@@ -2,149 +2,172 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>NeoX Treasure – Start</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>NeoX Catch Game – 開場動畫</title>
 <style>
-  :root{ --bg:#060a1a; --panel:#0b1030; --brand:#2b7cff; }
-  html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"PingFang TC","Noto Sans TC"}
-  .shell{position:fixed;inset:0;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
+  html,body{margin:0;height:100%;background:#05081A;color:#fff;font-family:'Noto Sans TC',sans-serif;overflow:hidden;}
 
-  /* 1) Banner（字幕介紹） */
-  #banner{position:absolute;inset:0;display:grid;place-items:center;z-index:10;
-          background:radial-gradient(1000px 700px at 50% 25%, #0b1450 0%, #070b25 60%, #040713 100%)}
-  .card{max-width:min(900px,92vw);text-align:center;padding:clamp(22px,4vw,36px) clamp(18px,4vw,28px);
-        background:rgba(255,255,255,.05);border-radius:18px;backdrop-filter:blur(6px);
-        box-shadow:0 26px 80px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06)}
-  .title{margin:0 0 8px;font-size:clamp(26px,6vw,44px);letter-spacing:.08em;
-         text-shadow:0 0 18px #41b0ff66,0 0 42px #41b0ff33;opacity:0;transform:translateY(10px) scale(.98);
-         transition:opacity .7s, transform .7s}
-  .line{opacity:0;transform:translateY(6px);transition:opacity .6s, transform .6s;color:#cfe0ff;
-        font-size:clamp(15px,3.4vw,18px);line-height:1.7;margin:.35em 0}
-  .dots{margin-top:10px;opacity:.0;transition:opacity .6s}
-  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#89c9ff55;margin:0 3px}
+  /* ===== Banner 介紹 ===== */
+  #banner{
+    position:absolute;inset:0;display:grid;place-items:center;text-align:center;
+    background:radial-gradient(circle at center,#0b1450 0%,#070b25 60%,#040713 100%);
+    z-index:10;
+  }
+  #bannerText{opacity:0;max-width:90%;line-height:1.6;font-size:clamp(16px,3vw,20px);}
+  .fade-in{animation:fadein 1.6s ease forwards;}
+  @keyframes fadein{to{opacity:1;transform:none}}
 
-  /* 2) 開場影片層 */
-  #opener{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#000;z-index:11}
-  #opener video{width:100%;height:100%;object-fit:cover}
-  #tap{position:absolute;left:0;right:0;bottom:calc(8% + env(safe-area-inset-bottom));text-align:center;
-       color:#fff;opacity:.85;display:none}
+  /* ===== 開場動畫影片 ===== */
+  #opener{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:11;
+           background:radial-gradient(circle at center,#030617 0%,#050a1f 100%);}
+  #opener video{width:100%;height:100%;object-fit:contain;background-color:#000;opacity:0;transition:opacity .6s ease;}
 
-  /* 3) Start 層（影片完結後） */
-  #startLayer{position:absolute;inset:0;display:none;place-items:center;z-index:12;
-              background:linear-gradient(180deg,#070d26,transparent 40%)}
-  #startBtn{border:0;border-radius:14px;padding:14px 22px;font-weight:800;letter-spacing:.02em;
-            background:var(--brand);color:#fff;box-shadow:0 14px 36px rgba(43,124,255,.45);cursor:pointer}
-  /* 4) 遊戲區（iframe 全屏） */
-  #stage{position:absolute;inset:0;display:none}
-  iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+  /* ===== 影片後爆光轉場 ===== */
+  #transitionFx{position:absolute;inset:0;display:none;place-items:center;z-index:12;pointer-events:none;overflow:hidden;}
+  #transitionFx .flash{position:absolute;inset:0;background:#fff;opacity:0;}
+  #transitionFx .pulse{
+    position:absolute;left:50%;top:50%;width:130px;height:130px;
+    transform:translate(-50%,-50%) scale(0.3);
+    background:url('https://neoxcoin.github.io/neox-emoji-128.png') center/contain no-repeat;
+    filter:drop-shadow(0 0 20px rgba(80,150,255,.8)) drop-shadow(0 0 40px rgba(43,124,255,.4));
+    opacity:.95;
+  }
+  @keyframes fx-flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+  @keyframes fx-coinburst{
+    0%{transform:translate(-50%,-50%) scale(0.3);opacity:1}
+    60%{transform:translate(-50%,-50%) scale(6);opacity:.45}
+    100%{transform:translate(-50%,-50%) scale(8);opacity:0}
+  }
+  .fx-run .flash{animation:fx-flash .52s ease-out forwards}
+  .fx-run .pulse{animation:fx-coinburst .9s ease-out forwards}
 
-  .credit{position:fixed;left:12px;bottom:calc(10px + env(safe-area-inset-bottom));opacity:.55;font-size:12px}
+  /* ===== Start Layer ===== */
+  #startLayer{position:absolute;inset:0;display:grid;place-items:center;background:rgba(5,8,20,.85);
+              z-index:13;opacity:0;transition:opacity 1.2s ease;}
+  #startLayer.visible{opacity:1;}
+  #startBtn{
+    background:#2563eb;color:#fff;font-weight:900;font-size:clamp(20px,6vw,36px);
+    letter-spacing:.05em;padding:18px 34px;border-radius:14px;cursor:pointer;
+    box-shadow:0 0 25px rgba(37,99,235,.6);
+    animation:pop-in 1.3s ease forwards;
+  }
+  @keyframes pop-in{0%{transform:scale(0.8);opacity:0}70%{transform:scale(1.05);opacity:1}100%{transform:scale(1);opacity:1}}
+
+  .hidden{display:none}
 </style>
 </head>
 <body>
-<div class="shell">
-  <!-- 1) Banner 字幕介紹 -->
-  <section id="banner" aria-label="Intro banner">
-    <div class="card">
-      <h1 class="title" id="title">NEOX</h1>
-      <div class="line" id="l1">歡迎來到 <b>NeoX Catch the Coins</b>！</div>
-      <div class="line" id="l2">用底部托盤接住 <b>NeoX Coins</b>，不同硬幣分數不同。</div>
-      <div class="line" id="l3">小心假幣與漏接會扣分，連續命中可衝高分！</div>
-      <div class="line" id="l4">左右點按／拖曳，或鍵盤 ← → 控制托盤。</div>
-      <div class="dots" id="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-    </div>
-  </section>
 
-  <!-- 2) 開場動畫層 -->
-  <div id="opener" role="dialog" aria-label="Opening animation">
-    <video id="openerVideo" playsinline preload="auto"
-           src="NeoXcatchgameOpening%20.mp4"></video>
-    <div id="tap">點擊以播放 / 繼續</div>
+<!-- 遊戲介紹 Banner -->
+<div id="banner">
+  <div id="bannerText">
+    <h1>NeoX Catch Game</h1>
+    <p>接住從天而降的 NeoX Coin！<br>訓練你的反應力，挑戰更高分數！</p>
   </div>
-
-  <!-- 3) Start Game 層 -->
-  <div id="startLayer">
-    <button id="startBtn" aria-label="Start Game">Start Game</button>
-  </div>
-
-  <!-- 4) 遊戲容器 -->
-  <section id="stage" aria-hidden="true">
-    <iframe id="gameFrame" src="about:blank" allow="autoplay; fullscreen"></iframe>
-  </section>
-
-  <div class="credit">© NeoX</div>
 </div>
 
+<!-- 開場動畫 -->
+<div id="opener">
+  <video id="openerVideo" playsinline preload="auto"
+    src="https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening%20.mp4"></video>
+</div>
+
+<!-- 影片轉場 -->
+<div id="transitionFx">
+  <div class="flash"></div>
+  <div class="pulse"></div>
+</div>
+
+<!-- Start Game 層 -->
+<div id="startLayer" class="hidden">
+  <div id="startBtn">▶ START GAME</div>
+</div>
+
+<!-- 音樂 -->
+<audio id="introMusic" preload="auto" 
+       src="https://neoxcoin.github.io/neox-game/NeoX_OpeningTheme_Cartoon.wav"></audio>
+
 <script>
-/* ===== (1) 字幕排程：逐句淡入，完成後自動播片 ===== */
 const banner=document.getElementById('banner');
-const title=document.getElementById('title');
-const lines=[...document.querySelectorAll('.line')];
-const dots=document.getElementById('dots');
-function runBanner(){
-  title.style.opacity='1'; title.style.transform='translateY(0) scale(1)';
-  lines.forEach((el,i)=>setTimeout(()=>{ el.style.opacity='1'; el.style.transform='translateY(0)'; }, 800 + i*900));
-  setTimeout(()=>{ dots.style.opacity='1'; }, 800 + lines.length*900);
-  // 全部字幕完成 → 播放影片
-  setTimeout(playOpening, 800 + lines.length*900 + 900);
-}
-runBanner();
-
-/* ===== (2) 播放開場動畫（盡量自動；失敗則顯示 Tap 提示） ===== */
+const bannerText=document.getElementById('bannerText');
 const opener=document.getElementById('opener');
-const video =document.getElementById('openerVideo');
-const tap   =document.getElementById('tap');
-
-async function playOpening(){
-  opener.style.display='flex';
-  try{
-    await video.play();             // 可能因為 iOS 規則而失敗
-  }catch{
-    tap.style.display='block';      // 要求用戶點一下
-  }
-}
-// 任何點擊都嘗試播放
-opener.addEventListener('click', async()=>{
-  if(video.paused){ try{ await video.play(); tap.style.display='none'; }catch{} }
-});
-// 影片完結 → 顯示 Start Game
-video.addEventListener('ended', ()=>{
-  opener.style.display='none';
-  showStart();
-});
-
-/* ===== (3) 顯示 Start → 載入 v1 ===== */
+const video=document.getElementById('openerVideo');
+const trans=document.getElementById('transitionFx');
 const startLayer=document.getElementById('startLayer');
-const startBtn  =document.getElementById('startBtn');
-const stage     =document.getElementById('stage');
-const frame     =document.getElementById('gameFrame');
+const startBtn=document.getElementById('startBtn');
+const music=document.getElementById('introMusic');
 
-function showStart(){
-  startLayer.style.display='grid';
-}
-function enterGame(){
-  banner.style.display='none';
-  opener.style.display='none';
-  startLayer.style.display='none';
-  stage.style.display='block';
-  frame.src='v1.html';
-}
-startBtn.addEventListener('click', enterGame);
+/* ====== Step 1: Banner → 淡入文字 ====== */
+setTimeout(()=>bannerText.classList.add('fade-in'),200);
+setTimeout(()=>{
+  banner.style.transition='opacity 1s ease';
+  banner.style.opacity='0';
+  setTimeout(()=>{banner.style.display='none'; startOpening();},1000);
+},4000);
 
-/* ===== (4) 後續切關（保留原本 postMessage 溝通） ===== */
-let level=1,total=0;
-window.addEventListener('message',(e)=>{
-  const m=e.data||{};
-  if(m.type==='levelComplete'){
-    total += (m.levelScore||0);
-    level++;
-    if(level===2) frame.src='v2.html';
-    else if(level===3) frame.src='v3.html';
-    else {
-      // 全部通關後可在此加 End Game 影片
-    }
+/* ====== Step 2: 播開場動畫 ====== */
+async function startOpening(){
+  opener.style.display='flex';
+  try{ await video.play(); }catch{}
+}
+
+/* ====== Step 3: 音樂控制 ====== */
+let audioCtx,gainNode,source;
+async function playMusic(){
+  if(!audioCtx){
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const res=await fetch(music.src);
+    const buffer=await res.arrayBuffer();
+    const decoded=await audioCtx.decodeAudioData(buffer);
+    source=audioCtx.createBufferSource();
+    gainNode=audioCtx.createGain();
+    source.buffer=decoded; source.connect(gainNode).connect(audioCtx.destination);
+    source.start(0);
+    gainNode.gain.value=0;
   }
+  audioCtx.resume();
+  fadeGain(0,0.8,2000);
+}
+function fadeGain(from,to,duration){
+  if(!gainNode)return;
+  const now=audioCtx.currentTime;
+  gainNode.gain.cancelScheduledValues(now);
+  gainNode.gain.setValueAtTime(from,now);
+  gainNode.gain.linearRampToValueAtTime(to,now+duration/1000);
+}
+video.addEventListener('play',playMusic);
+
+/* ====== Step 4: 影片結束 → 爆光 + 音樂淡出 ====== */
+video.addEventListener('ended',()=>{
+  fadeGain(0.8,0,1200);
+  playTransition();
+});
+function playTransition(){
+  trans.style.display='grid';
+  trans.classList.remove('fx-run');
+  requestAnimationFrame(()=>trans.classList.add('fx-run'));
+  setTimeout(()=>{
+    trans.style.display='none';
+    showStartLayer();
+  },950);
+}
+
+/* ====== Step 5: 顯示 Start Game ====== */
+function showStartLayer(){
+  startLayer.classList.remove('hidden');
+  requestAnimationFrame(()=>startLayer.classList.add('visible'));
+}
+
+/* ====== Step 6: 進入遊戲 ====== */
+startBtn.addEventListener('click',()=>{
+  startLayer.classList.remove('visible');
+  setTimeout(()=>{
+    startLayer.classList.add('hidden');
+    if(audioCtx) audioCtx.close();
+    window.location.href="v1.html";
+  },800);
 });
 </script>
+
 </body>
 </html>
