@@ -8,59 +8,66 @@
   :root{ --bg:#060a1a; --panel:#0b1030; --brand:#2b7cff; }
   html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"PingFang TC","Noto Sans TC"}
   .shell{position:fixed;inset:0;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
-  /* 首屏（介紹 + 播片） */
-  #home{position:absolute;inset:0;display:grid;place-items:center;padding:clamp(16px,3vw,32px)}
-  .card{max-width:min(900px,92vw);background:rgba(255,255,255,.04);border-radius:16px;
-        box-shadow:0 24px 80px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
-        padding:clamp(16px,3.2vw,28px);backdrop-filter:blur(6px)}
-  h1{margin:.2em 0 .4em;font-size:clamp(22px,5.4vw,36px);letter-spacing:.02em}
-  p{margin:.4em 0 1em;color:#cfe0ff;line-height:1.7}
-  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
-  button{border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
-  .primary{background:var(--brand);color:#fff;box-shadow:0 12px 28px rgba(43,124,255,.45)}
-  .ghost{background:#151a3a;color:#e6ecff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-  small{opacity:.7}
-  /* 影片覆蓋層 */
-  #opener{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#000;z-index:10}
+
+  /* 1) Banner（字幕介紹） */
+  #banner{position:absolute;inset:0;display:grid;place-items:center;z-index:10;
+          background:radial-gradient(1000px 700px at 50% 25%, #0b1450 0%, #070b25 60%, #040713 100%)}
+  .card{max-width:min(900px,92vw);text-align:center;padding:clamp(22px,4vw,36px) clamp(18px,4vw,28px);
+        background:rgba(255,255,255,.05);border-radius:18px;backdrop-filter:blur(6px);
+        box-shadow:0 26px 80px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06)}
+  .title{margin:0 0 8px;font-size:clamp(26px,6vw,44px);letter-spacing:.08em;
+         text-shadow:0 0 18px #41b0ff66,0 0 42px #41b0ff33;opacity:0;transform:translateY(10px) scale(.98);
+         transition:opacity .7s, transform .7s}
+  .line{opacity:0;transform:translateY(6px);transition:opacity .6s, transform .6s;color:#cfe0ff;
+        font-size:clamp(15px,3.4vw,18px);line-height:1.7;margin:.35em 0}
+  .dots{margin-top:10px;opacity:.0;transition:opacity .6s}
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#89c9ff55;margin:0 3px}
+
+  /* 2) 開場影片層 */
+  #opener{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#000;z-index:11}
   #opener video{width:100%;height:100%;object-fit:cover}
-  #tap{position:absolute;inset:auto 0 8% 0;text-align:center;color:#fff;opacity:.85;display:none}
-  /* 真正遊戲區（iframe 全屏） */
+  #tap{position:absolute;left:0;right:0;bottom:calc(8% + env(safe-area-inset-bottom));text-align:center;
+       color:#fff;opacity:.85;display:none}
+
+  /* 3) Start 層（影片完結後） */
+  #startLayer{position:absolute;inset:0;display:none;place-items:center;z-index:12;
+              background:linear-gradient(180deg,#070d26,transparent 40%)}
+  #startBtn{border:0;border-radius:14px;padding:14px 22px;font-weight:800;letter-spacing:.02em;
+            background:var(--brand);color:#fff;box-shadow:0 14px 36px rgba(43,124,255,.45);cursor:pointer}
+  /* 4) 遊戲區（iframe 全屏） */
   #stage{position:absolute;inset:0;display:none}
   iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+
   .credit{position:fixed;left:12px;bottom:calc(10px + env(safe-area-inset-bottom));opacity:.55;font-size:12px}
 </style>
 </head>
 <body>
 <div class="shell">
-  <!-- 首頁：介紹 + 動畫按鈕 -->
-  <section id="home" aria-label="Game intro">
+  <!-- 1) Banner 字幕介紹 -->
+  <section id="banner" aria-label="Intro banner">
     <div class="card">
-      <h1>NeoX Catch the Coins</h1>
-      <p>
-        用底部的托盤接住掉下來的 <b>NeoX Coins</b>，不同硬幣分數不同，漏接或接到假幣會扣分。<br>
-        完成目標數量即可升級，連續命中可衝高分數！支援手機觸控同鍵盤操作。
-      </p>
-      <ul>
-        <li>🎯 目標：完成每關指定數量</li>
-        <li>🕹️ 操作：左右點按／拖曳，或鍵盤 ← →</li>
-        <li>🔊 可開關音效</li>
-      </ul>
-      <div class="btns">
-        <button id="btnPlayOpener" class="ghost">▶ 播放開場動畫</button>
-        <button id="btnStartGame" class="primary">Start Game</button>
-      </div>
-      <small>提示：先看開場動畫，再開始遊戲更有代入感。</small>
+      <h1 class="title" id="title">NEOX</h1>
+      <div class="line" id="l1">歡迎來到 <b>NeoX Catch the Coins</b>！</div>
+      <div class="line" id="l2">用底部托盤接住 <b>NeoX Coins</b>，不同硬幣分數不同。</div>
+      <div class="line" id="l3">小心假幣與漏接會扣分，連續命中可衝高分！</div>
+      <div class="line" id="l4">左右點按／拖曳，或鍵盤 ← → 控制托盤。</div>
+      <div class="dots" id="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
     </div>
   </section>
 
-  <!-- 開場動畫層 -->
+  <!-- 2) 開場動畫層 -->
   <div id="opener" role="dialog" aria-label="Opening animation">
     <video id="openerVideo" playsinline preload="auto"
            src="NeoXcatchgameOpening%20.mp4"></video>
     <div id="tap">點擊以播放 / 繼續</div>
   </div>
 
-  <!-- 遊戲容器 -->
+  <!-- 3) Start Game 層 -->
+  <div id="startLayer">
+    <button id="startBtn" aria-label="Start Game">Start Game</button>
+  </div>
+
+  <!-- 4) 遊戲容器 -->
   <section id="stage" aria-hidden="true">
     <iframe id="gameFrame" src="about:blank" allow="autoplay; fullscreen"></iframe>
   </section>
@@ -69,44 +76,62 @@
 </div>
 
 <script>
-const home   = document.getElementById('home');
-const opener = document.getElementById('opener');
-const video  = document.getElementById('openerVideo');
-const tap    = document.getElementById('tap');
-const stage  = document.getElementById('stage');
-const frame  = document.getElementById('gameFrame');
+/* ===== (1) 字幕排程：逐句淡入，完成後自動播片 ===== */
+const banner=document.getElementById('banner');
+const title=document.getElementById('title');
+const lines=[...document.querySelectorAll('.line')];
+const dots=document.getElementById('dots');
+function runBanner(){
+  title.style.opacity='1'; title.style.transform='translateY(0) scale(1)';
+  lines.forEach((el,i)=>setTimeout(()=>{ el.style.opacity='1'; el.style.transform='translateY(0)'; }, 800 + i*900));
+  setTimeout(()=>{ dots.style.opacity='1'; }, 800 + lines.length*900);
+  // 全部字幕完成 → 播放影片
+  setTimeout(playOpening, 800 + lines.length*900 + 900);
+}
+runBanner();
 
-// 1) 播放開場動畫
-document.getElementById('btnPlayOpener').onclick = async()=>{
+/* ===== (2) 播放開場動畫（盡量自動；失敗則顯示 Tap 提示） ===== */
+const opener=document.getElementById('opener');
+const video =document.getElementById('openerVideo');
+const tap   =document.getElementById('tap');
+
+async function playOpening(){
   opener.style.display='flex';
-  tap.style.display='none';
   try{
-    // 盡量自動播放（iOS 可能需要互動）
-    await video.play();
+    await video.play();             // 可能因為 iOS 規則而失敗
   }catch{
-    tap.style.display='block';
+    tap.style.display='block';      // 要求用戶點一下
   }
-};
-// 使用者點擊影片層時也嘗試播放/繼續
+}
+// 任何點擊都嘗試播放
 opener.addEventListener('click', async()=>{
-  if(video.paused) { try{ await video.play(); tap.style.display='none'; }catch{} }
+  if(video.paused){ try{ await video.play(); tap.style.display='none'; }catch{} }
 });
-
-// 影片播完 → 顯示 Start Game 按鈕變化 & 收起影片層
+// 影片完結 → 顯示 Start Game
 video.addEventListener('ended', ()=>{
   opener.style.display='none';
+  showStart();
 });
 
-// 2) 進入遊戲 v1
-function enterGame(){
-  home.style.display='none';
-  opener.style.display='none';
-  stage.style.display='block';
-  frame.src = 'v1.html';
-}
-document.getElementById('btnStartGame').onclick = enterGame;
+/* ===== (3) 顯示 Start → 載入 v1 ===== */
+const startLayer=document.getElementById('startLayer');
+const startBtn  =document.getElementById('startBtn');
+const stage     =document.getElementById('stage');
+const frame     =document.getElementById('gameFrame');
 
-// 3) 後續切關（保持原有 postMessage 溝通）
+function showStart(){
+  startLayer.style.display='grid';
+}
+function enterGame(){
+  banner.style.display='none';
+  opener.style.display='none';
+  startLayer.style.display='none';
+  stage.style.display='block';
+  frame.src='v1.html';
+}
+startBtn.addEventListener('click', enterGame);
+
+/* ===== (4) 後續切關（保留原本 postMessage 溝通） ===== */
 let level=1,total=0;
 window.addEventListener('message',(e)=>{
   const m=e.data||{};
@@ -116,7 +141,7 @@ window.addEventListener('message',(e)=>{
     if(level===2) frame.src='v2.html';
     else if(level===3) frame.src='v3.html';
     else {
-      // 可在此加入 End Game 影片或勝利畫面
+      // 全部通關後可在此加 End Game 影片
     }
   }
 });
