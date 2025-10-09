@@ -1,5 +1,9 @@
-<!DOCTYPE html><meta charset="utf-8"><title>Level 1</title>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Level 1</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <style>
   html,body{margin:0;height:100%;background:#091433;color:#fff;font-family:system-ui}
   #wrap{height:100vh;display:flex;flex-direction:column}
@@ -7,41 +11,127 @@
   #game{position:relative;flex:1}
   canvas{position:absolute;inset:0;width:100%;height:100%}
 </style>
-<header><div>Level 1</div><div>Score: <span id="s">0</span> | Time: <span id="t">30</span>s</div></header>
-<div id="game"><canvas id="cv" width="800" height="460"></canvas></div>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <div>Level 1</div>
+    <div>Score: <span id="s">0</span> | Time: <span id="t">30</span>s</div>
+  </header>
+  <div id="game"><canvas id="cv" width="800" height="460"></canvas></div>
+</div>
+
 <script>
 let levelScore=0, target=150, timeLeft=30;
 window.addEventListener('message',e=>{ if(e.data?.type==='init'){ /* e.data.total 可用 */ }});
-const cv=document.getElementById('cv'), ctx=cv.getContext('2d'); const sEl=document.getElementById('s'), tEl=document.getElementById('t');
-const P={x:cv.width/2,y:cv.height-28,w:80,h:16,vx:0,speed:380}; const keys={L:0,R:0}; let coins=[],spawn=0,last=0,run=true;
 
-function spawnCoin(){ const r=Math.random(); let type='normal'; if(r>0.85) type='fake'; else if(r>0.6) type='special';
-  const vy={normal:140,special:190,fake:170}[type]; coins.push({x:Math.random()*(cv.width-24)+12,y:-20,r:14,vy:vy+Math.random()*40,type}); }
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const sEl=document.getElementById('s'), tEl=document.getElementById('t');
+const P={x:cv.width/2,y:cv.height-28,w:80,h:16,vx:0,speed:380};
+const keys={L:0,R:0};
+let coins=[],spawn=0,last=0,run=true;
 
-function drawPlayer(){ ctx.save(); ctx.translate(P.x,P.y); ctx.fillStyle='#7ecbff'; ctx.shadowColor='#7ecbff'; ctx.shadowBlur=12; ctx.fillRect(-P.w/2,-P.h/2,P.w,P.h); ctx.shadowBlur=0; ctx.restore(); }
-function drawCoin(c){ ctx.save(); ctx.translate(c.x,c.y); ctx.shadowBlur=12;
-  if(c.type==='normal'){ctx.shadowColor='#ffd54a';ctx.fillStyle='#ffd54a';}
-  else if(c.type==='special'){ctx.shadowColor='#7ecbff';ctx.fillStyle='#7ecbff';}
-  else{ctx.shadowColor='#ff5a5a';ctx.fillStyle='#ff5a5a';}
-  ctx.beginPath(); ctx.arc(0,0,14,0,6.28); ctx.fill(); ctx.shadowBlur=0; ctx.fillStyle='rgba(0,0,0,.35)'; ctx.font='bold 14px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('N',0,0); ctx.restore(); }
-function hit(c){ const nx=Math.max(P.x-P.w/2,Math.min(c.x,P.x+P.w/2)); const ny=Math.max(P.y-P.h/2,Math.min(c.y,P.y+P.h/2)); const dx=c.x-nx,dy=c.y-ny; return dx*dx+dy*dy <= c.r*c.r; }
-function scoreAdd(d){ levelScore=Math.max(0, levelScore+d); sEl.textContent=levelScore; parent.postMessage({type:'scoreUpdate', levelScore}, '*'); }
-function miss(type){ if(type==='normal')scoreAdd(-5); if(type==='special')scoreAdd(-10); }
+function spawnCoin(){
+  const r=Math.random();
+  let type='normal';
+  if(r>0.85) type='fake';
+  else if(r>0.6) type='special';
+  const vy={normal:140,special:190,fake:170}[type];
+  coins.push({x:Math.random()*(cv.width-24)+12,y:-20,r:14,vy:vy+Math.random()*40,type});
+}
 
-function step(ts){ if(!run) return; const dt=(ts-(last||ts))/1000; last=ts; timeLeft-=dt; if(timeLeft<0) timeLeft=0; tEl.textContent=Math.ceil(timeLeft);
-  spawn+=dt; while(spawn>=0.6){ spawn-=0.6; spawnCoin(); }
-  P.vx=(keys.L?-P.speed:0)+(keys.R?P.speed:0); P.x=Math.max(P.w/2,Math.min(cv.width-P.w/2,P.x+P.vx*dt));
-  for(const c of coins){ c.y+=c.vy*dt; if(c.y>cv.height+40 && !c._gone){ c._gone=1; miss(c.type); } if(!c._gone && hit(c)){ c._gone=1; if(c.type==='normal')scoreAdd(10); else if(c.type==='special')scoreAdd(50); else scoreAdd(-20);} }
+function drawPlayer(){
+  ctx.save();
+  ctx.translate(P.x,P.y);
+  ctx.fillStyle='#7ecbff';
+  ctx.shadowColor='#7ecbff';
+  ctx.shadowBlur=12;
+  ctx.fillRect(-P.w/2,-P.h/2,P.w,P.h);
+  ctx.restore();
+}
+
+function drawCoin(c){
+  ctx.save();
+  ctx.translate(c.x,c.y);
+  if(c.type==='normal') ctx.fillStyle='#ffd54a';
+  else if(c.type==='special') ctx.fillStyle='#7ecbff';
+  else ctx.fillStyle='#ff5a5a';
+  ctx.beginPath();
+  ctx.arc(0,0,14,0,6.28);
+  ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,.35)';
+  ctx.font='bold 14px system-ui';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('N',0,0);
+  ctx.restore();
+}
+
+function hit(c){
+  const nx=Math.max(P.x-P.w/2,Math.min(c.x,P.x+P.w/2));
+  const ny=Math.max(P.y-P.h/2,Math.min(c.y,P.y+P.h/2));
+  const dx=c.x-nx,dy=c.y-ny;
+  return dx*dx+dy*dy <= c.r*c.r;
+}
+
+function scoreAdd(d){
+  levelScore=Math.max(0, levelScore+d);
+  sEl.textContent=levelScore;
+  parent.postMessage({type:'scoreUpdate', levelScore}, '*');
+}
+
+function miss(type){
+  if(type==='normal') scoreAdd(-5);
+  if(type==='special') scoreAdd(-10);
+}
+
+function step(ts){
+  if(!run) return;
+  const dt=(ts-(last||ts))/1000;
+  last=ts;
+  timeLeft-=dt;
+  if(timeLeft<0) timeLeft=0;
+  tEl.textContent=Math.ceil(timeLeft);
+  spawn+=dt;
+  while(spawn>=0.6){ spawn-=0.6; spawnCoin(); }
+  P.vx=(keys.L?-P.speed:0)+(keys.R?P.speed:0);
+  P.x=Math.max(P.w/2,Math.min(cv.width-P.w/2,P.x+P.vx*dt));
+  for(const c of coins){
+    c.y+=c.vy*dt;
+    if(c.y>cv.height+40 && !c._gone){ c._gone=1; miss(c.type); }
+    if(!c._gone && hit(c)){
+      c._gone=1;
+      if(c.type==='normal')scoreAdd(10);
+      else if(c.type==='special')scoreAdd(50);
+      else scoreAdd(-20);
+    }
+  }
   coins=coins.filter(c=>c.y<=cv.height+50);
-  ctx.clearRect(0,0,cv.width,cv.height); // bg dots
-  for(let i=0;i<60;i++){ctx.fillStyle='rgba(255,255,255,.04)';ctx.fillRect((i*37)%cv.width,(i*79)%cv.height,2,2);}
-  drawPlayer(); coins.forEach(drawCoin);
-  if(levelScore>=target || timeLeft<=0){ run=false; parent.postMessage({type:'levelComplete', levelScore}, '*'); return; }
+  ctx.clearRect(0,0,cv.width,cv.height);
+  drawPlayer();
+  coins.forEach(drawCoin);
+  if(levelScore>=target || timeLeft<=0){
+    run=false;
+    parent.postMessage({type:'levelComplete', levelScore}, '*');
+    return;
+  }
   requestAnimationFrame(step);
 }
 requestAnimationFrame(step);
-addEventListener('keydown',e=>{ if(e.key==='ArrowLeft'||e.key==='a')keys.L=1; if(e.key==='ArrowRight'||e.key==='d')keys.R=1;});
-addEventListener('keyup',e=>{ if(e.key==='ArrowLeft'||e.key==='a')keys.L=0; if(e.key==='ArrowRight'||e.key==='d')keys.R=0;});
-document.getElementById('game').addEventListener('pointerdown',e=>{ const x=e.clientX - cv.getBoundingClientRect().left; keys.L = x<cv.clientWidth/2; keys.R = !keys.L; });
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a')keys.L=1;
+  if(e.key==='ArrowRight'||e.key==='d')keys.R=1;
+});
+addEventListener('keyup',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a')keys.L=0;
+  if(e.key==='ArrowRight'||e.key==='d')keys.R=0;
+});
+document.getElementById('game').addEventListener('pointerdown',e=>{
+  const x=e.clientX - cv.getBoundingClientRect().left;
+  keys.L = x < cv.clientWidth/2;
+  keys.R = !keys.L;
+});
 document.getElementById('game').addEventListener('pointerup',()=>{ keys.L=keys.R=0; });
 </script>
+</body>
+</html>
