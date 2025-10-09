@@ -1,45 +1,62 @@
-<!DOCTYPE html><meta charset="utf-8">
-<title>NeoX Treasure – Levels</title>
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NeoX Treasure – Start</title>
 <style>
-  body{margin:0;background:#0a0a2a;color:#fff;font-family:system-ui,Arial}
-  header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px}
-  #hud{font-weight:700}
-  #stage{position:relative;max-width:900px;margin:0 auto;aspect-ratio:16/9;border:1px solid #ffffff22;border-radius:12px;overflow:hidden}
-  iframe{width:100%;height:100%;border:0;display:block}
-  #end{position:absolute;inset:0;background:#000;display:none}
-  #end video{width:100%;height:100%;object-fit:cover}
-  button{background:#2563eb;border:0;color:#fff;padding:8px 12px;border-radius:10px}
+  html,body{margin:0;height:100%;background:#060a1a;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto}
+  .shell{position:fixed;inset:0;padding-bottom:env(safe-area-inset-bottom)}
+  #intro{position:absolute;inset:0;display:grid;place-items:center;z-index:10;background:radial-gradient(1000px 700px at 50% 25%,#0b1450 0%,#070b25 60%,#040713 100%)}
+  #intro .box{display:flex;flex-direction:column;align-items:center;gap:14px}
+  #intro h1{margin:0;font-size:clamp(22px,7vw,36px);letter-spacing:.1em;text-shadow:0 0 18px #41b0ff55,0 0 38px #41b0ff22}
+  #play{border:0;border-radius:12px;padding:12px 18px;font-weight:700;background:#2563eb;box-shadow:0 10px 28px #2563eb55;color:#fff;cursor:pointer}
+  #stage{position:absolute;inset:0}
+  iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
+  .credit{position:fixed;left:12px;bottom:calc(10px + env(safe-area-inset-bottom));opacity:.5;font-size:12px}
 </style>
-<header>
-  <div id="hud">Level: <span id="lv">1</span> / 3　Score: <span id="tot">0</span></div>
-  <div>
-    <button id="start">Start</button>
-    <button id="restart">Restart</button>
+</head>
+<body>
+<div class="shell">
+  <!-- 開場畫面 -->
+  <div id="intro">
+    <div class="box">
+      <h1>NEOX</h1>
+      <div style="opacity:.8">Powered by NeoX</div>
+      <button id="play">Play Game</button>
+    </div>
   </div>
-</header>
-<div id="stage">
-  <iframe id="game" src="v1.html" allow="autoplay; fullscreen"></iframe>
-  <div id="end"><video id="endVideo" src="NeoX_End_Game_VictoryGlow.mp4" playsinline></video></div>
-</div>
-<script>
-let level=1,total=0; const lvEl=document.getElementById('lv'), totEl=document.getElementById('tot');
-const frame=document.getElementById('game'); const endLayer=document.getElementById('end'); const endVideo=document.getElementById('endVideo');
 
-function loadLevel(n){
-  level=n; lvEl.textContent=n;
-  frame.src=`v${n}.html`;
-  frame.onload=()=>frame.contentWindow.postMessage({type:'init', total}, '*');
-}
-window.addEventListener('message', (e)=>{
+  <!-- 遊戲容器 -->
+  <div id="stage" aria-hidden="true">
+    <iframe id="gameFrame" allow="autoplay; fullscreen" src="about:blank"></iframe>
+  </div>
+  <div class="credit">© NeoX</div>
+</div>
+
+<script>
+const intro = document.getElementById('intro');
+const frame = document.getElementById('gameFrame');
+document.getElementById('play').onclick = ()=>{
+  intro.style.opacity='0'; intro.style.transition='opacity .6s';
+  setTimeout(()=>intro.style.display='none',600);
+  // 載入第一關
+  frame.src = 'v1.html';
+};
+
+// 多關卡通訊（保留與之後 v2/v3 相容）
+let level=1,total=0;
+window.addEventListener('message',(e)=>{
   const m=e.data||{};
-  if(m.type==='scoreUpdate'){ totEl.textContent = total + (m.levelScore||0); }
+  if(m.type==='scoreUpdate'){ /* 可選：顯示 HUD */ }
   if(m.type==='levelComplete'){
-    total += (m.levelScore||0); totEl.textContent=total;
-    if(level<3){ loadLevel(level+1); }
-    else{ endLayer.style.display='block'; endVideo.currentTime=0; endVideo.play().catch(()=>{}); }
+    total += (m.levelScore||0);
+    level++;
+    if(level===2) frame.src='v2.html';
+    else if(level===3) frame.src='v3.html';
+    else {
+      // 播 End Game（之後加）
+    }
   }
 });
-document.getElementById('start').onclick=()=>{ total=0; totEl.textContent=0; loadLevel(1); };
-document.getElementById('restart').onclick=()=>{ total=0; totEl.textContent=0; loadLevel(1); endLayer.style.display='none'; endVideo.pause(); };
 </script>
+</body></html>
