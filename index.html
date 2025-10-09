@@ -1,62 +1,95 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Treasure – Start</title>
 <style>
-  html,body{margin:0;height:100%;background:#060a1a;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto}
-  .shell{position:fixed;inset:0;padding-bottom:env(safe-area-inset-bottom)}
-  #intro{position:absolute;inset:0;display:grid;place-items:center;z-index:10;background:radial-gradient(1000px 700px at 50% 25%,#0b1450 0%,#070b25 60%,#040713 100%)}
-  #intro .box{display:flex;flex-direction:column;align-items:center;gap:14px}
-  #intro h1{margin:0;font-size:clamp(22px,7vw,36px);letter-spacing:.1em;text-shadow:0 0 18px #41b0ff55,0 0 38px #41b0ff22}
-  #play{border:0;border-radius:12px;padding:12px 18px;font-weight:700;background:#2563eb;box-shadow:0 10px 28px #2563eb55;color:#fff;cursor:pointer}
+  :root{ --bg:#060a1a; --panel:#0b1030; --brand:#26a8ff; }
+  html,body{margin:0;height:100%;background:var(--bg);color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto}
+  /* 整頁容器 */
+  .shell{position:fixed;inset:0;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}
+  /* 開場動畫層 */
+  #intro{position:absolute;inset:0;display:grid;place-items:center;z-index:10;
+         background:radial-gradient(1000px 700px at 50% 25%, #0b1450 0%, #070b25 60%, #040713 100%);}
+  #intro .box{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px}
+  #logoX{font-weight:900;font-size:clamp(28px,9vw,56px);letter-spacing:.12em;margin:0;
+         text-shadow:0 0 18px #41b0ff66,0 0 42px #41b0ff33;opacity:0;transform:translateY(10px) scale(.98);
+         transition:opacity .7s, transform .7s;}
+  #powered{opacity:.0;transition:opacity .8s .4s}
+  #play{border:0;border-radius:12px;padding:12px 18px;font-weight:800;letter-spacing:.02em;
+        background:#2563eb;box-shadow:0 12px 28px #2563eb55;color:#fff;cursor:pointer}
+  /* 星星背景 */
+  #stars{position:absolute;inset:0;opacity:.7}
+  /* 遊戲區（iframe 全屏） */
   #stage{position:absolute;inset:0}
   iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
-  .credit{position:fixed;left:12px;bottom:calc(10px + env(safe-area-inset-bottom));opacity:.5;font-size:12px}
+  /* 角落小字 */
+  .credit{position:fixed;left:12px;bottom:calc(10px + env(safe-area-inset-bottom));opacity:.55;font-size:12px}
 </style>
 </head>
 <body>
 <div class="shell">
-  <!-- 開場畫面 -->
-  <div id="intro">
+  <!-- 開場動畫 -->
+  <div id="intro" role="dialog" aria-label="Start screen">
+    <canvas id="stars"></canvas>
     <div class="box">
-      <h1>NEOX</h1>
-      <div style="opacity:.8">Powered by NeoX</div>
-      <button id="play">Play Game</button>
+      <h1 id="logoX">NEOX</h1>
+      <div id="powered">Powered by NeoX</div>
+      <button id="play" aria-label="Play Game">Play Game</button>
     </div>
   </div>
 
-  <!-- 遊戲容器 -->
+  <!-- 遊戲容器（按 Play 後載入 v1.html） -->
   <div id="stage" aria-hidden="true">
-    <iframe id="gameFrame" allow="autoplay; fullscreen" src="about:blank"></iframe>
+    <iframe id="gameFrame" src="about:blank" allow="autoplay; fullscreen"></iframe>
   </div>
+
   <div class="credit">© NeoX</div>
 </div>
 
 <script>
-const intro = document.getElementById('intro');
-const frame = document.getElementById('gameFrame');
-document.getElementById('play').onclick = ()=>{
-  intro.style.opacity='0'; intro.style.transition='opacity .6s';
-  setTimeout(()=>intro.style.display='none',600);
+/* ===== 開場動畫：星空粒子 ===== */
+const intro=document.getElementById('intro');
+const logo=document.getElementById('logoX');
+const powered=document.getElementById('powered');
+const stars=document.getElementById('stars');
+const sctx=stars.getContext('2d');
+function fit(){ stars.width=innerWidth; stars.height=innerHeight; }
+fit(); addEventListener('resize',fit);
+const dots=[...Array(100)].map(()=>({x:Math.random()*stars.width,y:Math.random()*stars.height,z:0.6+Math.random()*1.2}));
+(function loop(){
+  sctx.fillStyle='rgba(5,10,25,.35)'; sctx.fillRect(0,0,stars.width,stars.height);
+  dots.forEach(d=>{ d.y+=d.z*0.7; if(d.y>stars.height) d.y=0; sctx.beginPath(); sctx.arc(d.x,d.y,d.z*1.1,0,6.28); sctx.fillStyle='rgba(120,190,255,.85)'; sctx.fill();});
+  requestAnimationFrame(loop);
+})();
+requestAnimationFrame(()=>{ logo.style.opacity='1'; logo.style.transform='translateY(0) scale(1)'; powered.style.opacity='0.9'; });
+
+/* ===== 點擊 Play → 載入 v1 ===== */
+const frame=document.getElementById('gameFrame');
+document.getElementById('play').onclick=()=>{
+  // 淡出開場層
+  intro.style.transition='opacity .6s'; intro.style.opacity='0';
+  setTimeout(()=>intro.remove(),600);
   // 載入第一關
-  frame.src = 'v1.html';
+  frame.src='v1.html';
 };
 
-// 多關卡通訊（保留與之後 v2/v3 相容）
+/* ===== 多關卡訊息（留作之後自動進入 v2/v3 / 播 End Game） ===== */
 let level=1,total=0;
 window.addEventListener('message',(e)=>{
   const m=e.data||{};
-  if(m.type==='scoreUpdate'){ /* 可選：顯示 HUD */ }
   if(m.type==='levelComplete'){
     total += (m.levelScore||0);
     level++;
     if(level===2) frame.src='v2.html';
     else if(level===3) frame.src='v3.html';
     else {
-      // 播 End Game（之後加）
+      // （可選）全部通關 → 播 End Game 影片：之後加
+      // showEndGame();
     }
   }
 });
 </script>
-</body></html>
+</body>
+</html>
