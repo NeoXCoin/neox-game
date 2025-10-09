@@ -2,35 +2,51 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Catch Game – 開場動畫</title>
 <style>
-  html,body{margin:0;height:100%;background:#05081A;color:#fff;font-family:'Noto Sans TC',sans-serif;overflow:hidden;}
+  html,body{margin:0;height:100%;background:#05081A;color:#fff;font-family:'Noto Sans TC',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
 
-  /* ===== Banner 介紹 ===== */
+  /* ===== 1) Banner 介紹 ===== */
   #banner{
     position:absolute;inset:0;display:grid;place-items:center;text-align:center;
     background:radial-gradient(circle at center,#0b1450 0%,#070b25 60%,#040713 100%);
-    z-index:10;
+    z-index:10
   }
-  #bannerText{opacity:0;max-width:90%;line-height:1.6;font-size:clamp(16px,3vw,20px);}
-  .fade-in{animation:fadein 1.6s ease forwards;}
-  @keyframes fadein{to{opacity:1;transform:none}}
+  #bannerText{opacity:0;max-width:min(900px,92vw);line-height:1.7;font-size:clamp(16px,3.2vw,20px);padding:clamp(16px,3vw,28px)}
+  #bannerText h1{margin:.1em 0 .3em;font-size:clamp(26px,6vw,44px);letter-spacing:.06em;text-shadow:0 0 18px #41b0ff66,0 0 40px #41b0ff33}
+  .fade-in{animation:fadein 1.2s ease forwards}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  /* ===== 開場動畫影片 ===== */
-  #opener{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:11;
-           background:radial-gradient(circle at center,#030617 0%,#050a1f 100%);}
-  #opener video{width:100%;height:100%;object-fit:contain;background-color:#000;opacity:0;transition:opacity .6s ease;}
+  /* ===== 2) 開場影片層 ===== */
+  #opener{
+    position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:11;
+    background:radial-gradient(circle at center,#030617 0%,#050a1f 100%);overflow:hidden
+  }
+  #opener video{
+    width:100%;height:100%;object-fit:contain;background:#000;
+    opacity:0;transition:opacity .6s ease
+  }
+  /* 自動比例提示層 */
+  #tap{
+    position:absolute;left:0;right:0;bottom:calc(8% + env(safe-area-inset-bottom));
+    text-align:center;color:#fff;opacity:.92;display:none
+  }
+  /* Loading（保底） */
+  #loadingSpinner{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:12px;color:#bcd4ff
+  }
+  .spinner{width:46px;height:46px;border:4px solid #ffffff24;border-top-color:#2b7cff;border-radius:50%;animation:spin 1.1s linear infinite;filter:drop-shadow(0 0 8px #2b7cff99)}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ===== 影片後爆光轉場 ===== */
-  #transitionFx{position:absolute;inset:0;display:none;place-items:center;z-index:12;pointer-events:none;overflow:hidden;}
-  #transitionFx .flash{position:absolute;inset:0;background:#fff;opacity:0;}
+  /* ===== 3) 影片後：NeoX 幣爆光轉場 ===== */
+  #transitionFx{position:absolute;inset:0;display:none;place-items:center;z-index:12;pointer-events:none;overflow:hidden}
+  #transitionFx .flash{position:absolute;inset:0;background:#fff;opacity:0}
   #transitionFx .pulse{
-    position:absolute;left:50%;top:50%;width:130px;height:130px;
-    transform:translate(-50%,-50%) scale(0.3);
+    position:absolute;left:50%;top:50%;width:130px;height:130px;transform:translate(-50%,-50%) scale(0.3);
     background:url('https://neoxcoin.github.io/neox-emoji-128.png') center/contain no-repeat;
     filter:drop-shadow(0 0 20px rgba(80,150,255,.8)) drop-shadow(0 0 40px rgba(43,124,255,.4));
-    opacity:.95;
+    opacity:.95
   }
   @keyframes fx-flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
   @keyframes fx-coinburst{
@@ -40,134 +56,163 @@
   }
   .fx-run .flash{animation:fx-flash .52s ease-out forwards}
   .fx-run .pulse{animation:fx-coinburst .9s ease-out forwards}
+  @media (prefers-reduced-motion:reduce){.fx-run .flash,.fx-run .pulse{animation-duration:1ms !important}}
 
-  /* ===== Start Layer ===== */
-  #startLayer{position:absolute;inset:0;display:grid;place-items:center;background:rgba(5,8,20,.85);
-              z-index:13;opacity:0;transition:opacity 1.2s ease;}
-  #startLayer.visible{opacity:1;}
+  /* ===== 4) Start Layer ===== */
+  #startLayer{position:absolute;inset:0;display:none;place-items:center;background:rgba(5,8,20,.85);z-index:13;opacity:0;transition:opacity 1s ease}
+  #startLayer.visible{opacity:1}
   #startBtn{
-    background:#2563eb;color:#fff;font-weight:900;font-size:clamp(20px,6vw,36px);
-    letter-spacing:.05em;padding:18px 34px;border-radius:14px;cursor:pointer;
-    box-shadow:0 0 25px rgba(37,99,235,.6);
-    animation:pop-in 1.3s ease forwards;
+    background:#2563eb;color:#fff;font-weight:900;font-size:clamp(20px,6vw,36px);letter-spacing:.05em;
+    padding:18px 34px;border-radius:14px;cursor:pointer;box-shadow:0 0 25px rgba(37,99,235,.6);
+    animation:pop-in 1.1s ease forwards
   }
-  @keyframes pop-in{0%{transform:scale(0.8);opacity:0}70%{transform:scale(1.05);opacity:1}100%{transform:scale(1);opacity:1}}
-
-  .hidden{display:none}
+  @keyframes pop-in{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.05);opacity:1}100%{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
 
-<!-- 遊戲介紹 Banner -->
-<div id="banner">
+<!-- 1) Banner -->
+<section id="banner">
   <div id="bannerText">
     <h1>NeoX Catch Game</h1>
-    <p>接住從天而降的 NeoX Coin！<br>訓練你的反應力，挑戰更高分數！</p>
+    <p>接住從天而降的 <b>NeoX Coin</b>！不同硬幣分數不同，連續命中可以衝高分；<br>小心假幣與漏接會扣分。支援手機觸控與鍵盤 ← →。</p>
   </div>
-</div>
+</section>
 
-<!-- 開場動畫 -->
-<div id="opener">
+<!-- 2) 開場動畫 -->
+<section id="opener" role="dialog" aria-label="Opening animation">
+  <div id="loadingSpinner"><div class="spinner"></div><span>載入開場動畫中…</span></div>
   <video id="openerVideo" playsinline preload="auto"
     src="https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening%20.mp4"></video>
-</div>
+  <div id="tap">點擊以播放 / 繼續</div>
+</section>
 
-<!-- 影片轉場 -->
-<div id="transitionFx">
+<!-- 3) 轉場 -->
+<div id="transitionFx" aria-hidden="true">
   <div class="flash"></div>
   <div class="pulse"></div>
 </div>
 
-<!-- Start Game 層 -->
-<div id="startLayer" class="hidden">
+<!-- 4) Start Game -->
+<section id="startLayer" aria-hidden="true">
   <div id="startBtn">▶ START GAME</div>
-</div>
+</section>
 
-<!-- 音樂 -->
-<audio id="introMusic" preload="auto" 
-       src="https://neoxcoin.github.io/neox-game/NeoX_OpeningTheme_Cartoon.wav"></audio>
+<!-- 背景音樂（卡通風） -->
+<audio id="introMusic" preload="auto"
+  src="https://neoxcoin.github.io/neox-game/NeoX_OpeningTheme_Cartoon.wav"></audio>
 
 <script>
-const banner=document.getElementById('banner');
-const bannerText=document.getElementById('bannerText');
-const opener=document.getElementById('opener');
-const video=document.getElementById('openerVideo');
-const trans=document.getElementById('transitionFx');
-const startLayer=document.getElementById('startLayer');
-const startBtn=document.getElementById('startBtn');
-const music=document.getElementById('introMusic');
+/* --------- 元素 --------- */
+const banner = document.getElementById('banner');
+const bannerText = document.getElementById('bannerText');
+const opener = document.getElementById('opener');
+const video = document.getElementById('openerVideo');
+const tap = document.getElementById('tap');
+const spinner = document.getElementById('loadingSpinner');
 
-/* ====== Step 1: Banner → 淡入文字 ====== */
-setTimeout(()=>bannerText.classList.add('fade-in'),200);
+const trans = document.getElementById('transitionFx');
+const startLayer = document.getElementById('startLayer');
+const startBtn = document.getElementById('startBtn');
+const music = document.getElementById('introMusic');
+
+/* --------- 1) Banner → 影片 --------- */
+setTimeout(()=> bannerText.classList.add('fade-in'), 200);
 setTimeout(()=>{
   banner.style.transition='opacity 1s ease';
   banner.style.opacity='0';
-  setTimeout(()=>{banner.style.display='none'; startOpening();},1000);
-},4000);
+  setTimeout(()=>{ banner.style.display='none'; startOpening(); }, 1000);
+}, 3800);
 
-/* ====== Step 2: 播開場動畫 ====== */
+/* --------- 2) 開場動畫播放 + 自動比例 --------- */
+function fitVideoObject(){
+  const r = video.videoWidth / video.videoHeight || 1;
+  const s = innerWidth / innerHeight;
+  // 比例接近用 cover，其餘用 contain（確保不裁邊）
+  video.style.objectFit = Math.abs(r - s) < 0.18 ? 'cover' : 'contain';
+}
+video.addEventListener('loadedmetadata', fitVideoObject);
+addEventListener('resize', fitVideoObject, {passive:true});
+
 async function startOpening(){
-  opener.style.display='flex';
-  try{ await video.play(); }catch{}
-}
-
-/* ====== Step 3: 音樂控制 ====== */
-let audioCtx,gainNode,source;
-async function playMusic(){
-  if(!audioCtx){
-    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    const res=await fetch(music.src);
-    const buffer=await res.arrayBuffer();
-    const decoded=await audioCtx.decodeAudioData(buffer);
-    source=audioCtx.createBufferSource();
-    gainNode=audioCtx.createGain();
-    source.buffer=decoded; source.connect(gainNode).connect(audioCtx.destination);
-    source.start(0);
-    gainNode.gain.value=0;
+  opener.style.display = 'flex';
+  try{
+    await video.play();              // 可能被 iOS 阻止
+  }catch(e){
+    tap.style.display = 'block';     // 顯示「點擊以播放」
   }
-  audioCtx.resume();
-  fadeGain(0,0.8,2000);
 }
-function fadeGain(from,to,duration){
-  if(!gainNode)return;
-  const now=audioCtx.currentTime;
-  gainNode.gain.cancelScheduledValues(now);
-  gainNode.gain.setValueAtTime(from,now);
-  gainNode.gain.linearRampToValueAtTime(to,now+duration/1000);
-}
-video.addEventListener('play',playMusic);
+video.addEventListener('loadeddata', ()=>{
+  spinner.style.display = 'none';
+  video.style.opacity = '1';
+});
+video.addEventListener('playing', ()=>{
+  spinner.style.display = 'none';
+  video.style.opacity = '1';
+  tap.style.display = 'none';
+});
+opener.addEventListener('click', async ()=>{
+  if (video.paused) {
+    try{ await video.play(); tap.style.display='none'; }catch(e){}
+  }
+});
 
-/* ====== Step 4: 影片結束 → 爆光 + 音樂淡出 ====== */
-video.addEventListener('ended',()=>{
-  fadeGain(0.8,0,1200);
+/* --------- 3) 音樂淡入/淡出（WebAudio） --------- */
+let audioCtx, gainNode, source;
+async function playMusic(){
+  try{
+    if(!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const res = await fetch(music.src);
+      const buf = await res.arrayBuffer();
+      const decoded = await audioCtx.decodeAudioData(buf);
+      source = audioCtx.createBufferSource();
+      gainNode = audioCtx.createGain();
+      source.buffer = decoded; source.connect(gainNode).connect(audioCtx.destination);
+      gainNode.gain.value = 0; source.start(0);
+    }
+    await audioCtx.resume();
+    fadeGain(0, 0.8, 1800); // 淡入 1.8s
+  }catch(e){}
+}
+function fadeGain(from, to, ms){
+  if(!gainNode) return;
+  const now = audioCtx.currentTime;
+  gainNode.gain.cancelScheduledValues(now);
+  gainNode.gain.setValueAtTime(from, now);
+  gainNode.gain.linearRampToValueAtTime(to, now + ms/1000);
+}
+// 影片真正開始時播放音樂
+video.addEventListener('play', playMusic);
+
+/* --------- 4) 影片完 → 轉場 + 音樂淡出 --------- */
+video.addEventListener('ended', ()=>{
+  fadeGain(0.8, 0, 1200);
   playTransition();
 });
 function playTransition(){
   trans.style.display='grid';
   trans.classList.remove('fx-run');
-  requestAnimationFrame(()=>trans.classList.add('fx-run'));
+  requestAnimationFrame(()=> trans.classList.add('fx-run'));
   setTimeout(()=>{
     trans.style.display='none';
     showStartLayer();
-  },950);
+  }, 950);
 }
 
-/* ====== Step 5: 顯示 Start Game ====== */
+/* --------- 5) 顯示 Start Game --------- */
 function showStartLayer(){
-  startLayer.classList.remove('hidden');
-  requestAnimationFrame(()=>startLayer.classList.add('visible'));
+  startLayer.style.display='grid';
+  requestAnimationFrame(()=> startLayer.classList.add('visible'));
 }
-
-/* ====== Step 6: 進入遊戲 ====== */
-startBtn.addEventListener('click',()=>{
+startBtn.addEventListener('click', ()=>{
   startLayer.classList.remove('visible');
   setTimeout(()=>{
-    startLayer.classList.add('hidden');
-    if(audioCtx) audioCtx.close();
-    window.location.href="v1.html";
-  },800);
+    startLayer.style.display='none';
+    if(audioCtx){ try{ audioCtx.close(); }catch(e){} }
+    window.location.href = 'v1.html';
+  }, 800);
 });
 </script>
-
 </body>
 </html>
