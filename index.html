@@ -1,7 +1,45 @@
-index.html              ← 主控頁 (關卡切換+總分+End Game)
-v1.html
-v2.html
-v3.html
-NeoX_End_Game_VictoryGlow.mp4
-assets/                 ← (可空白，用來放圖片或音效)
-.nojekyll               ← 空白檔案（防止 Jekyll 錯誤）
+<!DOCTYPE html><meta charset="utf-8">
+<title>NeoX Treasure – Levels</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+  body{margin:0;background:#0a0a2a;color:#fff;font-family:system-ui,Arial}
+  header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px}
+  #hud{font-weight:700}
+  #stage{position:relative;max-width:900px;margin:0 auto;aspect-ratio:16/9;border:1px solid #ffffff22;border-radius:12px;overflow:hidden}
+  iframe{width:100%;height:100%;border:0;display:block}
+  #end{position:absolute;inset:0;background:#000;display:none}
+  #end video{width:100%;height:100%;object-fit:cover}
+  button{background:#2563eb;border:0;color:#fff;padding:8px 12px;border-radius:10px}
+</style>
+<header>
+  <div id="hud">Level: <span id="lv">1</span> / 3　Score: <span id="tot">0</span></div>
+  <div>
+    <button id="start">Start</button>
+    <button id="restart">Restart</button>
+  </div>
+</header>
+<div id="stage">
+  <iframe id="game" src="v1.html" allow="autoplay; fullscreen"></iframe>
+  <div id="end"><video id="endVideo" src="NeoX_End_Game_VictoryGlow.mp4" playsinline></video></div>
+</div>
+<script>
+let level=1,total=0; const lvEl=document.getElementById('lv'), totEl=document.getElementById('tot');
+const frame=document.getElementById('game'); const endLayer=document.getElementById('end'); const endVideo=document.getElementById('endVideo');
+
+function loadLevel(n){
+  level=n; lvEl.textContent=n;
+  frame.src=`v${n}.html`;
+  frame.onload=()=>frame.contentWindow.postMessage({type:'init', total}, '*');
+}
+window.addEventListener('message', (e)=>{
+  const m=e.data||{};
+  if(m.type==='scoreUpdate'){ totEl.textContent = total + (m.levelScore||0); }
+  if(m.type==='levelComplete'){
+    total += (m.levelScore||0); totEl.textContent=total;
+    if(level<3){ loadLevel(level+1); }
+    else{ endLayer.style.display='block'; endVideo.currentTime=0; endVideo.play().catch(()=>{}); }
+  }
+});
+document.getElementById('start').onclick=()=>{ total=0; totEl.textContent=0; loadLevel(1); };
+document.getElementById('restart').onclick=()=>{ total=0; totEl.textContent=0; loadLevel(1); endLayer.style.display='none'; endVideo.pause(); };
+</script>
