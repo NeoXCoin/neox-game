@@ -80,6 +80,12 @@
   .run .pulse{animation:fx-burst .9s ease-out forwards}
   @keyframes fx-flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
   @keyframes fx-burst{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}60%{transform:translate(-50%,-50%) scale(6);opacity:.45}100%{transform:translate(-50%,-50%) scale(8);opacity:0}}
+  
+  .vctrl.fadeout {
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+  }
 </style>
 </head>
 <body>
