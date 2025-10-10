@@ -101,15 +101,30 @@
     70%{transform:scale(1.05);opacity:1}
     100%{transform:scale(1);opacity:1}
   }
+  .brandline{
+    display:inline-flex; align-items:center; gap:12px;
+    justify-content:center;
+  }
+  .coinMark{
+    width:clamp(32px,6vw,54px); height:auto;
+    opacity:0; transform:translateY(6px) scale(.95);
+    filter:drop-shadow(0 0 10px rgba(255,210,90,.35));
+    animation:coinIn .9s ease .15s forwards; /* 同步文字淡入 */
+  }
+  @keyframes coinIn{
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
 </style>
 </head>
 <body>
 
 <!-- 1) Banner -->
 <section id="banner">
-  <div id="bannerText">
+  <div class="brandline">
+    <img class="coinMark" src="https://neoxcoin.github.io/neox-emoji-128.png" alt="NeoX Coin" />
     <h1>NeoX Catch Game</h1>
-    <p class="tagline">Your journey to NeoX begins here. Catch the coins. Unlock the future.</p>
+  </div>
+  <p class="tagline">Your journey to NeoX begins here. Catch the coins. Unlock the future.</p>
   </div>
 </section>
 
