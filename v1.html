@@ -5,31 +5,31 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Catch – Level 1</title>
 <style>
-  html, body {
-    height:100%; margin:0; background:#05081A; color:#fff;
-    font-family:-apple-system,system-ui,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif;
-    overflow:hidden;
-  }
-  #wrap{ position:relative; height:100%; display:grid; place-items:center; }
-  canvas{
-    display:block; width:min(92vw, 820px); aspect-ratio:9/16;
-    border-radius:16px; background:#0a0c22;
-    box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.06);
-    touch-action:none;
-  }
-  .hud{ position:absolute; inset:0; display:grid; grid-template-rows:auto 1fr auto; pointer-events:none;}
-  .topbar{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 14px; font-weight:800;}
-  .badges{ display:flex; gap:8px; flex-wrap:wrap;}
-  .badge{ padding:6px 10px; border-radius:10px; background:rgba(0,0,0,.35); box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
-  button{ pointer-events:auto; border:0; border-radius:10px; padding:8px 12px; font-weight:800; background:#2b7cff; color:#fff; cursor:pointer; box-shadow:0 6px 18px rgba(43,124,255,.35); }
-  button.alt{ background:#1f2648; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
+  html,body{height:100%;margin:0;background:#05081A;color:#fff;font-family:-apple-system,system-ui,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif;overflow:hidden;}
+  #wrap{position:relative;height:100%;display:grid;place-items:center;}
+  canvas{display:block;width:min(92vw,820px);aspect-ratio:9/16;border-radius:16px;background:#0a0c22;
+         box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.06);touch-action:none;}
 
-  .center{ display:grid; place-items:center; padding:10px;}
-  .panel{ pointer-events:auto; min-width:clamp(240px,80%,520px); text-align:center; padding:18px 16px 20px; border-radius:14px; background:rgba(10,12,34,.88); box-shadow:0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.06); backdrop-filter:blur(4px);}
-  .panel h1{ margin:8px 0 6px; font-size:clamp(20px,4.8vw,28px);}
-  .panel p{ margin:6px 0 14px; color:#b9c1ff; font-size:14px; line-height:1.5;}
-  .panel .row{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap;}
-  .hidden{ display:none !important; }
+  .hud{position:absolute;inset:0;display:grid;grid-template-rows:auto 1fr auto;pointer-events:none;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;font-weight:800;}
+  .badge{padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
+  button{pointer-events:auto;border:0;border-radius:10px;padding:8px 12px;font-weight:800;background:#2b7cff;color:#fff;
+          cursor:pointer;box-shadow:0 6px 18px rgba(43,124,255,.35);}
+  button.alt{background:#1f2648;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
+  .hidden{display:none!important;}
+
+  /* 漂浮菜單 */
+  #menuBox{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:8px;pointer-events:auto;}
+  #menuBtns{display:none;flex-direction:column;gap:6px;}
+  #menuBox.open #menuBtns{display:flex;}
+
+  .center{display:grid;place-items:center;padding:10px;}
+  .panel{pointer-events:auto;min-width:clamp(240px,80%,520px);text-align:center;padding:18px 16px 20px;border-radius:14px;
+         background:rgba(10,12,34,.88);box-shadow:0 20px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.06);
+         backdrop-filter:blur(4px);}
+  .panel h1{margin:8px 0 6px;font-size:clamp(20px,4.8vw,28px);}
+  .panel p{margin:6px 0 14px;color:#b9c1ff;font-size:14px;line-height:1.5;}
+  .panel .row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
 </style>
 </head>
 <body>
@@ -38,22 +38,22 @@
 
   <div class="hud">
     <div class="topbar">
-      <div class="badges">
-        <div class="badge" id="scoreBadge">Score: 0</div>
-        <div class="badge" id="progressBadge">Progress: 0 / 10</div>
-        <div class="badge" id="bestBadge">Best: 0</div>
-      </div>
-      <div>
-        <button id="btnSound" class="alt">🔊 Sound</button>
-        <button id="btnPause" class="alt">⏸ Pause</button>
-        <button id="btnRestart">🔄 Restart</button>
+      <div class="badge" id="scoreBadge">Score: 0</div>
+      <div id="menuBox">
+        <button id="btnMenu" class="alt">☰ Menu</button>
+        <div id="menuBtns">
+          <button id="btnSound" class="alt">🔊 Sound</button>
+          <button id="btnPause" class="alt">⏸ Pause</button>
+          <button id="btnRestart" class="alt">🔄 Restart</button>
+          <button id="btnHome" class="alt">🏠 Home</button>
+        </div>
       </div>
     </div>
 
     <div class="center">
       <div id="panelStart" class="panel">
         <h1>NeoX Catch — Level 1</h1>
-        <p>Move the tray to catch dropping <b>NeoX Coins</b> 🟡.<br>Reach the target to level up.</p>
+        <p>Move the tray to catch falling <b>NeoX Coins</b> 🪙<br>Reach the target to level up.</p>
         <div class="row"><button id="btnStart">▶ Start</button></div>
       </div>
 
@@ -78,27 +78,67 @@
 </div>
 
 <script>
+/* ---------- Canvas ---------- */
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const bgImg=new Image(); bgImg.src='https://neoxcoin.github.io/neox-game/forest%20background%20.PNG';
+const chestImg=new Image(); chestImg.src='https://neoxcoin.github.io/neox-game/TreasureBox.png';
 const coinImg=new Image(); coinImg.src='https://neoxcoin.github.io/neox-emoji-128.png';
+let bgReady=false; bgImg.onload=()=>bgReady=true;
 
-function fitHiDPI(){const cssW=canvas.clientWidth,cssH=canvas.clientHeight,dpr=Math.max(1,Math.min(devicePixelRatio||1,2));if(canvas.width!==Math.round(cssW*dpr)){canvas.width=Math.round(cssW*dpr);canvas.height=Math.round(cssH*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+function fitHiDPI(){
+  const cssW=canvas.clientWidth,cssH=canvas.clientHeight;
+  const dpr=Math.max(1,Math.min(devicePixelRatio||1,2));
+  if(canvas.width!==Math.round(cssW*dpr)){canvas.width=Math.round(cssW*dpr);canvas.height=Math.round(cssH*dpr);}
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
 fitHiDPI(); addEventListener('resize',fitHiDPI);
 
+/* ---------- Game State ---------- */
 const State={READY:0,PLAYING:1,PAUSED:2,WIN:3}; let state=State.READY;
 let score=0,best=0,target=10,caught=0;
 const coins=[]; const bowl={x:225,y:760,w:110,h:18,vx:0,speed:6};
 
-function rand(a,b){return Math.random()*(b-a)+a;}
-function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-function show(el,s=true){el.classList.toggle('hidden',!s);}
-function refreshHUD(){document.getElementById('scoreBadge').textContent=`Score: ${score}`;document.getElementById('progressBadge').textContent=`Progress: ${caught} / ${target}`;document.getElementById('bestBadge').textContent=`Best: ${best}`;}
+/* ---------- Audio ---------- */
+let audioCtx=null, masterGain=null, soundOn=true;
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    masterGain=audioCtx.createGain(); masterGain.gain.value=0.3; masterGain.connect(audioCtx.destination);
+  }
+}
+async function resumeAudio(){ensureAudio(); if(audioCtx.state!=='running') await audioCtx.resume();}
+function beep({freq=440,dur=0.15,type='sine',gain=0.3,start=0}){
+  if(!soundOn||!audioCtx)return;
+  const now=audioCtx.currentTime+start;
+  const osc=audioCtx.createOscillator(), g=audioCtx.createGain();
+  osc.type=type; osc.frequency.setValueAtTime(freq,now);
+  g.gain.setValueAtTime(gain,now); g.gain.exponentialRampToValueAtTime(0.001, now+dur);
+  osc.connect(g).connect(masterGain); osc.start(now); osc.stop(now+dur);
+}
+const SFX={
+  click(){beep({freq:600,dur:0.08,type:'square'});},
+  catch(){beep({freq:900,dur:0.1,type:'triangle'});},
+  miss(){beep({freq:300,dur:0.15,type:'sine'});},
+  win(){[660,880,1100].forEach((f,i)=>beep({freq:f,start:i*0.15,dur:0.12,type:'square'}));},
+  toggle(on){on?beep({freq:800,dur:0.08}):beep({freq:250,dur:0.12});}
+};
+['click','touchstart'].forEach(ev=>window.addEventListener(ev,resumeAudio,{once:true,passive:true}));
 
-function start(){state=State.PLAYING;score=0;caught=0;coins.length=0;show(panelStart,false);show(panelPause,false);show(panelWin,false);}
-function pause(){state=State.PAUSED;show(panelPause,true);}
-function resume(){state=State.PLAYING;show(panelPause,false);}
-function win(){state=State.WIN;show(panelWin,true);}
+/* ---------- UI ---------- */
+const menuBox=document.getElementById('menuBox');
+document.getElementById('btnMenu').onclick=()=>menuBox.classList.toggle('open');
+document.getElementById('btnSound').onclick=()=>{soundOn=!soundOn;SFX.toggle(soundOn);};
+document.getElementById('btnHome').onclick=()=>location.href='index.html';
+function show(el,s=true){el.classList.toggle('hidden',!s);}
+function refreshHUD(){document.getElementById('scoreBadge').textContent=`Score: ${score}`;}
+
+function start(){state=State.PLAYING;score=0;caught=0;coins.length=0;show(panelStart,false);show(panelPause,false);show(panelWin,false);SFX.click();}
+function pause(){state=State.PAUSED;show(panelPause,true);SFX.click();}
+function resume(){state=State.PLAYING;show(panelPause,false);SFX.click();}
+function win(){state=State.WIN;show(panelWin,true);SFX.win();best=Math.max(best,score);}
 function restart(){start();}
 
+/* ---------- Buttons ---------- */
 document.getElementById('btnStart').onclick=start;
 document.getElementById('btnPause').onclick=pause;
 document.getElementById('btnResume').onclick=resume;
@@ -107,32 +147,46 @@ document.getElementById('btnRestart2').onclick=restart;
 document.getElementById('btnReplay').onclick=restart;
 document.getElementById('btnNext').onclick=()=>location.href='v2.html';
 
+/* ---------- Input ---------- */
 let pointerX=null;
 canvas.addEventListener('pointerdown',e=>{if(state===State.READY)start();pointerX=e.clientX;});
-canvas.addEventListener('pointermove',e=>{if(pointerX===null)return;const dx=e.clientX-pointerX;bowl.x=clamp(bowl.x+dx*0.5,bowl.w/2,canvas.clientWidth-bowl.w/2);pointerX=e.clientX;});
+canvas.addEventListener('pointermove',e=>{
+  if(pointerX===null)return;
+  const dx=e.clientX-pointerX;
+  bowl.x=Math.max(bowl.w/2,Math.min(canvas.clientWidth-bowl.w/2,bowl.x+dx*0.5));
+  pointerX=e.clientX;
+});
 canvas.addEventListener('pointerup',()=>pointerX=null);
 
+/* ---------- Loop ---------- */
 let spawn=0,last=performance.now();
+function rand(a,b){return Math.random()*(b-a)+a;}
 function loop(now){
   requestAnimationFrame(loop);
   const dt=Math.min(50,now-last)/16.6667; last=now;
-  ctx.fillStyle="#05081A"; ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  ctx.clearRect(0,0,w,h);
+  if(bgReady){const s=Math.max(w/bgImg.width,h/bgImg.height);ctx.drawImage(bgImg,(w-bgImg.width*s)/2,(h-bgImg.height*s)/2,bgImg.width*s,bgImg.height*s);}
+  else{ctx.fillStyle="#0a0c22";ctx.fillRect(0,0,w,h);}
 
   if(state===State.PLAYING){
     spawn-=dt;
-    if(spawn<=0){coins.push({x:rand(20,canvas.clientWidth-20),y:-20,vy:rand(3,5)});spawn=rand(0.5,1);}
+    if(spawn<=0){coins.push({x:rand(20,w-20),y:-20,vy:rand(3,5)});spawn=rand(0.5,1);}
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i]; c.y+=c.vy*dt;
       if(Math.abs(c.x-bowl.x)<bowl.w/2 && Math.abs(c.y-bowl.y)<20){
-        coins.splice(i,1); score+=10; caught++; if(caught>=target)win();
-      }else if(c.y>canvas.clientHeight+20)coins.splice(i,1);
+        coins.splice(i,1); score+=10; caught++; SFX.catch(); if(caught>=target)win();
+      }else if(c.y>h+20){coins.splice(i,1); SFX.miss();}
     }
     refreshHUD();
   }
 
-  // Draw coins
+  // Coins
   for(const c of coins){const r=14;ctx.drawImage(coinImg,c.x-r,c.y-r,r*2,r*2);}
-  // Draw bowl
+  // Chest
+  const chestW=w*0.45,chestH=chestW*0.7,chestX=w/2-chestW/2,chestY=h-chestH-10;
+  ctx.drawImage(chestImg,chestX,chestY,chestW,chestH);
+  // Bowl
   ctx.fillStyle='#2b7cff'; ctx.fillRect(bowl.x-bowl.w/2,bowl.y,bowl.w,10);
 }
 requestAnimationFrame(loop);
