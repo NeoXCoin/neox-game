@@ -105,7 +105,7 @@
     </div>
 
     <div id="panelWin" class="panel hidden">
-      <h1>All 5 Levels Clear! 🎉</h1>
+      <h1>Time’s up ⏱️</h1>
       <p><span id="finalScore">Score: 0</span> · <span id="bestScore">Best: 0</span></p>
       <div class="row">
         <button id="btnNextLevel" class="btn">Go to Level 2 ▶</button>
@@ -301,12 +301,23 @@ function winAll(){
   refreshHUD(); SFX.win(); show(panelWin,true);
 }
 function timeUp(){
-  if(state!==State.PLAYING) return;
-  state=State.PAUSED;
-  best=Math.max(best, Math.floor(score));
+  state = State.WIN;
+
+  // 更新 Best
+  best = Math.max(best, Math.floor(score));
   localStorage.setItem('neox_catch_best', String(best));
+
+  // 把本關分數寫去 localStorage（俾 v2.html 讀）
+  const s = Math.floor(score);
+  localStorage.setItem(V1_SCORE_KEY, String(s));
+
+  // （可選）累積總分
+  const prevTotal = Number(localStorage.getItem(TOTAL_KEY) || 0);
+  localStorage.setItem(TOTAL_KEY, String(prevTotal + s));
+
   refreshHUD();
-  show(panelPause,false); show(panelWin,false); show(panelTimeup,true);
+  SFX.win();
+  show(panelWin, true);
 }
 
 /* ========== Spawn & Loop ========== */
