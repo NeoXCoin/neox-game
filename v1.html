@@ -162,9 +162,9 @@ function placeChest(){
   chest.y = Math.max(chest.h, H - bottomMargin);
 
   // X：兩邊預留 2px，可接到邊緣 coin
-  const margin = 2;
+  const EDGE = 2;
   const cx = (chest.x || canvas.clientWidth/2);
-  chest.x = Math.max(chest.w/2 + margin, Math.min(cx, canvas.clientWidth - chest.w/2 - margin));
+  chest.x = Math.max(chest.w/2 + EDGE, Math.min(cx, canvas.clientWidth - chest.w/2 - EDGE));
 }
 placeChest();
 addEventListener('resize', placeChest);
@@ -226,21 +226,25 @@ addEventListener('pointercancel',()=>{pointerId=null; chest.vx=0;},{passive:fals
 addEventListener('blur',()=>{ if(state===State.PLAYING) togglePause(true); });
 
 /* ====== Coins ====== */
-const coins=[]; let spawnTimer=0;
-function spawnCoins(dt){
-  spawnTimer-=dt;
-  const maxOnScreen = 5; // 平滑一點
-  if(spawnTimer<=0 && coins.length<maxOnScreen){
-    // 覆蓋整個寬度，左右只留 2px
-    const margin=2;
+const coins = [];
+let spawnTimer = 0;
+// 🚀 EDGE 建議放在全域頂部（所有 function 外）
+const EDGE = 2; // 左右邊緣保留距離，確保寶箱與掉落範圍一致
+
+function spawnCoins(dt) {
+  spawnTimer -= dt;
+  const maxOnScreen = 5; // 同時最多 5 個 coin
+
+  if (spawnTimer <= 0 && coins.length < maxOnScreen) {
     coins.push({
-      x: margin + Math.random()*(canvas.clientWidth-2*margin),
-      y: -20, r:12,
-      vy: 2.6 + Math.random()*2.2,
-      spin: Math.random()*Math.PI*2,
-      vspin: -0.12 + Math.random()*0.24
+      x: EDGE + Math.random() * (canvas.clientWidth - 2 * EDGE),
+      y: -20,
+      r: 12,
+      vy: 2.6 + Math.random() * 2.2,
+      spin: Math.random() * Math.PI * 2,
+      vspin: -0.12 + Math.random() * 0.24
     });
-    spawnTimer = 0.55 + Math.random()*0.55;
+    spawnTimer = 0.55 + Math.random() * 0.55;
   }
 }
 
@@ -292,13 +296,36 @@ function loop(now){
     spawnCoins(dt);
     for(const c of coins){ c.y+=c.vy*dt; c.spin+=c.vspin*dt; }
 
-    // 橢圓口碰撞
-    const mouth={cx:chest.x, cy:chest.y - chest.h*0.58, rx:chest.w*0.34, ry:chest.h*0.16};
-    for(let i=coins.length-1;i>=0;i--){
-      const c=coins[i]; const ex=(c.x-mouth.cx)/mouth.rx, ey=(c.y-mouth.cy)/mouth.ry;
-      if(ex*ex+ey*ey<=1){ score+=10; coins.splice(i,1); SFX.star(); refreshHUD(); }
-      else if(c.y>canvas.clientHeight+30){ coins.splice(i,1); }
+    // 橢圓口碰撞（加貼邊補償＋少量放寬）
+    const EDGE = 2;                        // 同上面 clamp / spawn 用同一個邊距
+    const baseRx = chest.w * 0.36;         // 比 0.34 稍寬
+    const baseRy = chest.h * 0.18;         // 比 0.16 稍高
+
+    // 如果貼左／右，橢圓有部份出界；把嗰部份補返去
+    const overhangL = Math.max(0, (chest.w/2 + EDGE) - chest.x);
+    const overhangR = Math.max(0, (chest.w/2 + EDGE) - (canvas.clientWidth - chest.x));
+    const edgeBoost = overhangL + overhangR + 4;   // +4px 緩衝，令體感自然
+
+    const mouth = {
+      cx: chest.x,
+      cy: chest.y - chest.h * 0.58,
+      rx: baseRx + edgeBoost,
+      ry: baseRy
+    };
+
+    for (let i = coins.length - 1; i >= 0; i--) {
+      const c = coins[i];
+      const ex = (c.x - mouth.cx) / mouth.rx;
+      const ey = (c.y - mouth.cy) / mouth.ry;
+      if (ex*ex + ey*ey <= 1) {
+        score += 10;
+        coins.splice(i, 1);
+        SFX.star();
+        refreshHUD();
+    } else if (c.y > canvas.clientHeight + 30) {
+        coins.splice(i, 1);
     }
+  }
     refreshHUD();
   }
 
