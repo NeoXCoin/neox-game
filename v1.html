@@ -122,24 +122,34 @@ const bgImg=new Image(); bgImg.src=BG_URL; let bgReady=false; bgImg.onload=()=>b
 const chestImg=new Image(); chestImg.src=CHEST_URL; let chestReady=false; chestImg.onload=()=>chestReady=true;
 const coinImg=new Image(); coinImg.src=COIN_URL; let coinReady=false; coinImg.onload=()=>coinReady=true;
 
-/* ========== Player (chest) 自動貼底＋尺寸 ========== */
-const chest={x:225,y:0,w:220,h:160,speed:6.2,vx:0};
-function isMobile(){ return /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent); }
-function visibleCanvasHeight(){
-  const rect=canvas.getBoundingClientRect(); const vp=window.visualViewport;
-  if(vp){ const visibleBottom=(vp.offsetTop||0)+vp.height; return Math.max(0, Math.min(rect.bottom,visibleBottom)-rect.top); }
-  return rect.height;
-}
 function placeChest(){
-  const H=visibleCanvasHeight();
-  const land=matchMedia('(orientation: landscape)').matches;
-  const bottomMargin = isMobile()? 18 : (land? Math.max(24, H*0.05) : Math.max(24, H*0.035));
-  const targetW = Math.min(canvas.clientWidth*(isMobile()?0.42:0.35), 300);
-  chest.w=targetW; chest.h=Math.round(targetW*0.72);
+  const H = canvas.clientHeight;                                   // ← 用畫布可見高度
+  const land = matchMedia('(orientation: landscape)').matches;
+
+  // 底邊距：手機固定 18px；桌面/平板直向 3.5% (>=24px)，橫向 5% (>=24px)
+  const bottomMargin = isMobile()
+    ? 18
+    : (land ? Math.max(24, H * 0.05) : Math.max(24, H * 0.035));
+
+  // 寶箱尺寸
+  const targetW = Math.min(canvas.clientWidth * (isMobile() ? 0.34 : 0.30), 280);
+  chest.w = targetW;
+  chest.h = Math.round(targetW * 0.72);
+
+  // Y 位置：貼近底部（預留 bottomMargin）
   chest.y = Math.max(chest.h, H - bottomMargin);
-  chest.x = Math.max(chest.w/2+8, Math.min(chest.x||canvas.clientWidth/2, canvas.clientWidth-chest.w/2-8));
+
+  // X 位置：左右縮 2px，兩側都接到 coin
+  const margin = 2;
+  chest.x = Math.max(
+    chest.w / 2 + margin,
+    Math.min(chest.x || canvas.clientWidth / 2, canvas.clientWidth - chest.w / 2 - margin)
+  );
 }
-placeChest(); addEventListener('resize', placeChest); addEventListener('orientationchange', placeChest);
+
+placeChest();
+addEventListener('resize', placeChest);
+addEventListener('orientationchange', placeChest);
 
 /* ========== Levels / Score ========== */
 const LEVELS=[
