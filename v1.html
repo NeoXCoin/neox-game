@@ -239,8 +239,8 @@ document.getElementById('btnStart').onclick=()=>{SFX.click();start();};
 document.getElementById('btnHome').onclick =()=>{window.location.href='index.html';};
 document.getElementById('btnRestart2').onclick=()=>{SFX.click();restart();};
 document.getElementById('btnReplay').onclick  =()=>{SFX.click();restart();};
-document.getElementById('btnReplay2').onclick =()=>{SFX.click();restart();};
-document.getElementById('btnNextLevel').onclick =()=>{localStorage.setItem(CARRY_KEY, String(Math.floor(score))); window.location.href='v2.html';};
+document.getElementById('btnNextLevel').onclick = () => {SFX.click();};
+document.getElementById('btnReplay').onclick = () => {SFX.click();restart();};
 
 const btnPause=document.getElementById('btnPause');
 btnPause.onclick=()=>{SFX.click();togglePause();};
