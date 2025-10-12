@@ -21,7 +21,7 @@
     grid-template-rows:auto 1fr; /* 原本的布局保留 */
    }
    .panel{ z-index:10; pointer-events:auto; } /* 面板在最上層可點擊 */
-   }
+   
   /* 左 Home｜中 Score/Time/Best｜右 Pause */
   .topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:10px;padding:10px 14px;font-weight:800;}
   .left{justify-self:start;pointer-events:auto;}
@@ -198,6 +198,7 @@ document.getElementById('btnRestart2').onclick=()=>{restart();};
 document.getElementById('btnReplay').onclick=()=>{restart();};
 document.getElementById('btnNextLevel').onclick=()=>{window.location.href='v2.html#continue';};
 const btnPause=document.getElementById('btnPause');
+document.getElementById('btnResume').onclick = () => { togglePause(false); };
 btnPause.onclick=()=>togglePause();
 
 /* ====== Input ====== */
