@@ -318,7 +318,8 @@ function drawChest(){
 }
 function drawCoins(){
   for(const c of coins){
-    const size=c.r*3, r=size/2;
+    const size = c.special ? c.r * 2.4 : c.r * 3;
+    const r = size / 2;
     ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
 
     if(c.special){
