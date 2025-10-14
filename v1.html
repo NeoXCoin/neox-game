@@ -196,12 +196,71 @@ function refreshHUD(){
   bestScore.textContent =`Best: ${Math.floor(best)}`;
 }
 
-/* ====== Audio（簡版） ====== */
-let audioCtx=null, masterGain=null;
-function ensureAudio(){ if(audioCtx) return; audioCtx=new (window.AudioContext||window.webkitAudioContext)(); masterGain=audioCtx.createGain(); masterGain.gain.value=.8; masterGain.connect(audioCtx.destination); }
-async function resumeAudio(){ try{ ensureAudio(); if(audioCtx.state!=='running') await audioCtx.resume(); }catch(e){} }
-function beep(f,d=.1){ if(!audioCtx) return; const n=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type='sine'; o.frequency.setValueAtTime(f,n); g.gain.setValueAtTime(.18,n); g.gain.exponentialRampToValueAtTime(0.0001,n+d*.9); o.connect(g).connect(masterGain); o.start(n); o.stop(n+d); }
-const SFX={star(){beep(880,.08); setTimeout(()=>beep(1320,.08),40)}, level(){beep(700,.12)}, win(){[660,880,990,1320].forEach((f,i)=>setTimeout(()=>beep(f,.14),90*i))}};
+/* ====== Audio (mobile-safe) ====== */
+let audioCtx = null, masterGain = null;
+let soundOn = true;
+
+function ensureAudio(){
+  if (audioCtx) return;
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new Ctx();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.8;
+  masterGain.connect(audioCtx.destination);
+}
+
+// iOS 解鎖：極短 buffer
+function unlockAudioOnce(){
+  ensureAudio();
+  if (!audioCtx) return;
+  const buf = audioCtx.createBuffer(1, 1, 22050);
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.connect(masterGain);
+  try { src.start(0); } catch(e){}
+}
+
+// 用戶手勢/回前景時叫呢個
+async function resumeAudio(){
+  ensureAudio();
+  try{
+    unlockAudioOnce();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+  }catch(e){}
+}
+
+function beep({f=440,d=0.12,t='sine',g=0.2,decay=0.02,start=0}={}){
+  if (!soundOn) return;
+  ensureAudio();
+  if (audioCtx.state !== 'running') unlockAudioOnce();
+  if (audioCtx.state !== 'running') return;
+
+  const n = audioCtx.currentTime + start;
+  const o = audioCtx.createOscillator();
+  const ga = audioCtx.createGain();
+  o.type = t;
+  o.frequency.setValueAtTime(f, n);
+  ga.gain.setValueAtTime(g, n);
+  ga.gain.exponentialRampToValueAtTime(0.0001, n + Math.max(0.01, d - decay));
+  o.connect(ga).connect(masterGain);
+  o.start(n); o.stop(n + d);
+}
+
+const SFX = {
+  click(){ beep({f:700,d:.07,t:'triangle',g:.12}); },
+  star(){  beep({f:880,d:.08,g:.18}); beep({f:1320,d:.10,g:.12,start:.04}); },
+  level(){ [500,750,1100].forEach((f,i)=>beep({f,d:.10+.02*i,t:'square',g:.15,start:i*.08})); },
+  win(){   [660,880,990,1320].forEach((f,i)=>beep({f,d:.14,g:.14,start:i*.09})); }
+};
+
+// 多覆蓋幾個手勢事件（只需一次）
+['pointerdown','touchend','mousedown','keydown','click'].forEach(evt=>{
+  window.addEventListener(evt, resumeAudio, {once:true, passive:true});
+});
+// 回前景時自動恢復
+document.addEventListener('visibilitychange', ()=>{
+  if (document.visibilityState === 'visible') resumeAudio();
+});
 
 /* ====== Buttons ====== */
 document.getElementById('btnHome').onclick = ()=>{window.location.href='index.html';};
