@@ -291,7 +291,7 @@ function loop(now){
     // 移動
     chest.vx=(keys.has('L')?-chest.speed:0)+(keys.has('R')?chest.speed:0) || chest.vx*0.92;
     const margin=2;
-    chest.x=Math.max(chest.w/2+margin, Math.min(canvas.clientWidth-chest.w/2-margin, chest.x+chest.vx));
+    chest.x=Math.max(chest.w/2+EDGE, Math.min(canvas.clientWidth-chest.w/2-EDGE, chest.x+chest.vx));
 
     spawnCoins(dt);
     for(const c of coins){ c.y+=c.vy*dt; c.spin+=c.vspin*dt; }
