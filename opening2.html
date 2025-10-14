@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Game — Opening</title>
+<style>
+  html,body{height:100%;margin:0;background:#0a0b1f;color:#fff;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
+    display:grid;place-items:center;overflow:hidden;}
+  /* 與 v1 一致的容器尺寸與圓角陰影 */
+  .frame{
+    width:min(92vw,700px); aspect-ratio:9/16; position:relative; border-radius:16px; overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
+    background:#000;
+  }
+  video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#000;}
+  .overlay{position:absolute; inset:0; display:grid; grid-template-rows:auto 1fr auto; pointer-events:none;}
+  .topbar{display:flex; justify-content:space-between; align-items:center; padding:10px 12px; gap:8px;}
+  .badge{display:inline-block; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.12);
+         box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); font-weight:800;}
+  .title{justify-self:center; align-self:center; text-align:center; padding:0 16px;}
+  .title h1{margin:0 0 8px; font-size:clamp(18px,5vw,26px); text-shadow:0 6px 18px rgba(0,0,0,.4);}
+  .title p{margin:0; color:#c8d2ff; font-size:14px;}
+  .controls{display:flex; justify-content:center; gap:10px; padding:14px;}
+  .btn{pointer-events:auto; border:0; border-radius:12px; padding:10px 14px; font-weight:900; cursor:pointer; color:#fff;
+       background:#2b7cff; box-shadow:0 8px 22px rgba(43,124,255,.35);}
+  .btn.alt{background:#1f2648; box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
+  .hidden{display:none !important;}
+
+  /* 若影片載入失敗的漸層背景 */
+  .fallback{
+    position:absolute; inset:0;
+    background:radial-gradient(120% 80% at 50% 20%, #233a87 0%, #151a3e 55%, #0a0b1f 100%);
+  }
+</style>
+</head>
+<body>
+  <div class="frame" aria-label="Opening video">
+    <div class="fallback" id="fallback"></div>
+
+    <!-- 開場影片：預設靜音、自動播放、行內播放（iOS） -->
+    <video id="opVideo" playsinline muted autoplay preload="auto" poster="">
+      <source src="https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4" type="video/mp4">
+    </video>
+
+    <div class="overlay" aria-live="polite">
+      <div class="topbar">
+        <span class="badge">NeoX Catch — Level 2</span>
+        <span class="badge" id="carryBadge" title="Score carried from Level 1">Carry: 0</span>
+      </div>
+
+      <div class="title">
+        <h1>Treasure Journey</h1>
+        <p>Watch the short opening, or skip and start the level.</p>
+      </div>
+
+      <div class="controls">
+        <button id="btnSound" class="btn">▶ Play with sound</button>
+        <button id="btnSkip"  class="btn alt">⏭ Skip</button>
+        <button id="btnStart" class="btn hidden">▶ Start Game</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ===== Carry score from Level 1 ===== */
+const carryKey = 'nx_carry';
+const carry = Number(localStorage.getItem(carryKey) || 0);
+document.getElementById('carryBadge').textContent = `Carry: ${Math.floor(carry)}`;
+
+/* ===== Video wiring ===== */
+const video = document.getElementById('opVideo');
+const fallback = document.getElementById('fallback');
+const btnSound = document.getElementById('btnSound');
+const btnSkip  = document.getElementById('btnSkip');
+const btnStart = document.getElementById('btnStart');
+
+let ended = false;
+let autoToV2Timer = null;
+
+/* 若可以自動播放成功，就隱藏 fallback */
+video.addEventListener('playing', ()=> fallback.classList.add('hidden'));
+video.addEventListener('loadeddata', ()=> {
+  // 某些瀏覽器需要一次 play 嘗試
+  video.play().catch(()=>{/* 等用戶點按 */});
+});
+
+/* 播完後顯示 Start Game（同時 1.5s 後自動進入） */
+video.addEventListener('ended', ()=>{
+  ended = true;
+  btnStart.classList.remove('hidden');
+  autoToV2Timer = setTimeout(() => gotoV2(), 1500);
+});
+
+/* Play with sound：解除靜音並播放（需用戶手勢） */
+btnSound.addEventListener('click', async ()=>{
+  try{
+    video.muted = false;
+    await video.play();
+    btnSound.textContent = '🔊 Sound on';
+  }catch(e){
+    // 如失敗，仍保持可見讓用戶再按
+    console.warn('Autoplay with sound failed:', e);
+  }
+});
+
+/* Skip：立即去 v2 */
+btnSkip.addEventListener('click', ()=> gotoV2());
+
+/* Start Game（影片播完先會出現） */
+btnStart.addEventListener('click', ()=> gotoV2());
+
+/* 如果切回分頁，嘗試恢復播放（iOS常見） */
+document.addEventListener('visibilitychange', ()=>{
+  if (document.visibilityState === 'visible' && !ended){
+    video.play().catch(()=>{});
+  }
+});
+
+/* 前往 v2：不改動 carry，讓 v2 直接讀用 */
+function gotoV2(){
+  if (autoToV2Timer){ clearTimeout(autoToV2Timer); autoToV2Timer = null; }
+  // 可選：寫入一個旗標俾 v2 知道係從 opening 來
+  localStorage.setItem('nx_from_opening2', '1');
+  window.location.href = 'v2.html';
+}
+</script>
+</body>
+</html>
