@@ -267,7 +267,10 @@ document.getElementById('btnHome').onclick = ()=>{window.location.href='index.ht
 document.getElementById('btnStart').onclick=()=>{start();};
 document.getElementById('btnRestart2').onclick=()=>{restart();};
 document.getElementById('btnReplay').onclick=()=>{restart();};
-document.getElementById('btnNextLevel').onclick=()=>{window.location.href='v2.html#continue';};
+document.getElementById('btnNextLevel').onclick = () => {
+  localStorage.setItem('nx_carry', String(Math.floor(score))); // 🔹帶住分數去下一關
+  window.location.href = 'v2.html#continue';
+};
 const btnPause=document.getElementById('btnPause');
 document.getElementById('btnResume').onclick = () => { togglePause(false); };
 btnPause.onclick=()=>togglePause();
