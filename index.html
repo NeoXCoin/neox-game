@@ -45,21 +45,19 @@
   /* 自動淡出 */
   .vctrl.fadeout{opacity:0;transition:opacity 1.2s ease;pointer-events:none}
   
-  /* 手機橫向：控制鍵橫向排、位置略升高 */
-@media (orientation: landscape) {
-  .vctrl {
-    flex-direction: row;
-    gap: 18px;
-    bottom: calc(6% + env(safe-area-inset-bottom));
-  }
-}
-
-/* 手機直向：控制鍵垂直排（預設樣式的補充） */
+  /*/* 手機直向：兩個按鍵同一水平、置底 */
 @media (orientation: portrait) {
-  .vctrl {
-    flex-direction: column;
+  .vctrl{
+    flex-direction: row;       /* 並排 */
+    flex-wrap: nowrap;         /* 唔換行 */
     gap: 10px;
-    bottom: calc(10% + env(safe-area-inset-bottom));
+    bottom: calc(6% + env(safe-area-inset-bottom)); /* 稍為貼底 */
+  }
+  /* 俾窄屏都唔會擠爆 */
+  .vctrl button{
+    white-space: nowrap;                 /* 文字唔換行 */
+    font-size: clamp(14px, 3.4vw, 16px); /* 細少少更fit */
+    padding: 10px 14px;
   }
 }
 
