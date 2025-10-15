@@ -8,24 +8,27 @@
   html, body {
     margin: 0;
     height: 100%;
-    background-color: #000;
+    background: url('TreasureL2.png') center/cover no-repeat fixed; /* 👈 手機開場背景 */
     color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans", Arial, sans-serif;
     overflow: hidden;
   }
+
   #wrap {
     position: relative;
     height: 100%;
     display: grid;
     place-items: center;
+    background: url('TreasureL2.png') center/cover no-repeat; /* 👈 保險層 */
   }
 
-  /* 影片保持原始比例 */
+  /* 影片比例與背景處理 */
   video {
     width: 100%;
     height: 100%;
-    object-fit: contain;   /* 👈 保持比例，不裁切 */
-    background: #000;
+    object-fit: cover;
+    background: url('TreasureL2.png') center/cover no-repeat; /* 👈 防止黑屏 */
+    border-radius: 0;
   }
 
   /* 按鈕與標題區 */
@@ -67,7 +70,8 @@
     cursor: pointer;
     color: #fff;
     background: #1b2144;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.08);
     transition: background 0.2s;
   }
   button:hover {
@@ -80,7 +84,16 @@
 </head>
 <body>
 <div id="wrap">
-  <video id="introVideo" src="https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4" preload="auto"></video>
+  <!-- 👇 新加 poster，確保載入時顯示 TreasureL2.png -->
+  <video
+    id="introVideo"
+    src="https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4"
+    poster="TreasureL2.png"
+    preload="auto"
+    muted
+    playsinline
+    webkit-playsinline
+  ></video>
 
   <div class="overlay">
     <h1>Treasure Journey</h1>
@@ -98,6 +111,11 @@ const video = document.getElementById('introVideo');
 const btnSound = document.getElementById('btnSound');
 const btnSkip = document.getElementById('btnSkip');
 const btnStart = document.getElementById('btnStart');
+
+// 避免 iPhone 黑屏 — 第一次觸碰立即顯示第一幀
+window.addEventListener("touchstart", () => {
+  video.play().catch(()=>{});
+}, { once:true });
 
 let soundEnabled = false;
 let audioCtx = null;
