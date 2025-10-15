@@ -2,125 +2,111 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>NeoX Catch — Opening 2</title>
 <style>
-  html, body{
-    margin:0; height:100%; overflow:hidden;
-    background:#0a0b1f; color:#fff;
+  :root{ --stage-max:700px; }
+
+  html,body{
+    margin:0;height:100%;background:#0a0b1f;color:#fff;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
+    overflow:hidden;
   }
+  /* 置中版心 */
   #wrap{
-    position:relative; height:100%;
-    display:grid; place-items:center;
+    height:100%;display:grid;place-items:center;padding:16px;
   }
 
-  /* ✅ 正方形開場框（和 v1 一致感） */
-  .frame{
-    position:relative;
-    width:min(92vw, 700px);
+  /* 1:1 正方形舞台（不會過大也不會超出） */
+  .stage{
+    width:min(92vmin,var(--stage-max));
     aspect-ratio:1/1;
-    border-radius:16px; overflow:hidden;
-    background:#000 url('TreasureL2.png') center/cover no-repeat;
-    box-shadow:0 20px 60px rgba(0,0,0,.45),
-               inset 0 0 0 1px rgba(255,255,255,.06);
+    border-radius:16px;
+    background:#000;
+    box-shadow:0 20px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
+    overflow:hidden; position:relative;
   }
-  .frame > video{
-    position:absolute; inset:0;
-    width:100%; height:100%;
-    object-fit:cover;            /* 填滿正方形 */
-    background:#000;             /* 載入前避免黑屏閃爍 */
+  .stage video{
+    width:100%;height:100%;
+    object-fit:contain;           /* 保持比例，不裁切 */
+    background:#000;
   }
 
-  /* 題頭與按鈕疊在最上層 */
+  /* 文字與按鈕（預設：橫向/桌面覆蓋在下方） */
   .overlay{
-    position:absolute; inset:0; display:flex;
-    flex-direction:column; justify-content:flex-end; align-items:center;
-    text-align:center;
-    background:linear-gradient(transparent 65%, rgba(0,0,0,.65));
-    padding:18px 16px 26px;
+    position:absolute; inset:auto 0 0 0;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    background:linear-gradient(transparent 30%, rgba(0,0,0,.65));
+    padding:14px;
   }
-  h1{ margin:0 0 10px; font-size:clamp(20px,6vw,30px); font-weight:800; }
-  p{ margin:0 0 18px; font-size:15px; color:#d0d4ff; }
-
-  .btnrow{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .title{margin:6px 0 8px; font-weight:800; font-size:clamp(18px,4.8vw,28px);}
+  .sub{margin:0 0 10px; color:#cfd6ff; font-size:14px}
+  .row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
   button{
-    border:0; border-radius:12px; padding:10px 14px; font-weight:700; cursor:pointer;
-    color:#fff; background:#1b2144;
-    box-shadow:0 10px 28px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.08);
-    transition:background .2s;
+    border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;color:#fff;
+    background:#1b2144; box-shadow:0 10px 28px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.08);
   }
-  button:hover{ background:#2b7cff; }
   .primary{ background:#2b7cff; }
+
+  /* 📱 直向手機：把 overlay 放到影片「外面下面」 */
+  @media (orientation:portrait){
+    #wrap{ grid-auto-rows:max-content; gap:10px; }
+    .overlay{
+      position:static; background:transparent; padding:0;
+      width:min(92vmin,var(--stage-max));   /* 跟舞台同寬 */
+    }
+  }
+
+  /* 橫向平板/桌面：舞台不超過畫面高度 */
+  @media (orientation:landscape){
+    .stage{ width:min(80vmin,var(--stage-max)); }
+  }
 </style>
 </head>
 <body>
-<div id="wrap">
-  <div class="frame" aria-label="Opening">
-    <video
-      id="introVideo"
-      src="https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4"
-      poster="TreasureL2.png"
-      preload="auto"
-      muted
-      playsinline
-      webkit-playsinline
-    ></video>
+  <div id="wrap">
+    <!-- 正方形舞台 -->
+    <div class="stage">
+      <video id="introVideo"
+        src="https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4"
+        poster="TreasureL2.png"
+        preload="auto" muted playsinline webkit-playsinline>
+      </video>
 
-    <div class="overlay" aria-live="polite">
-      <h1>Treasure Journey</h1>
-      <p>Watch the short opening, or skip and start the level.</p>
-      <div class="btnrow">
-        <button id="btnSound" type="button">🔈 Sound on</button>
-        <button id="btnStart" class="primary" type="button">▶ Start Play</button>
-        <button id="btnSkip" type="button">⏭ Skip</button>
+      <!-- 橫向/桌面時覆蓋在舞台內；直向手機時會自動移到舞台下方 -->
+      <div class="overlay" id="overlay">
+        <h1 class="title">Treasure Journey</h1>
+        <p class="sub">Watch the short opening, or skip and start the level.</p>
+        <div class="row">
+          <button id="btnSound">🔈 Sound on</button>
+          <button id="btnStart" class="primary">▶ Start Play</button>
+          <button id="btnSkip">⏭ Skip</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
 <script>
-  const video    = document.getElementById('introVideo');
-  const btnSound = document.getElementById('btnSound');
-  const btnStart = document.getElementById('btnStart');
-  const btnSkip  = document.getElementById('btnSkip');
+const video    = document.getElementById('introVideo');
+const btnSound = document.getElementById('btnSound');
+const btnStart = document.getElementById('btnStart');
+const btnSkip  = document.getElementById('btnSkip');
 
-  let soundOn = false;
-  let audioCtx = null;
+let soundEnabled=false, audioCtx=null;
+function ensureAudio(){ if(!audioCtx){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }}
 
-  function ensureAudio(){
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+// iPhone 避免黑屏：首次觸碰就啟動影片管道與第一幀
+window.addEventListener('touchstart',()=>{ video.play().then(()=>video.pause()).catch(()=>{}); }, {once:true});
 
-  // 🛠 防止 iPhone 初啟黑屏：首次觸碰顯示第一幀
-  window.addEventListener('touchstart', async () => {
-    try { await video.play(); video.pause(); } catch(e) {}
-  }, { once:true });
-
-  btnSound.onclick = async () => {
-    ensureAudio();
-    soundOn = !soundOn;
-    if (soundOn) {
-      try { await audioCtx.resume(); } catch(e) {}
-      video.muted = false;
-      btnSound.textContent = '🔊 Sound on';
-    } else {
-      video.muted = true;
-      btnSound.textContent = '🔈 Sound off';
-    }
-  };
-
-  btnStart.onclick = async () => {
-    try { await video.play(); } catch(e) {}
-  };
-
-  btnSkip.onclick = () => {
-    location.href = 'v2.html';
-  };
-
-  video.addEventListener('ended', () => {
-    location.href = 'v2.html';
-  });
+btnSound.onclick = async ()=>{
+  ensureAudio(); soundEnabled=!soundEnabled;
+  try{ await audioCtx.resume(); }catch(e){}
+  video.muted = !soundEnabled;
+  btnSound.textContent = soundEnabled ? '🔊 Sound on' : '🔈 Sound off';
+};
+btnStart.onclick = ()=>{ video.play().catch(()=>{}); };
+btnSkip.onclick  = ()=>{ location.href='v2.html'; };
+video.addEventListener('ended', ()=>{ location.href='v2.html'; });
 </script>
 </body>
 </html>
