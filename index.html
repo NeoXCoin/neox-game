@@ -44,6 +44,24 @@
   #btnPlaySound{background:#2563eb}
   /* 自動淡出 */
   .vctrl.fadeout{opacity:0;transition:opacity 1.2s ease;pointer-events:none}
+  
+  /* 手機橫向：控制鍵橫向排、位置略升高 */
+@media (orientation: landscape) {
+  .vctrl {
+    flex-direction: row;
+    gap: 18px;
+    bottom: calc(6% + env(safe-area-inset-bottom));
+  }
+}
+
+/* 手機直向：控制鍵垂直排（預設樣式的補充） */
+@media (orientation: portrait) {
+  .vctrl {
+    flex-direction: column;
+    gap: 10px;
+    bottom: calc(10% + env(safe-area-inset-bottom));
+  }
+}
 
   /* ===== Start layer ===== */
   #startLayer{position:fixed;inset:0;display:none;place-items:center;background:rgba(5,8,20,.85);
