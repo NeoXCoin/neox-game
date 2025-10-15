@@ -100,8 +100,8 @@
     <p>Watch the short opening, or skip and start the level.</p>
     <div class="btnrow">
       <button id="btnSound">🔈 Sound on</button>
-      <button id="btnSkip">⏭ Skip</button>
       <button id="btnStart" class="primary">▶ Start Play</button>
+      <button id="btnSkip">⏭ Skip</button>
     </div>
   </div>
 </div>
@@ -109,8 +109,8 @@
 <script>
 const video = document.getElementById('introVideo');
 const btnSound = document.getElementById('btnSound');
-const btnSkip = document.getElementById('btnSkip');
 const btnStart = document.getElementById('btnStart');
+const btnSkip = document.getElementById('btnSkip');
 
 // 避免 iPhone 黑屏 — 第一次觸碰立即顯示第一幀
 window.addEventListener("touchstart", () => {
