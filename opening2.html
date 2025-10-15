@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Catch — Opening 2</title>
 <style>
-  :root{ --stage-max:700px; }
+  :root{ --max:700px; }
 
   html,body{
     margin:0;height:100%;background:#0a0b1f;color:#fff;
@@ -13,13 +13,11 @@
     overflow:hidden;
   }
   /* 置中版心 */
-  #wrap{
-    height:100%;display:grid;place-items:center;padding:16px;
-  }
+  #wrap{height:100%;display:grid;place-items:center;padding:16px;}
 
-  /* 1:1 正方形舞台（不會過大也不會超出） */
+  /* 正方形舞台（1:1） */
   .stage{
-    width:min(92vmin,var(--stage-max));
+    width:min(92vmin,var(--max));
     aspect-ratio:1/1;
     border-radius:16px;
     background:#000;
@@ -28,53 +26,47 @@
   }
   .stage video{
     width:100%;height:100%;
-    object-fit:contain;           /* 保持比例，不裁切 */
+    object-fit:contain;          /* 保持比例、不裁切 */
     background:#000;
   }
 
-  /* 文字與按鈕（預設：橫向/桌面覆蓋在下方） */
-  .overlay{
-    position:absolute; inset:auto 0 0 0;
-    display:flex; flex-direction:column; align-items:center; text-align:center;
-    background:linear-gradient(transparent 30%, rgba(0,0,0,.65));
-    padding:14px;
+  /* 直向：標題＋掣 放「舞台下面」 */
+  .panel{
+    width:min(92vmin,var(--max));
+    text-align:center;
+    margin-top:12px;
   }
-  .title{margin:6px 0 8px; font-weight:800; font-size:clamp(18px,4.8vw,28px);}
-  .sub{margin:0 0 10px; color:#cfd6ff; font-size:14px}
-  .row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+  .title{margin:6px 0 8px;font-weight:800;font-size:clamp(18px,5.2vw,28px)}
+  .sub{margin:0 0 10px;color:#cfd6ff;font-size:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
   button{
     border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;color:#fff;
     background:#1b2144; box-shadow:0 10px 28px rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.08);
   }
   .primary{ background:#2b7cff; }
 
-  /* 📱 直向手機：把 overlay 放到影片「外面下面」 */
-  @media (orientation:portrait){
-    #wrap{ grid-auto-rows:max-content; gap:10px; }
-    .overlay{
-      position:static; background:transparent; padding:0;
-      width:min(92vmin,var(--stage-max));   /* 跟舞台同寬 */
-    }
-  }
-
-  /* 橫向平板/桌面：舞台不超過畫面高度 */
+  /* 橫向：把 panel 收返入去舞台底部覆蓋 */
   @media (orientation:landscape){
-    .stage{ width:min(80vmin,var(--stage-max)); }
+    .stage{ width:min(80vmin,var(--max)); }
+    .panel{
+      position:absolute; inset:auto 0 0 0; margin:0; padding:12px;
+      background:linear-gradient(transparent 30%, rgba(0,0,0,.65));
+    }
   }
 </style>
 </head>
 <body>
   <div id="wrap">
-    <!-- 正方形舞台 -->
-    <div class="stage">
+    <!-- 1:1 影片舞台 -->
+    <div class="stage" id="stage">
       <video id="introVideo"
         src="https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4"
         poster="TreasureL2.png"
         preload="auto" muted playsinline webkit-playsinline>
       </video>
 
-      <!-- 橫向/桌面時覆蓋在舞台內；直向手機時會自動移到舞台下方 -->
-      <div class="overlay" id="overlay">
+      <!-- 橫向時會覆蓋；直向時會落到舞台下邊（見 CSS） -->
+      <div class="panel" id="panel">
         <h1 class="title">Treasure Journey</h1>
         <p class="sub">Watch the short opening, or skip and start the level.</p>
         <div class="row">
@@ -95,9 +87,12 @@ const btnSkip  = document.getElementById('btnSkip');
 let soundEnabled=false, audioCtx=null;
 function ensureAudio(){ if(!audioCtx){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }}
 
-// iPhone 避免黑屏：首次觸碰就啟動影片管道與第一幀
-window.addEventListener('touchstart',()=>{ video.play().then(()=>video.pause()).catch(()=>{}); }, {once:true});
+/* iPhone 黑屏對策：首次觸碰即刻解鎖媒體通道，顯示第一幀 */
+window.addEventListener('touchstart', ()=>{
+  video.play().then(()=>video.pause()).catch(()=>{});
+}, {once:true});
 
+/* 控制鍵 */
 btnSound.onclick = async ()=>{
   ensureAudio(); soundEnabled=!soundEnabled;
   try{ await audioCtx.resume(); }catch(e){}
@@ -107,6 +102,11 @@ btnSound.onclick = async ()=>{
 btnStart.onclick = ()=>{ video.play().catch(()=>{}); };
 btnSkip.onclick  = ()=>{ location.href='v2.html'; };
 video.addEventListener('ended', ()=>{ location.href='v2.html'; });
+
+/* 同你 index.html 一樣：按一次任何鍵都嘗試開播，保險 */
+['pointerdown','click','keydown'].forEach(evt=>{
+  window.addEventListener(evt, ()=>{ if(video.paused) video.play().catch(()=>{}); }, {once:true, passive:true});
+});
 </script>
 </body>
 </html>
