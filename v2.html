@@ -323,7 +323,7 @@ function drawChest(){
 function drawCoins(){
   for(const c of coins){
     // ✨ 兩種 coin 同一尺寸（較細，貼近 v1）
-    const size = 2.0 * c.r;
+    const size = 2.2 * c.r;
     const r = size/2;
 
     ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
