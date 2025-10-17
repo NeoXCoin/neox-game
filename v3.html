@@ -275,22 +275,21 @@ function restart(){
   items.length=0; spawnTimer=0; chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
   state=State.PLAYING; panelWin.classList.add('hidden'); endingLayer.style.display='none'; btnPause.textContent='⏸ Pause'; refreshHUD();
 }
-function finish(){ // 先播 End 動畫，播完才出面板
-  state=State.ENDING;
-  best=Math.max(best,Math.floor(score));
-  localStorage.setItem('neox_catch_best_l3', String(best));
-  localStorage.setItem('nx_carry', String(Math.floor(score))); // 若之後還有關卡可延續
-  refreshHUD();
+function finish(reasonText){
+  // 狀態與分數
+  state = State.ENDING;
+  best  = Math.max(best, Math.floor(score));
 
-  endingLayer.style.display='grid';
-  endingVideo.currentTime=0;
-  endingVideo.play().catch(()=>{ showPanel(); });
-}
-endingVideo.addEventListener('ended', showPanel);
-function showPanel(){
-  state=State.WIN; SFX.win();
-  endingLayer.style.display='none';
-  panelWin.classList.remove('hidden');
+  // 存起來（v3 與 endgame.html 兩邊都可讀）
+  localStorage.setItem('neox_catch_best_l3', String(best));
+  localStorage.setItem('nx_carry',          String(Math.floor(score)));
+  localStorage.setItem('nx_last_score',     String(Math.floor(score)));
+  localStorage.setItem('nx_best_all',       String(Math.floor(best)));
+
+  // 帶參數跳去片尾頁
+  const s = Math.floor(score);
+  const b = Math.floor(best);
+  window.location.href = `endgame.html?score=${s}&best=${b}`;
 }
 
 /* ===== Loop ===== */
