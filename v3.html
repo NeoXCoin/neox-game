@@ -10,11 +10,20 @@
   #wrap{position:relative;height:100%;display:grid;place-items:center}
 
   /* 遊戲畫布（手機直向 9:16） */
-  canvas{display:block;width:min(92vw,700px);aspect-ratio:9/16;height:auto;border-radius:16px;background:#000;
-    box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);touch-action:none;position:relative;z-index:2}
-
+  canvas{
+    display:block;
+    width:min(92vw,700px);
+    aspect-ratio:9/16;
+    height:auto;
+    border-radius:16px;
+    background: transparent; /* 🔹 改這裡，讓影片顯示出來 */
+    box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 1px rgba(255,255,255,.06);
+    touch-action:none;
+    position:relative;
+    z-index:2;
+  }
   /* 影片背景鋪在 canvas 下層 */
-  .bgvid{position:absolute;inset:0;display:grid;place-items:center;z-index:1;pointer-events:none}
+  .bgvid{position:absolute;inset:0;display:grid;place-items:center;z-index:0;pointer-events:none}
   .bgvid video{width:min(92vw,700px);aspect-ratio:9/16;height:auto;object-fit:contain;border-radius:16px;background:#000}
 
   /* HUD（在最前層）*/
