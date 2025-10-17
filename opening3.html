@@ -1,0 +1,132 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>NeoX Catch — Opening 3</title>
+<style>
+  :root{
+    --gap:12px;
+    --pad:12px 14px;
+    --glass: rgba(10,12,20,.82);
+    --primary:#2b7cff;
+    --text:#fff;
+  }
+  html,body{
+    margin:0; height:100%; overflow:hidden;
+    background:#000; color:var(--text);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
+  }
+  #wrap{
+    position:fixed; inset:0;
+    display:grid; place-items:center;
+    background:#000;  /* 背景保險，不會出黑屏閃爍 */
+  }
+
+  /* 影片保持原比例，不裁切、不放大 */
+  video{
+    width:100%; height:100%;
+    object-fit:contain;              /* 重點：保持比例 */
+    background:#000;                 /* 沒載入時保持黑底 */
+    opacity:0; transition:opacity .5s ease;
+  }
+
+  /* 底部標題＋按鈕 */
+  .overlay{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    justify-content:flex-end; align-items:center; text-align:center;
+    background:linear-gradient(transparent 60%, rgba(0,0,0,.65));
+    padding:0 16px calc(18px + env(safe-area-inset-bottom));
+    pointer-events:none; /* 讓視頻可點；下面 row 再開啟事件 */
+  }
+  h1{ margin:0 0 8px; font-size:clamp(22px,5.8vw,34px); font-weight:900; }
+  p{  margin:0 0 14px; color:#cfe0ff; font-size:clamp(13px,3.6vw,16px); }
+
+  .row{
+    display:flex; gap:var(--gap); flex-wrap:wrap; justify-content:center;
+    pointer-events:auto;
+  }
+  button{
+    border:0; border-radius:12px; padding:var(--pad);
+    font-weight:800; color:#fff; cursor:pointer;
+    background:var(--glass);
+    box-shadow:0 8px 22px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+  .primary{ background:var(--primary); }
+
+  /* 直向：兩個/三個按鈕在同一行置中 */
+  @media (orientation:portrait){
+    .row{ flex-direction:row; gap:12px; }
+  }
+  /* 橫向：同樣橫排，但往下貼近安全區 */
+  @media (orientation:landscape){
+    .row{ flex-direction:row; gap:14px; }
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <video id="opener"
+    src="https://neoxcoin.github.io/neox-game/TreasureL3Opening.mp4"
+    poster="TreasureL2.png"
+    preload="auto" muted playsinline webkit-playsinline>
+  </video>
+
+  <div class="overlay" aria-hidden="true">
+    <h1>Treasure Journey</h1>
+    <p>Watch the short opening, or skip and start the level.</p>
+    <div class="row">
+      <button id="btnSound">🔈 Play with sound</button>
+      <button id="btnStart" class="primary">▶ Start Play</button>
+      <button id="btnSkip">⏭ Skip</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const video = document.getElementById('opener');
+const btnSound = document.getElementById('btnSound');
+const btnStart = document.getElementById('btnStart');
+const btnSkip  = document.getElementById('btnSkip');
+
+function goGame(){
+  try{ video.pause(); }catch(e){}
+  localStorage.setItem('seenOpening3','1');
+  location.href = 'v3.html';
+}
+
+/* iOS 黑屏／靜音策略：首次觸控就嘗試播放第一幀（仍保持 muted） */
+['touchstart','pointerdown','click'].forEach(evt=>{
+  window.addEventListener(evt, ()=>{ video.play().catch(()=>{}); }, {once:true,passive:true});
+});
+
+/* 載入後淡入 */
+video.addEventListener('playing', ()=>{ video.style.opacity='1'; });
+video.addEventListener('loadedmetadata', ()=>{ fitContain(); });
+addEventListener('resize', fitContain, {passive:true});
+
+/* 依比例微調（保險，與 contain 配合） */
+function fitContain(){
+  const r = (video.videoWidth||16)/(video.videoHeight||9);
+  const s = innerWidth/innerHeight;
+  // 接近整屏才用 cover，其餘用 contain（你說要保持原比例，所以基本用 contain）
+  video.style.objectFit = Math.abs(r - s) < 0.12 ? 'contain' : 'contain';
+}
+
+/* 控制鍵 */
+btnStart.addEventListener('click', ()=>{ video.play().catch(()=>{}); });
+btnSound.addEventListener('click', async ()=>{
+  try{
+    if (video.paused) await video.play();
+    video.muted = false;
+    btnSound.textContent = '🔊 Sound on';
+    btnSound.disabled = true;
+  }catch(e){}
+});
+btnSkip.addEventListener('click', goGame);
+
+/* 結束自動入關 */
+video.addEventListener('ended', goGame);
+</script>
+</body>
+</html>
