@@ -106,9 +106,33 @@ function endFlow(){
   panel.style.display = 'block';
 }
 
-/* 面板按鈕 */
-btnHome.onclick   = ()=> location.href = 'index.html';
-btnReplay.onclick = ()=> location.href = 'v3.html#replay';
+// ▶️ Play / ⏸ Pause 切換
+btnPlay.addEventListener("click", () => {
+  if (video.paused) {
+    video.play();
+    btnPlay.textContent = "⏸ Pause";
+  } else {
+    video.pause();
+    btnPlay.textContent = "▶️ Play";
+  }
+});
+
+// 🔁 Replay
+btnReplay.addEventListener("click", () => {
+  video.currentTime = 0;
+  video.play();
+  btnPlay.textContent = "⏸ Pause";
+});
+
+// 🏠 回主頁
+btnHome.addEventListener("click", () => {
+  window.location.href = "index.html"; // ← 你可以改成主頁連結
+});
+
+// 自動播完後恢復按鈕狀態
+video.addEventListener("ended", () => {
+  btnPlay.textContent = "▶️ Play";
+});
 </script>
 </body>
 </html>
