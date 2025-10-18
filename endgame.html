@@ -13,78 +13,70 @@
   }
   #wrap{
     position:relative;height:100%;
-    display:grid;place-items:center;
-    padding:10px;
+    display:grid;place-items:center;padding:10px;
   }
   .stage{
-    position:relative;
-    width:min(92vw,900px);
-    aspect-ratio:9/16;
-    border-radius:16px;
-    background:#000;
-    box-shadow:0 22px 60px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.07);
-    overflow:hidden;
+    position:relative;width:min(92vw,900px);aspect-ratio:9/16;border-radius:16px;
+    background:#000;overflow:hidden;
+    box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.07);
   }
+  /* 影片：維持原比例，不放大裁切 */
   video{
-    position:absolute;inset:0;
-    width:100%;height:100%;
-    object-fit:contain;
-    background:#000;
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:contain;background:#000;
   }
+
+  /* 頂部標題 */
   .headline{
-    position:absolute;left:50%;top:10%;
-    transform:translateX(-50%);
-    text-align:center;text-shadow:0 6px 22px rgba(0,0,0,.55);
-    pointer-events:none;
+    position:absolute;left:50%;top:8%;
+    transform:translateX(-50%);text-align:center;
+    text-shadow:0 6px 22px rgba(0,0,0,.55);pointer-events:none;
   }
-  .headline h1{
-    margin:0 0 8px;
-    font-size:clamp(22px,5.2vw,36px);
-  }
-  .headline p{
-    margin:0;color:#cfe0ff;font-weight:700;
+  .headline h1{margin:0 0 8px;font-size:clamp(22px,5.2vw,36px);}
+  .headline p{margin:0;color:#cfe0ff;font-weight:700;}
+
+  /* 底部按鈕：提高一點，避免被工具條遮擋 */
+  .controlsWrap{
+    position:absolute;left:0;right:0;bottom:0;pointer-events:none;
+    background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(7,10,24,.75) 38%, rgba(7,10,24,.85) 100%);
+    padding-bottom:clamp(10px, 6%, calc(16px + env(safe-area-inset-bottom)));
+    padding-top:18%;
+    display:flex;justify-content:center;
   }
   .controls{
-    position:absolute;left:50%;
-    bottom:calc(8% + env(safe-area-inset-bottom));
-    transform:translateX(-50%);
+    pointer-events:auto;
     display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+    transform:translateY(6%); /* 微微上提 */
   }
   button{
-    border:0;border-radius:12px;
-    padding:12px 18px;color:#fff;
-    font-weight:900;cursor:pointer;
-    background:#1b2144;
-    box-shadow:0 10px 28px rgba(0,0,0,.25);
-    transition:all .2s ease;
+    border:0;border-radius:12px;padding:12px 18px;color:#fff;font-weight:900;cursor:pointer;
+    background:#1b2144;box-shadow:0 10px 28px rgba(0,0,0,.25);transition:all .2s ease;
   }
-  button:hover{
-    background:#2b36a4;
-    transform:scale(1.05);
-  }
-  button img{
-    width:22px;height:22px;
-    vertical-align:middle;
-    margin-right:6px;
-  }
+  button:hover{background:#2b36a4;transform:translateY(-1px);}
+  button img{width:22px;height:22px;vertical-align:middle;margin-right:6px}
 </style>
 </head>
 <body>
 <div id="wrap">
   <div class="stage">
-    <video id="endVid" preload="auto" src="https://neoxcoin.github.io/neox-game/Endgameanimation%20.mp4"></video>
+    <video id="endVid" preload="auto"
+           playsinline webkit-playsinline
+           src="https://neoxcoin.github.io/neox-game/Endgameanimation%20.mp4"></video>
 
     <div class="headline">
       <h1 id="titleText">Victory!</h1>
       <p id="scoreText">Score: 0 · Best: 0</p>
     </div>
 
-    <div class="controls">
-      <button id="btnPlay">▶️ Play</button>
-      <button id="btnReplay">🔁 Replay</button>
-      <button id="btnHome">
-        <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="NeoX">Home
-      </button>
+    <!-- 底部漸變 + 控制鍵區 -->
+    <div class="controlsWrap">
+      <div class="controls">
+        <button id="btnPlay">▶️ Play</button>
+        <button id="btnReplay">🔁 Replay</button>
+        <button id="btnHome">
+          <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="NeoX">Home
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -96,38 +88,28 @@ const btnReplay = document.getElementById("btnReplay");
 const btnHome = document.getElementById("btnHome");
 const scoreText = document.getElementById("scoreText");
 
-// 讀取分數（從網址參數或 localStorage）
+// 讀取分數（URL 參數優先，否則用上次 localStorage）
 const params = new URLSearchParams(location.search);
 const score = params.get("score") || localStorage.getItem("nx_last_score") || 0;
-const best  = params.get("best")  || localStorage.getItem("nx_best_all") || 0;
+const best  = params.get("best")  || localStorage.getItem("nx_best_all")  || 0;
 scoreText.textContent = `Score: ${score} · Best: ${best}`;
 
-// ▶️ Play / ⏸ Pause 切換
-btnPlay.addEventListener("click", () => {
-  if (video.paused) {
-    video.play();
-    btnPlay.textContent = "⏸ Pause";
-  } else {
-    video.pause();
-    btnPlay.textContent = "▶️ Play";
-  }
-});
+// ▶️/⏸ 切換
+function syncPlayButton(){
+  btnPlay.textContent = video.paused ? "▶️ Play" : "⏸ Pause";
+}
+btnPlay.addEventListener("click", ()=>{ video.paused ? video.play() : video.pause(); syncPlayButton(); });
+btnReplay.addEventListener("click", ()=>{ video.currentTime = 0; video.play(); syncPlayButton(); });
+btnHome.addEventListener("click", ()=>{ window.location.href = "index.html"; });
 
-// 🔁 Replay
-btnReplay.addEventListener("click", () => {
-  video.currentTime = 0;
-  video.play();
-  btnPlay.textContent = "⏸ Pause";
-});
+video.addEventListener("play",  syncPlayButton);
+video.addEventListener("pause", syncPlayButton);
+video.addEventListener("ended", syncPlayButton);
 
-// 🏠 回主頁 index.html
-btnHome.addEventListener("click", () => {
-  window.location.href = "index.html";
-});
-
-// 播完後自動顯示「▶️ Play」
-video.addEventListener("ended", () => {
-  btnPlay.textContent = "▶️ Play";
+// 鍵盤快捷：Space 切換、R 重播
+addEventListener("keydown",(e)=>{
+  if(e.code==="Space"){ e.preventDefault(); video.paused ? video.play() : video.pause(); syncPlayButton(); }
+  if(e.key.toLowerCase()==="r"){ video.currentTime=0; video.play(); syncPlayButton(); }
 });
 </script>
 </body>
