@@ -6,55 +6,58 @@
 <title>NeoX Catch — Level 3</title>
 <style>
   html,body{
-    height:100%;margin:0;background:#070a18;color:#fff;
+    height:100%;margin:0;background:#000;color:#fff;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
     overflow:hidden;
   }
   #wrap{position:relative;height:100%;display:grid;place-items:center}
 
-  /* 遊戲畫布（手機直向 9:16） */
-  canvas{
-    display:block;width:min(92vw,700px);aspect-ratio:9/16;height:auto;border-radius:16px;
-    background: transparent;
-    box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 1px rgba(255,255,255,.06);
-    touch-action:none; position:relative; z-index:2;
+  /* 背景影片（不裁切） */
+  .bgvid{
+    position:absolute;inset:0;display:grid;place-items:center;
+    z-index:0;pointer-events:none;background:#000;
+  }
+  .bgvid video{
+    width:min(92vw,700px);aspect-ratio:9/16;height:auto;
+    object-fit:contain;border-radius:16px;background:#000;
   }
 
-  /* 背景影片（等比、不裁切） */
-  .bgvid{position:absolute;inset:0;display:grid;place-items:center;z-index:0;pointer-events:none}
-  .bgvid video{width:min(92vw,700px);aspect-ratio:9/16;height:auto;object-fit:contain;border-radius:16px;background:#000}
+  canvas{
+    display:block;width:min(92vw,700px);aspect-ratio:9/16;height:auto;
+    border-radius:16px;background:transparent;
+    box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 1px rgba(255,255,255,.06);
+    touch-action:none;position:relative;z-index:2;
+  }
 
   /* HUD */
   .hud{position:absolute;inset:0;z-index:5;pointer-events:none;display:grid;grid-template-rows:auto 1fr}
-  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:10px;padding:10px 14px;font-weight:800}
+  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;
+          gap:10px;padding:10px 14px;font-weight:800}
   .left{justify-self:start;pointer-events:auto}
   .center{justify-self:center;text-align:center;pointer-events:none}
   .right{justify-self:end;pointer-events:auto}
-  .badge{display:inline-block;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
-         box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900}
-  .iconbtn{display:inline-flex;align-items:center;gap:8px;background:#1b2144;border:0;color:#fff;border-radius:14px;padding:10px 14px;
-           font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);cursor:pointer}
+  .badge{display:inline-block;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.14);
+         backdrop-filter:blur(3px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+         margin:0 6px;font-weight:900}
+  .iconbtn{display:inline-flex;align-items:center;gap:8px;background:#1b2144;border:0;color:#fff;border-radius:14px;
+           padding:10px 14px;font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.25),inset 0 0 0 1px rgba(255,255,255,.08);
+           cursor:pointer}
   .iconbtn img{width:22px;height:22px;object-fit:contain;display:block}
 
-  /* Game Complete 面板（Finish 前顯示） */
-  .panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:auto;
-    min-width:clamp(240px,80%,520px);text-align:center;padding:18px 16px 20px;border-radius:16px;
-    background:rgba(10,12,34,.78); /* 半透明 */
-    box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08);backdrop-filter:blur(6px);z-index:15;
-    opacity:0;transition:opacity .6s ease;
-  }
+  /* Game Complete 面板 */
+  .panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    min-width:clamp(240px,80%,520px);padding:20px 16px;border-radius:16px;text-align:center;
+    background:rgba(10,12,34,.75);box-shadow:0 20px 60px rgba(0,0,0,.5),
+    inset 0 0 0 1px rgba(255,255,255,.08);backdrop-filter:blur(6px);z-index:15;
+    opacity:0;transition:opacity .6s ease;}
   .panel.show{opacity:1}
   .panel h1{margin:8px 0 10px;font-size:clamp(22px,5.2vw,30px)}
-  .panel p{margin:0 0 14px;color:#c8d2ff;font-size:14px;line-height:1.55}
+  .panel p{margin:0 0 14px;color:#c8d2ff}
   .row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
   .btn{border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;color:#fff;background:#2b7cff;
-    box-shadow:0 8px 22px rgba(43,124,255,.35)}
+       box-shadow:0 8px 22px rgba(43,124,255,.35)}
   .btn.alt{background:#1f2648;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
-  .hidden{display:none !important}
-
-  /* End 動畫層（保留） */
-  #ending{position:absolute;inset:0;display:none;place-items:center;background:rgba(0,0,0,.85);z-index:14}
-  #ending video{width:min(92vw,700px);aspect-ratio:9/16;height:auto;object-fit:contain;border-radius:16px;background:#000}
+  .hidden{display:none!important}
 
   @media (max-width:600px){
     .topbar{position:relative;display:block;padding:10px 14px}
@@ -66,28 +69,17 @@
 </head>
 <body>
 <div id="wrap">
+  <div class="bgvid"><video id="bgVideo" muted loop playsinline webkit-playsinline preload="auto"
+    src="https://neoxcoin.github.io/neox-game/V3backgroundAnimation.mp4"
+    poster="https://neoxcoin.github.io/neox-game/V3background.png.PNG"></video></div>
 
-  <!-- 背景動畫 -->
-  <div class="bgvid" aria-hidden="true">
-    <video id="bgVideo" muted loop playsinline webkit-playsinline preload="auto"
-      src="https://neoxcoin.github.io/neox-game/V3backgroundAnimation.mp4"
-      poster="https://neoxcoin.github.io/neox-game/V3background.png.PNG"></video>
-  </div>
+  <canvas id="game" width="450" height="800"></canvas>
 
-  <canvas id="game" width="450" height="800" aria-label="NeoX Catch Level 3"></canvas>
-
-  <!-- End 動畫層（暫不使用，可保留） -->
-  <section id="ending" aria-label="Ending animation">
-    <video id="endingVideo" playsinline webkit-playsinline preload="auto"
-      src="https://neoxcoin.github.io/neox-game/NeoX_End_Game_VictoryGlow%202.mp4"></video>
-  </section>
-
-  <!-- HUD -->
-  <div class="hud" aria-live="polite">
+  <div class="hud">
     <div class="topbar">
       <div class="left">
-        <button id="btnHome" class="iconbtn" title="Back to Home">
-          <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home" />Home
+        <button id="btnHome" class="iconbtn">
+          <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home"/>Home
         </button>
       </div>
       <div class="center">
@@ -96,13 +88,12 @@
         <span class="badge" id="bestBadge">Best: 0</span>
       </div>
       <div class="right">
-        <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
+        <button id="btnPause" class="iconbtn">⏸ Pause</button>
       </div>
     </div>
 
-    <!-- 完成面板（先顯示，再決定 Replay / Finish） -->
     <div id="panelWin" class="panel hidden">
-      <h1 id="winTitle">Game Complete 🎉</h1>
+      <h1>Game Complete 🎉</h1>
       <p><span id="finalScore">Score: 0</span> · <span id="bestScore">Best: 0</span></p>
       <div class="row">
         <button id="btnReplay" class="btn alt">↻ Replay</button>
@@ -113,286 +104,88 @@
 </div>
 
 <script>
-/* ===== Config ===== */
-const TOTAL_TIME_SEC = 180;
-const MISS_PENALTY   = 5;   // 掉出畫面扣分（不低於 0）
+const TOTAL_TIME_SEC=180,MISS_PENALTY=5;
+const CHEST_URL="https://neoxcoin.github.io/neox-game/treasure-box.png";
+const COIN_URL="https://neoxcoin.github.io/neox-game/neox-emoji-128.png";
+const RUBY_URL="https://neoxcoin.github.io/neox-game/ruby.png";
+const SAPPH_URL="https://neoxcoin.github.io/neox-game/sapphire.png";
 
-/* ===== Assets ===== */
-const CHEST_URL = "https://neoxcoin.github.io/neox-game/treasure-box.png";
-const COIN_URL  = "https://neoxcoin.github.io/neox-game/neox-emoji-128.png";
-const RUBY_URL  = "https://neoxcoin.github.io/neox-game/ruby.png";
-const SAPPH_URL = "https://neoxcoin.github.io/neox-game/sapphire.png";
+const canvas=document.getElementById("game"),ctx=canvas.getContext("2d");
+function fitHiDPI(){const cssW=canvas.clientWidth,cssH=canvas.clientHeight,dpr=Math.min(window.devicePixelRatio||1,2);
+if(canvas.width!==Math.round(cssW*dpr)){canvas.width=Math.round(cssW*dpr);canvas.height=Math.round(cssH*dpr);}
+ctx.setTransform(dpr,0,0,dpr,0,0);}
+fitHiDPI();addEventListener("resize",fitHiDPI);
 
-/* ===== Canvas HiDPI ===== */
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-function fitHiDPI(){
-  const cssW=canvas.clientWidth, cssH=canvas.clientHeight;
-  const dpr=Math.max(1, Math.min(window.devicePixelRatio||1, 2));
-  if(canvas.width!==Math.round(cssW*dpr)){
-    canvas.width=Math.round(cssW*dpr); canvas.height=Math.round(cssH*dpr);
-  }
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-}
-fitHiDPI(); addEventListener('resize', fitHiDPI);
+const State={PLAYING:1,PAUSED:2,WIN:3};let state=State.PLAYING;
+const scoreBadge=document.getElementById("scoreBadge"),
+bestBadge=document.getElementById("bestBadge"),
+timeBadge=document.getElementById("timeBadge"),
+panelWin=document.getElementById("panelWin"),
+finalScore=document.getElementById("finalScore"),
+bestScore=document.getElementById("bestScore"),
+btnPause=document.getElementById("btnPause"),
+btnFinish=document.getElementById("btnFinish");
 
-/* ===== State ===== */
-const State={READY:0,PLAYING:1,PAUSED:2,ENDING:3,WIN:4};
-let state=State.READY;
+const bgVideo=document.getElementById("bgVideo");
+bgVideo.play().catch(()=>{});
+let carry=+localStorage.getItem("nx_carry")||0,score=carry,
+best=+localStorage.getItem("neox_catch_best_l3")||0,timeLeft=TOTAL_TIME_SEC;
 
-/* ===== HUD refs ===== */
-const scoreBadge=document.getElementById('scoreBadge');
-const bestBadge =document.getElementById('bestBadge');
-const timeBadge =document.getElementById('timeBadge');
-const panelWin  =document.getElementById('panelWin');
-const finalScore=document.getElementById('finalScore');
-const bestScore =document.getElementById('bestScore');
-const btnPause  =document.getElementById('btnPause');
-const btnFinish =document.getElementById('btnFinish');
+function fmt(t){const m=Math.floor(t/60),s=Math.floor(t%60);return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
+function refreshHUD(){scoreBadge.textContent=`Score: ${Math.floor(score)}`;bestBadge.textContent=`Best: ${best}`;timeBadge.textContent=`Time: ${fmt(timeLeft)}`;finalScore.textContent=`Score: ${score}`;bestScore.textContent=`Best: ${best}`;}
 
-/* ===== Media ===== */
-const bgVideo = document.getElementById('bgVideo');
-bgVideo.play().catch(()=>{}); // iOS 初載入可能需要手勢
+const chestImg=new Image();chestImg.src=CHEST_URL;
+const coinImg=new Image();coinImg.src=COIN_URL;
+const rubyImg=new Image();rubyImg.src=RUBY_URL;
+const sappImg=new Image();sappImg.src=SAPPH_URL;
 
-/* ===== Data ===== */
-let carry = Number(localStorage.getItem('nx_carry') || 0);
-let score = carry;
-let best  = Number(localStorage.getItem('neox_catch_best_l3')||0);
-let timeLeft = TOTAL_TIME_SEC;
+const EDGE=2,chest={x:canvas.clientWidth/2,y:0,w:220,h:160,speed:6.5,vx:0};
+function placeChest(){const H=canvas.clientHeight;const targetW=Math.min(canvas.clientWidth*0.3,280);
+chest.w=targetW;chest.h=Math.round(targetW*0.72);chest.y=H-20;chest.x=Math.max(chest.w/2+EDGE,Math.min(chest.x,canvas.clientWidth-chest.w/2-EDGE));}
+placeChest();addEventListener("resize",placeChest);
 
-function fmt(t){ const m=Math.floor(t/60), s=Math.floor(t%60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
-function refreshHUD(){
-  scoreBadge.textContent=`Score: ${Math.floor(score)}`;
-  bestBadge .textContent=`Best: ${Math.floor(best)}`;
-  timeBadge .textContent=`Time: ${fmt(timeLeft)}`;
-  finalScore.textContent =`Score: ${Math.floor(score)}`;
-  bestScore .textContent =`Best: ${Math.floor(best)}`;
-}
+const keys=new Set();addEventListener("keydown",e=>{if(e.key==="ArrowLeft")keys.add("L");if(e.key==="ArrowRight")keys.add("R");if(e.key.toLowerCase()==="p")togglePause();});
+addEventListener("keyup",e=>{if(e.key==="ArrowLeft")keys.delete("L");if(e.key==="ArrowRight")keys.delete("R");});
+let pointerId=null;canvas.addEventListener("pointerdown",e=>{pointerId="p";e.preventDefault();});
+addEventListener("pointermove",e=>{if(!pointerId)return;const rect=canvas.getBoundingClientRect(),cx=(e.clientX-rect.left)/rect.width*canvas.clientWidth,diff=cx-chest.x;chest.vx=Math.max(-chest.speed,Math.min(chest.speed,diff*0.25));});
+addEventListener("pointerup",()=>{pointerId=null;chest.vx=0;});
 
-/* ===== Images ===== */
-const chestImg=new Image(); chestImg.src=CHEST_URL; let chestReady=false; chestImg.onload=()=>chestReady=true;
-const coinImg =new Image(); coinImg.src =COIN_URL;  let coinReady =false; coinImg.onload =()=>coinReady =true;
-const rubyImg =new Image(); rubyImg.src =RUBY_URL;  let rubyReady =false; rubyImg.onload =()=>rubyReady =true;
-const sappImg =new Image(); sappImg.src =SAPPH_URL; let sappReady =false; sappImg.onload =()=>sappReady =true;
+function togglePause(){if(state===State.PLAYING){state=State.PAUSED;btnPause.textContent="⏵ Resume";}else{state=State.PLAYING;btnPause.textContent="⏸ Pause";}}
 
-/* ===== Player (Chest) ===== */
-const EDGE=2;
-const chest={x:canvas.clientWidth/2,y:0,w:220,h:160,speed:6.5,vx:0};
-function isMobile(){ return /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent); }
-function visibleCanvasHeight(){
-  const rect=canvas.getBoundingClientRect(); const vp=window.visualViewport;
-  if(vp){ const vb=(vp.offsetTop||0)+vp.height; return Math.max(0, Math.min(rect.bottom,vb)-rect.top); }
-  return rect.height;
-}
-function placeChest(){
-  const H=visibleCanvasHeight();
-  const land=matchMedia('(orientation: landscape)').matches;
-  const bottomMargin=isMobile()?18:(land?Math.max(24,H*0.05):Math.max(24,H*0.035));
-  const targetW=Math.min(canvas.clientWidth*(isMobile()?0.30:0.28), 280);
-  chest.w=targetW; chest.h=Math.round(targetW*0.72);
-  chest.y=Math.max(chest.h, H-bottomMargin);
-  chest.x=Math.max(chest.w/2+EDGE, Math.min(chest.x, canvas.clientWidth-chest.w/2-EDGE));
-}
-placeChest(); addEventListener('resize', placeChest); addEventListener('orientationchange', placeChest);
+document.getElementById("btnHome").onclick=()=>location.href="index.html";
+document.getElementById("btnReplay").onclick=()=>restart();
+btnFinish.onclick=()=>{const s=Math.floor(score),b=Math.floor(best);location.href=`endgame.html?score=${s}&best=${b}`;};
+btnPause.onclick=()=>togglePause();
 
-/* ===== Input ===== */
-const keys=new Set();
-addEventListener('keydown',e=>{
-  if(e.repeat) return;
-  if(e.key==='ArrowLeft') keys.add('L');
-  if(e.key==='ArrowRight') keys.add('R');
-  if(e.key.toLowerCase()==='p') togglePause();
-  if(e.key.toLowerCase()==='r') restart();
-});
-addEventListener('keyup',e=>{
-  if(e.key==='ArrowLeft') keys.delete('L');
-  if(e.key==='ArrowRight') keys.delete('R');
-});
+let audioCtx;function beep(f){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type="sine";o.frequency.value=f;g.gain.value=.2;o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.1);}
+addEventListener("click",()=>{if(!audioCtx){audioCtx=new AudioContext();bgVideo.play().catch(()=>{});}});
 
-let pointerId=null;
-canvas.addEventListener('pointerdown',e=>{
-  const p=(e.changedTouches&&e.changedTouches[0])||e;
-  pointerId=p.pointerId ?? p.identifier ?? 'mouse';
-  e.preventDefault();
-},{passive:false});
-addEventListener('pointermove',e=>{
-  if(pointerId==null) return;
-  const t = (e.changedTouches && [...e.changedTouches].find(t=> (t.identifier ?? 'mouse')===pointerId)) || e;
-  if(!t) return;
-  const rect=canvas.getBoundingClientRect();
-  const cx=(t.clientX-rect.left)/rect.width*canvas.clientWidth;
-  const diff=cx-chest.x; chest.vx=Math.max(-chest.speed, Math.min(chest.speed, diff*0.25));
-},{passive:true});
-['pointerup','pointercancel','touchend'].forEach(evt=>addEventListener(evt,()=>{pointerId=null; chest.vx=0;}));
+const items=[],TYPES={COIN:"coin",RUBY:"ruby",SAPP:"sapp"},SCORE_MAP={coin:10,ruby:50,sapp:100},SIZE_MAP={coin:28,ruby:34,sapp:38};
+let spawnTimer=0;
+function spawn(dt){spawnTimer-=dt;if(spawnTimer<=0&&items.length<6){const SAFE=chest.w*0.12,r=Math.random(),type=r<.6?TYPES.COIN:(r<.82?TYPES.RUBY:TYPES.SAPP);
+items.push({type,x:EDGE+SAFE+Math.random()*(canvas.clientWidth-2*(EDGE+SAFE)),y:-20,vy:2.5+Math.random()*2.2,rot:Math.random()*Math.PI*2,vrot:-.14+Math.random()*.28});
+spawnTimer=.5+Math.random()*.6;}}
+function finish(){state=State.WIN;best=Math.max(best,score);localStorage.setItem("neox_catch_best_l3",best);localStorage.setItem("nx_last_score",score);refreshHUD();panelWin.classList.remove("hidden");requestAnimationFrame(()=>panelWin.classList.add("show"));}
+function restart(){score=carry;timeLeft=TOTAL_TIME_SEC;items.length=0;spawnTimer=0;state=State.PLAYING;panelWin.classList.add("hidden");panelWin.classList.remove("show");refreshHUD();}
 
-/* ===== Simple SFX ===== */
-let audioCtx=null, masterGain=null;
-function ensureAudio(){ if(audioCtx) return; audioCtx=new (window.AudioContext||window.webkitAudioContext)(); masterGain=audioCtx.createGain(); masterGain.gain.value=.85; masterGain.connect(audioCtx.destination); }
-async function resumeAudio(){ try{ ensureAudio(); if(audioCtx.state!=='running') await audioCtx.resume(); bgVideo.play().catch(()=>{});}catch(e){} }
-function beep(f,d=.1,v=.18){ if(!audioCtx) return; const n=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type='sine'; o.frequency.setValueAtTime(f,n); g.gain.setValueAtTime(v,n); g.gain.exponentialRampToValueAtTime(0.0001,n+d*.9); o.connect(g).connect(masterGain); o.start(n); o.stop(n+d); }
-const SFX={
-  coin(){beep(1100,.07,.17)},
-  ruby(){beep(700,.09,.2); setTimeout(()=>beep(980,.07,.18),60)},
-  sapp(){beep(520,.11,.22); setTimeout(()=>beep(1040,.08,.20),90)},
-  miss(){beep(240,.12,.18)},
-  win(){[660,880,990,1320].forEach((f,i)=>setTimeout(()=>beep(f,.14,.2),90*i))}
-};
-['pointerdown','touchend','mousedown','keydown','click'].forEach(evt=>{
-  window.addEventListener(evt, resumeAudio, {once:true, passive:true});
-});
-document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'visible') resumeAudio(); });
-
-/* ===== Objects ===== */
-const items=[]; let spawnTimer=0;
-const TYPES={COIN:'coin', RUBY:'ruby', SAPP:'sapp'};
-const SCORE_MAP={coin:10, ruby:50, sapp:100};
-const SIZE_MAP ={coin:28, ruby:34, sapp:38};
-
-function spawn(dt){
-  spawnTimer-=dt;
-  const maxOnScreen=6;
-  if(spawnTimer<=0 && items.length<maxOnScreen){
-    const SAFE = chest.w*0.12;
-    const r = Math.random();
-    const type = r<0.60 ? TYPES.COIN : (r<0.82 ? TYPES.RUBY : TYPES.SAPP);
-    const baseVy = type===TYPES.COIN ? 2.7 : type===TYPES.RUBY ? 2.4 : 2.2; // 寶石略慢
-    items.push({
-      type,
-      x: EDGE+SAFE + Math.random()*(canvas.clientWidth - 2*(EDGE+SAFE)),
-      y: -20,
-      vy: baseVy + Math.random()*2.0,
-      rot: Math.random()*Math.PI*2,
-      vrot: -0.14 + Math.random()*0.28
-    });
-    spawnTimer = 0.48 + Math.random()*0.64;
-  }
-}
-
-/* ===== Flow ===== */
-function start(){ state=State.PLAYING; hidePanel(); btnPause.textContent='⏸ Pause'; refreshHUD(); }
-function togglePause(forcePause){
-  if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; btnPause.textContent='⏵ Resume'; }
-  else if(state===State.PAUSED){ state=State.PLAYING; btnPause.textContent='⏸ Pause'; }
-}
-function restart(){
-  score = carry; timeLeft = TOTAL_TIME_SEC;
-  items.length=0; spawnTimer=0; chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
-  state=State.PLAYING; hidePanel(); btnPause.textContent='⏸ Pause'; refreshHUD();
-}
-function showPanel(){ panelWin.classList.remove('hidden'); requestAnimationFrame(()=>panelWin.classList.add('show')); }
-function hidePanel(){ panelWin.classList.add('hidden'); panelWin.classList.remove('show'); }
-
-function finish(){
-  state = State.WIN; SFX.win();
-  best  = Math.max(best, Math.floor(score));
-  localStorage.setItem('neox_catch_best_l3', String(best));
-  localStorage.setItem('nx_carry',          String(Math.floor(score)));
-  localStorage.setItem('nx_last_score',     String(Math.floor(score)));
-  localStorage.setItem('nx_best_all',       String(Math.floor(best)));
-  refreshHUD();
-  showPanel();
-}
-
-/* 按鍵 */
-document.getElementById('btnHome').onclick = ()=>{window.location.href='index.html';};
-document.getElementById('btnReplay').onclick= ()=>{restart();};
-btnFinish.onclick = ()=>{
-  const s=Math.floor(score), b=Math.floor(best);
-  window.location.href = `endgame.html?score=${s}&best=${b}`;
-};
-btnPause.onclick   = ()=>togglePause();
-
-/* ===== Loop ===== */
-let last=performance.now();
-function loop(now){
-  requestAnimationFrame(loop);
-  fitHiDPI();
-  const dt=Math.min(50, now-last)/16.6667; last=now;
-
-  drawScene();
-
-  if(state===State.PLAYING){
-    timeLeft=Math.max(0, timeLeft - dt/60);
-    if(timeLeft<=0){ finish(); return; }
-
-    chest.vx=(keys.has('L')?-chest.speed:0)+(keys.has('R')?chest.speed:0) || chest.vx*0.92;
-    const margin=2;
-    chest.x=Math.max(chest.w/2+margin, Math.min(canvas.clientWidth-chest.w/2-margin, chest.x+chest.vx));
-
-    spawn(dt);
-    for(const it of items){ it.y+=it.vy*dt; it.rot+=it.vrot*dt; }
-
-    // 橢圓口碰撞
-    const baseRx = chest.w*0.36, baseRy=chest.h*0.18;
-    const overhangL = Math.max(0, (chest.w/2 + EDGE) - chest.x);
-    const overhangR = Math.max(0, (chest.w/2 + EDGE) - (canvas.clientWidth - chest.x));
-    const edgeBoost = overhangL + overhangR + 4;
-    const mouth = {cx:chest.x, cy:chest.y - chest.h*0.58, rx:baseRx + edgeBoost, ry:baseRy};
-
-    for(let i=items.length-1;i>=0;i--){
-      const it=items[i];
-      const r = SIZE_MAP[it.type]/2;
-      const ex=(it.x-mouth.cx)/mouth.rx, ey=(it.y-mouth.cy)/mouth.ry;
-      if(ex*ex+ey*ey<=1){
-        score += SCORE_MAP[it.type];
-        items.splice(i,1);
-        (it.type==='coin'?SFX.coin:it.type==='ruby'?SFX.ruby:SFX.sapp)();
-        refreshHUD();
-      }else if(it.y>canvas.clientHeight+30){
-        score = Math.max(0, score - MISS_PENALTY); // 接不到 → 扣分
-        items.splice(i,1);
-        SFX.miss();
-        refreshHUD();
-      }
-    }
-  }
-}
+let last=performance.now();function loop(now){requestAnimationFrame(loop);fitHiDPI();const dt=Math.min(50,now-last)/16.6;last=now;
+drawScene();if(state===State.PLAYING){timeLeft=Math.max(0,timeLeft-dt/60);if(timeLeft<=0){finish();return;}
+chest.vx=(keys.has("L")?-chest.speed:0)+(keys.has("R")?chest.speed:0)||chest.vx*.92;chest.x=Math.max(chest.w/2,Math.min(canvas.clientWidth-chest.w/2,chest.x+chest.vx));
+spawn(dt);for(const it of items){it.y+=it.vy*dt;it.rot+=it.vrot*dt;}
+const mouth={cx:chest.x,cy:chest.y-chest.h*.58,rx:chest.w*.36,ry:chest.h*.18};
+for(let i=items.length-1;i>=0;i--){const it=items[i],r=SIZE_MAP[it.type]/2,ex=(it.x-mouth.cx)/mouth.rx,ey=(it.y-mouth.cy)/mouth.ry;
+if(ex*ex+ey*ey<=1){score+=SCORE_MAP[it.type];items.splice(i,1);beep(880);refreshHUD();}
+else if(it.y>canvas.clientHeight+30){score=Math.max(0,score-MISS_PENALTY);items.splice(i,1);beep(240);refreshHUD();}}}}
 requestAnimationFrame(loop);
-start();
 
-/* ===== Render ===== */
-function drawScene(){
-  const w=canvas.clientWidth,h=canvas.clientHeight;
-  ctx.clearRect(0,0,w,h);
-
-  // 寶箱微光
-  const glow=ctx.createRadialGradient(chest.x,chest.y-24,6,chest.x,chest.y-24,120);
-  glow.addColorStop(0,'rgba(43,124,255,0.30)'); glow.addColorStop(1,'rgba(43,124,255,0)');
-  ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(chest.x, chest.y-24, 90, 0, Math.PI*2); ctx.fill();
-
-  // 先畫寶箱，再畫掉落物
-  drawChest();
-  drawItems();
-}
-function drawChest(){
-  const {x,y,w,h}=chest;
-  if(chestReady){
-    ctx.save(); ctx.shadowColor='rgba(0,0,0,.35)'; ctx.shadowBlur=18;
-    ctx.drawImage(chestImg, x-w/2, y-h, w, h); ctx.restore();
-  }else{
-    ctx.fillStyle='#1c274f'; ctx.fillRect(x-w/2, y-h, w, h);
-  }
-}
-function drawItems(){
-  for(const it of items){
-    const size=SIZE_MAP[it.type], r=size/2;
-    ctx.save(); ctx.translate(it.x,it.y); ctx.rotate(it.rot);
-
-    // 柔光外圈
-    const g=ctx.createRadialGradient(0,0,r*0.4,0,0,r*1.25);
-    if(it.type==='coin'){ g.addColorStop(0,'rgba(255,220,120,.85)'); g.addColorStop(1,'rgba(255,220,120,0)'); }
-    else if(it.type==='ruby'){ g.addColorStop(0,'rgba(255,80,90,.85)'); g.addColorStop(1,'rgba(255,80,90,0)'); }
-    else { g.addColorStop(0,'rgba(90,180,255,.85)'); g.addColorStop(1,'rgba(90,180,255,0)'); }
-    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r*1.1,0,Math.PI*2); ctx.fill();
-
-    // 貼圖
-    let img = it.type==='coin' ? coinImg : (it.type==='ruby'?rubyImg:sappImg);
-    let ready= it.type==='coin' ? coinReady : (it.type==='ruby'?rubyReady:sappReady);
-    if(ready){ ctx.drawImage(img,-r,-r,size,size); }
-    else{ ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); }
-    ctx.restore();
-  }
-}
+function drawScene(){ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+const g=ctx.createRadialGradient(chest.x,chest.y-24,6,chest.x,chest.y-24,120);g.addColorStop(0,"rgba(43,124,255,.3)");g.addColorStop(1,"rgba(43,124,255,0)");
+ctx.fillStyle=g;ctx.beginPath();ctx.arc(chest.x,chest.y-24,90,0,Math.PI*2);ctx.fill();
+drawChest();drawItems();}
+function drawChest(){ctx.save();ctx.drawImage(chestImg,chest.x-chest.w/2,chest.y-chest.h,chest.w,chest.h);ctx.restore();}
+function drawItems(){for(const it of items){const s=SIZE_MAP[it.type],r=s/2;ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.rot);
+let img=it.type==="coin"?coinImg:it.type==="ruby"?rubyImg:sappImg;ctx.drawImage(img,-r,-r,s,s);ctx.restore();}}
+refreshHUD();
 </script>
 </body>
 </html>
