@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -19,11 +19,19 @@
     overflow: hidden;
   }
 
-  /* 影片鋪排（不裁切） */
+  /* 影片鋪排 */
   #vid{width:100%;height:100%;object-fit:contain;background:#000;opacity:0;transition:opacity .6s ease}
+
   /* 疊在影片上的底部資訊層 */
-  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
-    text-align:center;background:linear-gradient(transparent 60%, rgba(0,0,0,.65)); padding:24px 12px}
+  .overlay{
+    position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+    text-align:center;background:linear-gradient(transparent 60%, rgba(0,0,0,.65));
+    padding:24px 12px;
+    opacity:1;
+    transition:opacity 2s ease; /* ← 加入淡出過渡 */
+  }
+  .overlay.fade-out{opacity:0;} /* ← 加入淡出 class */
+
   h1{margin:.2em 0 .4em; font-weight:900; font-size:clamp(22px,6vw,40px)}
   .muted{color:#cbd5ff; margin:0 0 10px}
 
@@ -34,7 +42,7 @@
   .primary{background:#2b7cff}
   .ghost{background:#101634}
 
-  /* 結算面板（影片播完才出現） */
+  /* 結算面板 */
   #panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);min-width:min(92vw,520px);
     padding:18px 16px 20px;border-radius:16px;text-align:center;background:rgba(10,12,34,.9);
     box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08); backdrop-filter:blur(6px);
@@ -43,19 +51,15 @@
   #panel p{margin:0 0 14px; color:#c8d2ff}
   
   /* 手機直版：把標題與按鈕群固定到底部 */
-@media (orientation: portrait) {
-  .overlay {
-    justify-content: flex-end;
-    background: linear-gradient(transparent 40%, rgba(0,0,0,.65));
-    padding-bottom: 5vh;  /* 底部留少少空間 */
+  @media (orientation: portrait) {
+    .overlay {
+      justify-content: flex-end;
+      background: linear-gradient(transparent 40%, rgba(0,0,0,.65));
+      padding-bottom: 5vh;
+    }
+    .overlay h1, .overlay p { margin-bottom: 12px; }
+    .row { margin-bottom: env(safe-area-inset-bottom, 10px); }
   }
-  .overlay h1, .overlay p {
-    margin-bottom: 12px;
-  }
-  .row {
-    margin-bottom: env(safe-area-inset-bottom, 10px); /* 適應 iPhone 底部安全區 */
-  }
-}
 </style>
 </head>
 <body>
@@ -87,15 +91,14 @@
 </div>
 
 <script>
-/* ============ 讀取分數（Querystring 或 localStorage 備援） ============ */
+/* ============ 讀取分數 ============ */
 const url = new URL(location.href);
 const score = Number(url.searchParams.get('score') ?? localStorage.getItem('nx_last_score') ?? 0);
 const best  = Number(url.searchParams.get('best')  ?? localStorage.getItem('nx_best_all')   ?? 0);
-// 同步寫回，方便重新整理還在
 localStorage.setItem('nx_last_score', String(score));
 localStorage.setItem('nx_best_all', String(best));
 
-/* ============ UI refs ============ */
+/* ============ UI 元素 ============ */
 const vid = document.getElementById('vid');
 const ovr = document.getElementById('ovr');
 const scoreText = document.getElementById('scoreText');
@@ -110,10 +113,16 @@ const btnReplay= document.getElementById('btnReplay');
 scoreText.textContent = `Score: ${score} · Best: ${best}`;
 finalText.textContent = `Score: ${score} · Best: ${best}`;
 
-/* ============ 自動播放處理（行動裝置靜音啟播） ============ */
+/* ============ 影片載入顯示 ============ */
+vid.addEventListener('loadeddata', () => { vid.style.opacity = '1'; });
+
+/* ============ 自動播放處理 ============ */
 function showVideo(){ vid.style.opacity = '1'; }
-async function tryPlayMuted(){ try{ await vid.play(); showVideo(); }catch(e){} }
-addEventListener('DOMContentLoaded', tryPlayMuted, {once:true});
+async function tryPlayMuted(){
+  try { await vid.play(); showVideo(); } 
+  catch(e) { showVideo(); } // 即使播放失敗也顯示畫面
+}
+document.addEventListener('DOMContentLoaded', tryPlayMuted, {once:true});
 ['touchstart','pointerdown','keydown','click'].forEach(evt=>{
   window.addEventListener(evt, tryPlayMuted, {once:true, passive:true});
 });
@@ -135,6 +144,11 @@ function endFlow(){
 /* 面板按鈕 */
 btnHome.onclick   = ()=> location.href = 'index.html';
 btnReplay.onclick = ()=> location.href = 'v3.html#replay';
+
+/* ============ 5 秒後自動淡出 overlay ============ */
+setTimeout(() => {
+  ovr.classList.add('fade-out');
+}, 5000);
 </script>
 </body>
 </html>
