@@ -1,218 +1,125 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX — End Game</title>
 <style>
-html,body{
-  height:100%;margin:0;background:#05081A;color:#fff;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
-  overflow:hidden;
-}
-#wrap{position:relative;height:100%;display:grid;place-items:center}
-
-/* 🔳 正方形舞台 */
-.stage{
-  position:relative;
-  width:min(92vmin,720px);
-  aspect-ratio:1/1;
-  border-radius:16px;
-  background:#000;
-  box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.07);
-  overflow:hidden;
-}
-
-/* 🎥 影片鋪排 */
-#vid{width:100%;height:100%;object-fit:contain;background:#000;opacity:0;transition:opacity .6s ease}
-
-/* 🧾 頁面文字淡出動畫 */
-.fade-out{
-  opacity:0;
-  transition:opacity 1.2s ease-in-out;
-}
-
-/* 🌈 疊在影片上的資訊層 */
-.overlay{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
-  text-align:center;background:linear-gradient(transparent 60%, rgba(0,0,0,.65));
-  padding:24px 12px;
-  transition:opacity 1.2s ease-in-out;
-}
-h1{margin:.2em 0 .4em;font-weight:900;font-size:clamp(22px,6vw,40px)}
-.muted{color:#cbd5ff;margin:0 0 10px}
-
-/* 🔘 控制列 */
-.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.btn{
-  border:0;border-radius:12px;padding:12px 16px;
-  font-weight:900;color:#fff;cursor:pointer;
-  background:#1b2144;
-  box-shadow:0 10px 28px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.08);
-}
-
-/* 🟦 主按鈕樣式 */
-.btn.primary{
-  background:linear-gradient(135deg,#1b47ff,#2994ff);
-  box-shadow:0 10px 28px rgba(0,0,0,.25);
-  transition:all .25s ease;
-}
-.btn.primary:hover{
-  transform:scale(1.05);
-  box-shadow:0 14px 36px rgba(0,0,0,.35);
-}
-
-/* 🌌 副按鈕樣式 */
-.btn.ghost{
-  background:#101634;
-  color:#dce3ff;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 10px 25px rgba(0,0,0,.3);
-  position:relative;
-  overflow:hidden;
-}
-
-/* ✨ Replay 藍光閃爍效果 */
-.btn.ghost::after{
-  content:"";
-  position:absolute;inset:0;
-  border-radius:12px;
-  border:2px solid rgba(43,124,255,0);
-  box-shadow:0 0 12px rgba(43,124,255,0);
-  transition:all .25s ease;
-}
-.btn.ghost:hover::after{
-  border-color:rgba(43,124,255,.85);
-  box-shadow:0 0 16px rgba(43,124,255,.6),0 0 24px rgba(43,124,255,.4);
-}
-
-/* 🪙 圖標型按鈕 */
-.btn.icon{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  padding:10px 18px;
-  transition:all .25s ease;
-}
-.btn.icon img{
-  width:22px;height:22px;
-  object-fit:contain;
-  filter:drop-shadow(0 2px 5px rgba(0,0,0,.35));
-}
-
-/* 📦 結算面板（淡入半透明） */
-#panel{
-  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  min-width:min(92vw,520px);
-  padding:18px 16px 20px;border-radius:16px;text-align:center;
-  background:rgba(10,12,34,.7);
-  box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08);
-  backdrop-filter:blur(8px);
-  opacity:0;display:none;
-  transition:opacity 1.2s ease-in-out;
-}
-#panel.show{display:block;opacity:1;}
-#panel h2{margin:.2em 0 .3em;font-size:clamp(22px,6vw,36px)}
-#panel p{margin:0 0 14px;color:#c8d2ff}
-
-/* 📱 手機直版：底部靠下 */
-@media (orientation:portrait){
-  .overlay{
-    justify-content:flex-end;
-    background:linear-gradient(transparent 40%,rgba(0,0,0,.65));
-    padding-bottom:5vh;
+  html,body{height:100%;margin:0;background:#05081A;color:#fff;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;overflow:hidden}
+  #wrap{position:relative;height:100%;display:grid;place-items:center}
+  
+  .stage{
+    position: relative;
+    width: min(92vmin, 720px);
+    aspect-ratio: 1 / 1;
+    border-radius: 16px;
+    background: #000;
+    box-shadow: 0 22px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.07);
+    overflow: hidden;
   }
-  .overlay h1,.overlay p{margin-bottom:12px;}
-  .row{margin-bottom:env(safe-area-inset-bottom,10px);}
-}
+
+  /* 影片鋪排（不裁切） */
+  #vid{width:100%;height:100%;object-fit:contain;background:#000;opacity:0;transition:opacity .6s ease}
+  /* 疊在影片上的底部資訊層 */
+  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+    text-align:center;background:linear-gradient(transparent 60%, rgba(0,0,0,.65)); padding:24px 12px}
+  h1{margin:.2em 0 .4em; font-weight:900; font-size:clamp(22px,6vw,40px)}
+  .muted{color:#cbd5ff; margin:0 0 10px}
+
+  /* 控制列 */
+  .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .btn{border:0;border-radius:12px;padding:12px 16px;font-weight:900;color:#fff;cursor:pointer;
+       background:#1b2144; box-shadow:0 10px 28px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.08)}
+  .primary{background:#2b7cff}
+  .ghost{background:#101634}
+
+  /* 結算面板（影片播完才出現） */
+  #panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);min-width:min(92vw,520px);
+    padding:18px 16px 20px;border-radius:16px;text-align:center;background:rgba(10,12,34,.9);
+    box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08); backdrop-filter:blur(6px);
+    display:none}
+  #panel h2{margin:.2em 0 .3em; font-size:clamp(22px,6vw,36px)}
+  #panel p{margin:0 0 14px; color:#c8d2ff}
 </style>
 </head>
 <body>
 <div id="wrap">
   <div class="stage">
-    <video id="vid" playsinline webkit-playsinline preload="auto"
-      src="https://neoxcoin.github.io/neox-game/Endgameanimation%20.mp4"></video>
+   <video id="vid" playsinline webkit-playsinline muted preload="auto"
+    src="https://neoxcoin.github.io/neox-game/Endgameanimation%20.mp4"></video>
 
-    <!-- 📊 起始畫面 -->
-    <div class="overlay" id="ovr">
-      <h1>Victory!</h1>
-      <p class="muted" id="scoreText">Score: 0 · Best: 0</p>
-      <div class="row">
-        <button id="btnSound" class="btn">🔈 Play with sound</button>
-        <button id="btnPlay"  class="btn primary">▶ Play</button>
-        <button id="btnSkip"  class="btn ghost">⏭ Skip</button>
-      </div>
+  <!-- 播放中顯示：標題 + 聲音/開始/跳過 -->
+  <div class="overlay" id="ovr">
+    <h1>Victory!</h1>
+    <p class="muted" id="scoreText">Score: 0 · Best: 0</p>
+    <div class="row">
+      <button id="btnSound" class="btn">🔈 Play with sound</button>
+      <button id="btnPlay"  class="btn primary">▶ Play</button>
+      <button id="btnSkip"  class="btn ghost">⏭ Skip</button>
     </div>
+  </div>
 
-    <!-- 🏆 結算面板 -->
-    <div id="panel">
-      <h2>Great Job! 🎉</h2>
-      <p id="finalText">Score: 0 · Best: 0</p>
-      <div class="row">
-        <button class="btn ghost icon" id="btnReplay" title="Replay">
-          <img src="https://cdn-icons-png.flaticon.com/512/3917/3917588.png" alt="">
-          <span>Replay</span>
-        </button>
-        <button class="btn primary icon" id="btnHome" title="Home">
-          <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="NeoX Logo">
-          <span>Home</span>
-        </button>
-      </div>
+  <!-- 影片播完才顯示 -->
+  <div id="panel">
+    <h2>Great Job! 🎉</h2>
+    <p id="finalText">Score: 0 · Best: 0</p>
+    <div class="row">
+      <button class="btn ghost"  id="btnReplay">🔁 Replay</button>
+      <button class="btn primary" id="btnHome">🏠 Home</button>
     </div>
   </div>
 </div>
 
 <script>
-/* 分數處理 */
+/* ============ 讀取分數（Querystring 或 localStorage 備援） ============ */
 const url = new URL(location.href);
 const score = Number(url.searchParams.get('score') ?? localStorage.getItem('nx_last_score') ?? 0);
 const best  = Number(url.searchParams.get('best')  ?? localStorage.getItem('nx_best_all')   ?? 0);
+// 同步寫回，方便重新整理還在
 localStorage.setItem('nx_last_score', String(score));
 localStorage.setItem('nx_best_all', String(best));
 
+/* ============ UI refs ============ */
 const vid = document.getElementById('vid');
 const ovr = document.getElementById('ovr');
-const panel = document.getElementById('panel');
 const scoreText = document.getElementById('scoreText');
 const finalText = document.getElementById('finalText');
-const btnPlay = document.getElementById('btnPlay');
 const btnSound = document.getElementById('btnSound');
-const btnSkip = document.getElementById('btnSkip');
-const btnHome = document.getElementById('btnHome');
-const btnReplay = document.getElementById('btnReplay');
+const btnPlay  = document.getElementById('btnPlay');
+const btnSkip  = document.getElementById('btnSkip');
+const panel    = document.getElementById('panel');
+const btnHome  = document.getElementById('btnHome');
+const btnReplay= document.getElementById('btnReplay');
+
 scoreText.textContent = `Score: ${score} · Best: ${best}`;
 finalText.textContent = `Score: ${score} · Best: ${best}`;
 
-/* 自動播放（含背景音樂） */
-const bgm = new Audio("https://neoxcoin.github.io/neox-game/champions-victory-winner-background-music-414706.mp3");
-bgm.volume = 0.7;
+/* ============ 自動播放處理（行動裝置靜音啟播） ============ */
+function showVideo(){ vid.style.opacity = '1'; }
+async function tryPlayMuted(){ try{ await vid.play(); showVideo(); }catch(e){} }
+addEventListener('DOMContentLoaded', tryPlayMuted, {once:true});
+['touchstart','pointerdown','keydown','click'].forEach(evt=>{
+  window.addEventListener(evt, tryPlayMuted, {once:true, passive:true});
+});
 
-function showVideo(){ vid.style.opacity='1'; }
-async function tryPlay(){
-  try{ await vid.play(); showVideo(); bgm.play(); }catch(e){}
-}
-addEventListener('DOMContentLoaded', tryPlay, {once:true});
-['touchstart','click','keydown'].forEach(e=>window.addEventListener(e,tryPlay,{once:true,passive:true}));
+/* ============ 控制鍵 ============ */
+btnPlay.onclick = async ()=>{ try{ await vid.play(); showVideo(); }catch(e){} };
+btnSound.onclick = async ()=>{
+  try{ vid.muted = false; await vid.play(); btnSound.textContent = '🔊 Sound on'; btnSound.disabled = true; }catch(e){}
+};
+btnSkip.onclick = ()=> endFlow();
 
-/* 控制鍵 */
-btnPlay.onclick = tryPlay;
-btnSound.onclick = ()=>{bgm.play();bgm.muted=false;btnSound.textContent='🔊 Sound on';btnSound.disabled=true;};
-btnSkip.onclick = ()=>endFlow();
-
-/* 5 秒後淡出 Victory 區塊 */
-setTimeout(()=>ovr.classList.add('fade-out'),5000);
-
-/* 影片播完後顯示結算面板 */
+/* 影片播完 → 顯示面板 */
 vid.addEventListener('ended', endFlow);
 function endFlow(){
-  ovr.style.display='none';
-  panel.classList.add('show');
+  ovr.style.display = 'none';
+  panel.style.display = 'block';
 }
 
 /* 面板按鈕 */
-btnHome.onclick = ()=>location.href='index.html';
-btnReplay.onclick = ()=>location.href='v3.html#replay';
+btnHome.onclick   = ()=> location.href = 'index.html';
+btnReplay.onclick = ()=> location.href = 'v3.html#replay';
 </script>
 </body>
 </html>
