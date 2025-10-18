@@ -18,7 +18,7 @@
     overflow:hidden;
   }
   video{
-    width:100%;height:100%;object-fit:contain;background:#000;opacity:0;
+    width:100%;height:100%;object-fit:cover;background:#000;opacity:0;
     transition:opacity .8s ease;
   }
   .headline{
@@ -48,8 +48,11 @@
 <body>
 <div id="wrap">
   <div class="stage">
-    <video id="endVid" playsinline webkit-playsinline preload="auto"
+    <!-- 修正影片連結 -->
+    <video id="endVid" playsinline webkit-playsinline preload="auto" muted
       src="https://neoxcoin.github.io/neox-game/Endgameanimation%20.mp4"></video>
+
+    <!-- 使用你上傳的新音樂 -->
     <audio id="bgm" preload="auto"
       src="https://neoxcoin.github.io/neox-game/champions-victory-winner-background-music-414706.mp3"></audio>
 
@@ -88,20 +91,26 @@ finalText.textContent = `Score: ${score} · Best: ${best}`;
 async function startAll(){
   try{
     await video.play();
+    video.muted = false; // 確保影片聲音能播
     await bgm.play(); // 播放背景音樂
     video.style.opacity = '1';
-    // 淡出文字
     headline.classList.add('fade-out');
   }catch(e){
-    console.log("需要點擊互動才能播放音樂:", e);
+    console.log("⚠️ 自動播放失敗，需要互動才能啟動:", e);
   }
 }
-addEventListener("DOMContentLoaded", startAll);
+window.addEventListener("load", startAll);
 
 // 播放完影片後顯示面板
 video.addEventListener("ended", ()=>{
+  bgm.volume = 0.4; // 音樂輕輕淡出
+  const fadeOut = setInterval(()=>{
+    if(bgm.volume > 0.05) bgm.volume -= 0.02;
+    else { bgm.pause(); clearInterval(fadeOut); }
+  },150);
+
   panel.style.display = "block";
-  setTimeout(()=> panel.style.opacity = "1", 100);
+  setTimeout(()=> panel.style.opacity = "1", 200);
 });
 
 // 回主頁
