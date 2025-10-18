@@ -5,19 +5,28 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Catch — Level 3</title>
 <style>
-  html,body{height:100%;margin:0;background:#070a18;color:#fff;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;overflow:hidden}
-  #wrap{position:relative;height:100%;display:grid;place-items:center}
+  html,body{
+    height:100%;margin:0;background:#000;color:#fff;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
+    overflow:hidden;
+  }
+  #wrap{position:relative;height:100%;display:grid;place-items:center;background:#000;}
 
+  /* ===== Canvas ===== */
   canvas{
     display:block;width:min(92vw,700px);aspect-ratio:9/16;height:auto;border-radius:16px;
-    background:transparent;box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 1px rgba(255,255,255,.06);
+    background:transparent;
+    box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 1px rgba(255,255,255,.06);
     touch-action:none;position:relative;z-index:2;
   }
 
-  .bgvid{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;z-index:0;pointer-events:none}
-  .bgvid video{width:min(92vw,700px);aspect-ratio:9/16;height:auto;object-fit:contain;border-radius:16px;background:#000}
+  /* ===== Background video ===== */
+  .bgvid{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;z-index:0;pointer-events:none;background:#000;}
+  .bgvid video{
+    width:min(92vw,700px);aspect-ratio:9/16;height:auto;object-fit:contain;border-radius:16px;background:#000;
+  }
 
+  /* ===== HUD ===== */
   .hud{position:absolute;inset:0;z-index:5;pointer-events:none;display:grid;grid-template-rows:auto 1fr}
   .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:10px;padding:10px 14px;font-weight:800}
   .left{justify-self:start;pointer-events:auto}
@@ -29,16 +38,15 @@
     font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);cursor:pointer}
   .iconbtn img{width:22px;height:22px;object-fit:contain;display:block}
 
-  /* ✅ 結束面板 */
+  /* ===== Finish Panel (English) ===== */
   #finishPanel{
     position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
     min-width:clamp(240px,80%,520px);text-align:center;
     padding:24px 20px 26px;border-radius:18px;
-    background:rgba(10,12,34,.88);
+    background:rgba(10,12,34,.82);
     box-shadow:0 20px 60px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.08);
     backdrop-filter:blur(6px);
-    z-index:50;display:none;opacity:0;
-    transition:opacity 0.8s ease;
+    z-index:50;display:none;opacity:0;transition:opacity .8s ease;
   }
   #finishPanel.show{display:block;opacity:1;}
   #finishPanel h1{margin:10px 0 12px;font-size:clamp(22px,5vw,30px)}
@@ -48,12 +56,14 @@
     box-shadow:0 8px 22px rgba(43,124,255,.35);}
   .panelBtn.alt{background:#1f2648;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
 
-  /* ===== 開場動畫層 ===== */
+  /* ===== Opening Animation ===== */
   #opening{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;
-    background:rgba(0,0,0,.9);z-index:20;overflow:hidden;transition:opacity .35s ease;}
-  #opening video{width:auto;height:100%;max-width:100%;max-height:100%;object-fit:contain;border-radius:16px;background:#000;
-    box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 1px rgba(255,255,255,.06);}
-  #soundToggle{position:absolute;top:20px;right:20px;background:rgba(10,12,34,.8);color:#fff;border:0;border-radius:12px;
+    background:#000;z-index:20;overflow:hidden;transition:opacity .35s ease;}
+  #opening video{
+    width:auto;height:100%;max-width:100%;max-height:100%;
+    object-fit:contain;border-radius:16px;background:#000;
+  }
+  #soundToggle{position:absolute;top:20px;right:20px;background:rgba(10,12,34,.85);color:#fff;border:0;border-radius:12px;
     padding:8px 12px;font-weight:900;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.4);backdrop-filter:blur(6px);z-index:25;}
   #tapHint{position:absolute;bottom:8%;left:50%;transform:translateX(-50%);font-weight:900;background:rgba(10,12,34,.75);
     padding:8px 12px;border-radius:12px;backdrop-filter:blur(4px);display:none;}
@@ -61,7 +71,8 @@
 </head>
 <body>
 <div id="wrap">
-  <!-- 開場動畫 -->
+
+  <!-- Opening animation -->
   <section id="opening" aria-label="Opening animation">
     <video id="openingVideo" playsinline webkit-playsinline muted preload="auto"
       src="https://neoxcoin.github.io/neox-game/TreasureL3Opening.mp4"></video>
@@ -69,16 +80,16 @@
     <div id="tapHint">Tap to play ▶</div>
   </section>
 
-  <!-- 背景動畫 -->
+  <!-- Background animation -->
   <div class="bgvid" aria-hidden="true">
     <video id="bgVideo" muted loop playsinline webkit-playsinline preload="auto"
-      src="https://neoxcoin.github.io/neox-game/v3_animation_BG.mp4"
-      poster="https://neoxcoin.github.io/neox-game/V3background.png.PNG"></video>
+      src="https://neoxcoin.github.io/neox-game/V3backgroundAnimation.mp4"
+      poster="https://neoxcoin.github.io/neox-game/V3backgroundAnimation.mp4"></video>
   </div>
 
   <canvas id="game" width="450" height="800" aria-label="NeoX Catch Level 3"></canvas>
 
-  <!-- 分數列 -->
+  <!-- HUD -->
   <div class="hud">
     <div class="topbar">
       <div class="left">
@@ -92,32 +103,29 @@
     </div>
   </div>
 
-  <!-- ✅ 遊戲完成面板 -->
+  <!-- Finish panel -->
   <div id="finishPanel">
-    <h1>🎉 遊戲完成！</h1>
-    <p id="summaryText">你的得分會保存，可選擇重玩或完成。</p>
+    <h1>🎉 Game Complete!</h1>
+    <p id="summaryText">Your score is saved. Choose Replay or Finish.</p>
     <button id="btnReplayFinal" class="panelBtn alt">🔁 Replay</button>
-    <button id="btnFinish" class="panelBtn">✅ 完成</button>
+    <button id="btnFinish" class="panelBtn">✅ Finish</button>
   </div>
 </div>
 
 <script>
-/* === 主要邏輯 === */
+/* ===== Core logic ===== */
 const TOTAL_TIME_SEC=180;
 const canvas=document.getElementById('game');
 const ctx=canvas.getContext('2d');
-function fitHiDPI(){const dpr=Math.max(1,Math.min(devicePixelRatio||1,2));const w=canvas.clientWidth,h=canvas.clientHeight;
-if(canvas.width!==Math.round(w*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+function fitHiDPI(){
+  const dpr=Math.max(1,Math.min(devicePixelRatio||1,2));
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  if(canvas.width!==Math.round(w*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);}
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
 fitHiDPI();addEventListener('resize',fitHiDPI);
 
-const State={PLAY:0,PAUSE:1,FINISH:2};let state=State.PLAY;
-let score=Number(localStorage.getItem('nx_carry')||0),best=Number(localStorage.getItem('neox_catch_best_l3')||0),timeLeft=TOTAL_TIME_SEC;
-const scoreBadge=document.getElementById('scoreBadge'),timeBadge=document.getElementById('timeBadge');
-function fmt(t){const m=Math.floor(t/60),s=Math.floor(t%60);return`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
-function updateHUD(){scoreBadge.textContent=`Score: ${score}`;timeBadge.textContent=`Time: ${fmt(timeLeft)}`;}
-updateHUD();
-
-/* === 開場動畫 === */
+/* ===== Opening animation ===== */
 const opening=document.getElementById('opening'),video=document.getElementById('openingVideo'),tapHint=document.getElementById('tapHint');
 const soundBtn=document.getElementById('soundToggle');let soundOn=false;
 soundBtn.onclick=()=>{soundOn=!soundOn;video.muted=!soundOn;soundBtn.textContent=soundOn?'🔊 Sound Off':'🔈 Sound On';video.play().catch(()=>{});};
@@ -125,50 +133,77 @@ soundBtn.onclick=()=>{soundOn=!soundOn;video.muted=!soundOn;soundBtn.textContent
 video.onended=()=>{opening.style.opacity='0';setTimeout(()=>opening.remove(),400);};
 video.play().catch(()=>tapHint.style.display='block');
 
-/* === 玩家與掉落物 === */
+/* ===== Background ===== */
+document.getElementById('bgVideo').play().catch(()=>{});
+
+/* ===== Game data ===== */
+let state='play',score=Number(localStorage.getItem('nx_carry')||0),best=Number(localStorage.getItem('neox_catch_best_l3')||0),timeLeft=TOTAL_TIME_SEC;
+const scoreBadge=document.getElementById('scoreBadge'),timeBadge=document.getElementById('timeBadge');
+function fmt(t){const m=Math.floor(t/60),s=Math.floor(t%60);return`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
+function updateHUD(){scoreBadge.textContent=`Score: ${score}`;timeBadge.textContent=`Time: ${fmt(timeLeft)}`;}
+updateHUD();
+
+/* ===== Assets ===== */
 const chestImg=new Image();chestImg.src="https://neoxcoin.github.io/neox-game/treasure-box.png";
 const coinImg=new Image();coinImg.src="https://neoxcoin.github.io/neox-game/neox-emoji-128.png";
+
+/* ===== Player & objects ===== */
 const chest={x:canvas.clientWidth/2,y:700,w:220,h:160,vx:0,speed:6};
 const items=[];let spawn=0;
-function newItem(){const t=Math.random()<.7?'coin':'ruby';items.push({t,x:Math.random()*canvas.clientWidth,y:-20,vy:3+Math.random()*2});}
+function newItem(){const t='coin';items.push({t,x:Math.random()*canvas.clientWidth,y:-20,vy:3+Math.random()*2});}
 
-/* === 控制 === */
-const keys=new Set();onkeydown=e=>{if(e.key==='ArrowLeft')keys.add('L');if(e.key==='ArrowRight')keys.add('R');};
+/* ===== Controls (mobile + desktop) ===== */
+const keys=new Set();
+onkeydown=e=>{if(e.key==='ArrowLeft')keys.add('L');if(e.key==='ArrowRight')keys.add('R');};
 onkeyup=e=>{if(e.key==='ArrowLeft')keys.delete('L');if(e.key==='ArrowRight')keys.delete('R');};
-document.getElementById('btnPause').onclick=()=>{state=state===State.PAUSE?State.PLAY:State.PAUSE;};
 
-/* === Loop === */
+/* Touch drag */
+let pointer=null;
+canvas.addEventListener('pointerdown',e=>{pointer=e.pointerId;});
+canvas.addEventListener('pointermove',e=>{
+  if(e.pointerId!==pointer)return;
+  const rect=canvas.getBoundingClientRect();const cx=(e.clientX-rect.left)/rect.width*canvas.clientWidth;
+  chest.x=cx;
+});
+canvas.addEventListener('pointerup',()=>pointer=null);
+
+/* Pause button */
+document.getElementById('btnPause').onclick=()=>{state=(state==='pause')?'play':'pause';};
+
+/* ===== Main loop ===== */
 let last=performance.now();
 function loop(now){
   requestAnimationFrame(loop);
   const dt=Math.min(50,now-last)/16.6;last=now;
-  if(state===State.PLAY){timeLeft=Math.max(0,timeLeft-dt/60);if(timeLeft===0){showFinish();}}
-  ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  if(state==='play'){
+    timeLeft=Math.max(0,timeLeft-dt/60);
+    if(timeLeft===0){showFinish();}
+  }
 
-  // 玩家移動
-  if(state===State.PLAY){
-    if(keys.has('L'))chest.vx=-chest.speed;else if(keys.has('R'))chest.vx=chest.speed;else chest.vx*=.9;
-    chest.x=Math.max(chest.w/2,Math.min(canvas.clientWidth-chest.w/2,chest.x+chest.vx));
+  ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  if(state==='play'){
+    if(keys.has('L'))chest.x-=chest.speed;
+    if(keys.has('R'))chest.x+=chest.speed;
+    chest.x=Math.max(chest.w/2,Math.min(canvas.clientWidth-chest.w/2,chest.x));
     spawn-=dt;if(spawn<=0){newItem();spawn=40+Math.random()*40;}
     for(const it of items){it.y+=it.vy*dt;}
-    for(let i=items.length-1;i>=0;i--){const it=items[i];
+    for(let i=items.length-1;i>=0;i--){
+      const it=items[i];
       if(Math.abs(it.x-chest.x)<60&&Math.abs(it.y-(chest.y-80))<40){score+=10;items.splice(i,1);}
       else if(it.y>850)items.splice(i,1);
     }
     updateHUD();
   }
-
-  // 畫寶箱與物件
   ctx.drawImage(chestImg,chest.x-chest.w/2,chest.y-chest.h,chest.w,chest.h);
   for(const it of items){ctx.drawImage(coinImg,it.x-16,it.y-16,32,32);}
 }
 requestAnimationFrame(loop);
 
-/* === 結束面板 === */
+/* ===== Finish Panel ===== */
 const finishPanel=document.getElementById('finishPanel');
 function showFinish(){
-  if(state===State.FINISH)return;
-  state=State.FINISH;
+  if(state==='end')return;
+  state='end';
   localStorage.setItem('nx_carry',String(score));
   localStorage.setItem('nx_last_score',String(score));
   finishPanel.classList.add('show');
