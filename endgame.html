@@ -91,7 +91,6 @@
 const url = new URL(location.href);
 const score = Number(url.searchParams.get('score') ?? localStorage.getItem('nx_last_score') ?? 0);
 const best  = Number(url.searchParams.get('best')  ?? localStorage.getItem('nx_best_all')   ?? 0);
-// 同步寫回，方便重新整理還在
 localStorage.setItem('nx_last_score', String(score));
 localStorage.setItem('nx_best_all', String(best));
 
@@ -110,7 +109,7 @@ const btnReplay= document.getElementById('btnReplay');
 scoreText.textContent = `Score: ${score} · Best: ${best}`;
 finalText.textContent = `Score: ${score} · Best: ${best}`;
 
-/* ============ 自動播放處理（行動裝置靜音啟播） ============ */
+/* ============ 自動播放處理 ============ */
 function showVideo(){ vid.style.opacity = '1'; }
 async function tryPlayMuted(){ try{ await vid.play(); showVideo(); }catch(e){} }
 addEventListener('DOMContentLoaded', tryPlayMuted, {once:true});
@@ -119,29 +118,44 @@ addEventListener('DOMContentLoaded', tryPlayMuted, {once:true});
 });
 
 /* ============ 控制鍵 ============ */
+// ▶️ Play
 btnPlay.onclick = async ()=>{
   try{
     await vid.play();
     showVideo();
-
-    // 播放時讓文字淡出
+    // 文字淡出
     document.querySelector('.overlay h1').classList.add('fade-out');
     document.querySelector('.overlay p').classList.add('fade-out');
   }catch(e){}
 };
+
+// 🔊 Sound on
 btnSound.onclick = async ()=>{
-  try{ vid.muted = false; await vid.play(); btnSound.textContent = '🔊 Sound on'; btnSound.disabled = true; }catch(e){}
+  try{
+    vid.muted = false;
+    await vid.play();
+    btnSound.textContent = '🔊 Sound on';
+    btnSound.disabled = true;
+    // 同樣淡出文字
+    document.querySelector('.overlay h1').classList.add('fade-out');
+    document.querySelector('.overlay p').classList.add('fade-out');
+  }catch(e){}
 };
+
+// ⏭ Skip
 btnSkip.onclick = ()=> endFlow();
 
-/* 影片播完 → 顯示面板 */
+/* ============ 播完影片後顯示結算面板（淡入） ============ */
 vid.addEventListener('ended', endFlow);
 function endFlow(){
   ovr.style.display = 'none';
   panel.style.display = 'block';
+  panel.style.opacity = '0';
+  panel.style.transition = 'opacity 1.5s ease';
+  setTimeout(()=>{ panel.style.opacity = '1'; }, 100);
 }
 
-/* 面板按鈕 */
+/* ============ 面板按鈕 ============ */
 btnHome.onclick   = ()=> location.href = 'index.html';
 btnReplay.onclick = ()=> location.href = 'v3.html#replay';
 </script>
