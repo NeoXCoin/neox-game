@@ -119,7 +119,16 @@ addEventListener('DOMContentLoaded', tryPlayMuted, {once:true});
 });
 
 /* ============ 控制鍵 ============ */
-btnPlay.onclick = async ()=>{ try{ await vid.play(); showVideo(); }catch(e){} };
+btnPlay.onclick = async ()=>{
+  try{
+    await vid.play();
+    showVideo();
+
+    // 播放時讓文字淡出
+    document.querySelector('.overlay h1').classList.add('fade-out');
+    document.querySelector('.overlay p').classList.add('fade-out');
+  }catch(e){}
+};
 btnSound.onclick = async ()=>{
   try{ vid.muted = false; await vid.play(); btnSound.textContent = '🔊 Sound on'; btnSound.disabled = true; }catch(e){}
 };
