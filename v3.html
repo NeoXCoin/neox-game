@@ -39,20 +39,20 @@
   }
 
   /* HUD 永遠固定在上方 */
-  .hud{position:absolute;inset:0;z-index:5;pointer-events:none;display:block}
-  .topbar{
-    position:absolute;top:8px;left:0;right:0;
-    display:flex;justify-content:space-between;align-items:center;
-    padding:10px 14px;pointer-events:none;z-index:15;
-  }
-  .left,.right{pointer-events:auto}
-  .center{pointer-events:none;text-align:center}
-  .badge{
-    display:inline-block;margin:0 6px;padding:8px 12px;border-radius:12px;
-    background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
-    -webkit-backdrop-filter:blur(3px);
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);font-weight:900
-  }
+  /* 置頂 HUD 排版 */
+.hud{position:absolute; inset:0; z-index:5; pointer-events:none; display:grid; grid-template-rows:auto 1fr}
+
+.topbar{
+  display:grid;
+  grid-template-columns: auto 1fr auto; /* 左／中／右 3 欄 */
+  align-items:center;                    /* 垂直置中 —— 重點 */
+  gap:10px;
+  padding:10px 14px;
+  pointer-events:none;                   /* 只有內層按鈕可點 */
+}
+.topbar .left,
+.topbar .right{ pointer-events:auto; align-self:center; } /* 🔑 同 Score 對齊 */
+.topbar .center{ justify-self:center; text-align:center; pointer-events:none; }
   .iconbtn{
     display:inline-flex;align-items:center;gap:8px;background:#1b2144;border:0;color:#fff;border-radius:14px;
     padding:10px 14px;font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);cursor:pointer
