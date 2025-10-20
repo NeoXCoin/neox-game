@@ -328,3 +328,79 @@ function drawItems(){
     ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.rot);
     let img=it.type==='coin'?coinImg:it.type==='ruby'?rubyImg:sappImg;
     let ready=it.type
+        let ready=it.type==='coin'?coinReady:it.type==='ruby'?rubyReady:sappReady;
+    if(ready){ctx.drawImage(img,-r,-r,size,size);}
+    else{ctx.fillStyle='#ccc';ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();}
+    ctx.restore();
+  }
+}
+
+/* ====== 開場動畫流程 ====== */
+bgVideo.play().catch(()=>{});
+let opActuallyPlayed=false,opCanEnd=false;
+function showOpVideo(){opVideo.style.opacity='1';}
+async function tryPlayOpMuted(){
+  try{await opVideo.play();showOpVideo();}
+  catch{opCtrl.style.visibility='visible';}
+}
+addEventListener('DOMContentLoaded',tryPlayOpMuted,{once:true});
+['pointerdown','touchstart','click','keydown'].forEach(evt=>{
+  window.addEventListener(evt,tryPlayOpMuted,{once:true,passive:true});
+});
+opVideo.addEventListener('timeupdate',()=>{if(opVideo.currentTime>0.25)opActuallyPlayed=true;});
+setTimeout(()=>{opCanEnd=true;},600);
+opVideo.addEventListener('ended',()=>endOpening(false));
+
+function endOpening(userSkip){
+  if(!opCanEnd&&!userSkip)return;
+  if(!opActuallyPlayed&&!userSkip){opCtrl.style.visibility='visible';return;}
+  opening.classList.add('fadeout');
+  setTimeout(()=>{opening.style.display='none';start();},600);
+}
+
+/* ====== 開場按鈕 5 秒淡出 + Sound 切換 ====== */
+const overlay=opCtrl;
+let overlayTimer=null;
+
+function updateSoundBtn(){
+  opSoundBtn.textContent=opVideo.muted?'🔈 Sound on':'🔇 Sound off';
+}
+
+function showOverlayTemp(ms=5000){
+  clearTimeout(overlayTimer);
+  overlay.style.visibility='visible';
+  overlay.classList.remove('hide');
+  overlayTimer=setTimeout(()=>overlay.classList.add('hide'),ms);
+}
+
+opVideo.addEventListener('play',()=>{
+  showOpVideo();
+  updateSoundBtn();
+  showOverlayTemp(5000);
+});
+
+['pointerdown','touchstart','mousemove','keydown','click'].forEach(evt=>{
+  window.addEventListener(evt,()=>showOverlayTemp(5000),{passive:true});
+});
+
+opPlayBtn.onclick=async()=>{
+  try{await opVideo.play();}catch{}
+  showOverlayTemp(5000);
+};
+
+opSoundBtn.onclick=async()=>{
+  try{
+    opVideo.muted=!opVideo.muted;
+    await opVideo.play();
+    updateSoundBtn();
+    showOverlayTemp(5000);
+  }catch{}
+};
+
+opSkipBtn.onclick=()=>{
+  overlay.classList.add('hide');
+  endOpening(true);
+};
+</script>
+</body>
+</html>
