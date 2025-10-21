@@ -57,6 +57,13 @@
     .topbar .left{position:absolute;left:10px;top:10px}
     .topbar .right{position:absolute;right:10px;top:10px}
     .topbar .center{position:absolute;left:50%;top:10px;transform:translateX(-50%);pointer-events:none}
+    
+    /* 修正橫向版背景 Zoom-out 比例 */
+  @media (orientation: landscape) {
+    .bgvid video {
+    object-fit: cover;     /* 改為 cover，鋪滿整個舞台 */
+    transform: scale(0.82); /* 縮細 82%，可視頂部完整 */
+    transform-origin: center center;}
   }
 </style>
 </head>
