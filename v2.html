@@ -8,7 +8,7 @@
 <script>
 // 若未看過 opening2.html，先跳過去
 if (!sessionStorage.getItem("seenOpening2")) {
-    sessionStorage.setItem("seenOpening2", "true");
+  sessionStorage.setItem("seenOpening2", "true");
   window.location.href = "opening2.html";
 }
 </script>
@@ -26,26 +26,26 @@ if (!sessionStorage.getItem("seenOpening2")) {
   .panel{z-index:10;pointer-events:auto;}
 
   /* 手機等窄屏：強制左右貼邊＋中間絕對置中 */
-@media (max-width: 600px) {
-  .topbar{ position:relative; display:block; padding:10px 14px; }
-  .topbar .left  { position:absolute; left:10px;  top:10px; }
-  .topbar .right { position:absolute; right:10px; top:10px; }
-  .topbar .center{
-    position:absolute; left:50%; top:10px; transform:translateX(-50%);
-    text-align:center; pointer-events:none;
+  @media (max-width: 600px) {
+    .topbar{ position:relative; display:block; padding:10px 14px; }
+    .topbar .left  { position:absolute; left:10px;  top:10px; }
+    .topbar .right { position:absolute; right:10px; top:10px; }
+    .topbar .center{
+      position:absolute; left:50%; top:10px; transform:translateX(-50%);
+      text-align:center; pointer-events:none;
+    }
   }
-}
 
-/* 其他情況：grid，確保欄位唔被撐歪 */
-.topbar{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
-  align-items:start; gap:10px; padding:10px 14px; font-weight:800;
-  justify-items:center; /* 中間列自然置中 */
-}
+  /* 其他情況：grid，確保欄位唔被撐歪 */
+  .topbar{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+    align-items:start; gap:10px; padding:10px 14px; font-weight:800;
+    justify-items:center; /* 中間列自然置中 */
+  }
   .left{  justify-self:start; pointer-events:auto; }
   .center{justify-self:center; text-align:center; pointer-events:none; }
-  .right{ justify-self:end;   pointer-events:auto; }
+  .right{ justify-self=end;   pointer-events:auto; }
   .badge{display:inline-block;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
          box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900;}
 
@@ -103,10 +103,10 @@ if (!sessionStorage.getItem("seenOpening2")) {
 const TOTAL_TIME_SEC = 180;
 
 /* ====== Assets ====== */
-const BG_URL     = "https://neoxcoin.github.io/neox-game/v2blackground.png";          // 新背景
-const CHEST_URL  = "https://neoxcoin.github.io/neox-game/treasure-box.png";        // 寶箱
-const COIN_URL   = "https://neoxcoin.github.io/neox-game/NeoXCoinBack.png";          // 一般 coin（背面）
-const SPEC_URL   = "https://neoxcoin.github.io/neox-game/NXCspecialCoin.png";               // 特別 coin（正面）
+const BG_URL     = "https://neoxcoin.github.io/neox-game/v2blackground.png";
+const CHEST_URL  = "https://neoxcoin.github.io/neox-game/treasure-box.png";
+const COIN_URL   = "https://neoxcoin.github.io/neox-game/NeoXCoinBack.png";
+const SPEC_URL   = "https://neoxcoin.github.io/neox-game/NXCspecialCoin.png";
 
 /* ====== Canvas (HiDPI) ====== */
 const canvas = document.getElementById('game');
@@ -164,9 +164,15 @@ addEventListener('resize', placeChest);
 addEventListener('orientationchange', placeChest);
 
 /* ====== Score & Timer ====== */
-let carry = Number(localStorage.getItem('nx_carry')||0);
-let score = carry;  // 把上一關累積至本關
+// 只在進入本關時讀一次，作為 Replay 的起始點
+const startCarry = Number(localStorage.getItem('nx_carry') || 0);
+
+// 遊戲中使用的分數（Replay 會回到 startCarry）
+let score = startCarry;
+
+// 本關最佳
 let best  = Number(localStorage.getItem('neox_catch_best_l2')||0);
+
 let timeLeft = TOTAL_TIME_SEC;
 
 function fmt(t){ const m=Math.floor(t/60), s=Math.floor(t%60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
@@ -186,25 +192,12 @@ function beep(f,d=.1){ if(!audioCtx) return; const n=audioCtx.currentTime,o=audi
 const SFX={star(){beep(880,.08); setTimeout(()=>beep(1320,.08),40)}, win(){[660,880,990,1320].forEach((f,i)=>setTimeout(()=>beep(f,.14),90*i))}};
 
 /* ====== Buttons ====== */
-const btnHome       = document.getElementById('btnHome');
-const btnNextLevel  = document.getElementById('btnNextLevel');
-const btnReplay     = document.getElementById('btnReplay');
-const btnPause      = document.getElementById('btnPause');
+document.getElementById('btnHome').onclick = ()=>{window.location.href='index.html';};
+document.getElementById('btnReplay').onclick=()=>{restart();};
+const btnPause=document.getElementById('btnPause'); btnPause.onclick=()=>togglePause();
+// 去 Level 3：先到 opening3.html
+document.getElementById('btnNextLevel').onclick=()=>{ gotoOpening3(); };
 
-btnHome.onclick      = ()=>{ window.location.href = 'index.html'; };
-btnReplay.onclick    = ()=>{ restart(); };
-btnPause.onclick     = ()=>{ togglePause(); };
-btnNextLevel.onclick = ()=>{ gotoOpening3(); }; // ⬅️ 改成去 opening3.html
-
-// 🔹 新增這個 function：在跳轉前儲存分數
-function gotoOpening3(){
-  const s = Math.floor(score);
-  const b = Math.floor(Math.max(best, s));
-  localStorage.setItem('nx_last_score', String(s));  // 當前分數
-  localStorage.setItem('nx_carry',      String(s));  // 兼容舊 key
-  localStorage.setItem('nx_best_all',   String(b));  // 全域最佳分
-  window.location.href = 'opening3.html';            // 跳去 opening3.html
-}
 /* ====== Input ====== */
 const keys=new Set();
 addEventListener('keydown',e=>{
@@ -251,8 +244,9 @@ function spawnCoins(dt){
 
 /* ====== Flow ====== */
 function start(){
-  // 直接開始
-  state=State.PLAYING; panelWin.classList.add('hidden'); btnPause.textContent='⏸ Pause';
+  state=State.PLAYING;
+  panelWin.classList.add('hidden');
+  btnPause.textContent='⏸ Pause';
   refreshHUD();
 }
 function togglePause(forcePause){
@@ -260,37 +254,33 @@ function togglePause(forcePause){
   else if(state===State.PAUSED){ state=State.PLAYING; btnPause.textContent='⏸ Pause'; }
 }
 function restart(){
-  // 🔄 重玩：由「本關起始分」重新開始，不改動 localStorage
+  // 🔄 重玩：用「本關起始分」重新開始，不改 localStorage
   score = startCarry;
   timeLeft = TOTAL_TIME_SEC;
-  coins.length = 0; spawnTimer = 0;
-  chest.x = canvas.clientWidth/2; chest.vx = 0; placeChest();
-
-  state = State.PLAYING;
-  panelWin.classList.add('hidden');
-  btnPause.textContent = '⏸ Pause';
-  refreshHUD();
+  coins.length=0; spawnTimer=0;
+  chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
+  state=State.PLAYING; panelWin.classList.add('hidden');
+  btnPause.textContent='⏸ Pause'; refreshHUD();
 }
 function finish(reasonText){
-  state = State.WIN;
-  best  = Math.max(best, Math.floor(score));
-
-  // 儲存本關最佳
+  state=State.WIN;
+  best=Math.max(best,Math.floor(score));
   localStorage.setItem('neox_catch_best_l2', String(best));
 
-  // ✅ 把分數存起來，讓 opening3.html / v3.html 都能取用
+  // ✅ 真正完成時先把分數傳到下一關使用
   const s = Math.floor(score);
   localStorage.setItem('nx_last_score', String(s));
-  localStorage.setItem('nx_carry',      String(s));
+  localStorage.setItem('nx_carry',      String(s)); // 只在結算時更新
   localStorage.setItem('nx_best_all',   String(best));
 
-  winTitle.textContent = reasonText || "Time’s up ⏱️";
+  winTitle.textContent=reasonText||"Time’s up ⏱️";
   refreshHUD();
   panelWin.classList.remove('hidden');
   SFX.win();
-
-  // （可選）自動 1 秒後跳去 opening3.html：
-  // setTimeout(gotoOpening3, 1000);
+}
+function gotoOpening3(){
+  // 這裡唔需要再 set 分數；finish() 已處理
+  window.location.href = 'opening3.html';
 }
 
 /* ====== Loop ====== */
@@ -355,7 +345,7 @@ function drawChest(){
 }
 function drawCoins(){
   for(const c of coins){
-    // ✨ 兩種 coin 同一尺寸（較細，貼近 v1）
+    // 兩種 coin 同一尺寸
     const size = 2.2 * c.r;
     const r = size/2;
 
