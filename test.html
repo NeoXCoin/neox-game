@@ -9,40 +9,31 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;overflow:hidden}
   #wrap{position:relative;height:100%;display:grid;place-items:center}
 
-  /* 舞台：9:16 畫面（影片在下層，canvas 在上層） */
-  .stage{position:relative;width:min(92vw,700px);aspect-ratio:9/16;border-radius:16px;
-    box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 1px rgba(255,255,255,.06);overflow:hidden}
-
-  /* 背景影片層（不裁切，等比） */
-  .bgvid{position:absolute;inset:0;z-index:0;display:grid;place-items:center;pointer-events:none}
-  .bgvid video{width:100%;height:100%;object-fit:contain;object-position:center center;background:#000}
-
-  /* Canvas 疊上影片 */
-  canvas{position:absolute;inset:0;z-index:2;display:block;width:100%;height:100%;
-    background:transparent;border-radius:16px;touch-action:none}
-
-  /* HUD 置頂 */
-  .hud{position:absolute;inset:0;z-index:5;pointer-events:none;display:grid;grid-template-rows:auto 1fr}
-  .topbar{
-    display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
-    align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+  /* 直向 9:16 舞台：影片在下、canvas 疊在上 */
+  canvas{
+    display:block;width:min(92vw,700px);aspect-ratio:9/16;height:auto;border-radius:16px;
+    background:transparent; box-shadow:0 22px 60px rgba(0,0,0,.45), inset 0 0 1px rgba(255,255,255,.06);
+    touch-action:none; position:relative; z-index:2;
   }
+  .bgvid{position:absolute;inset:0;display:grid;place-items:center;z-index:0;pointer-events:none}
+  .bgvid video{width:min(92vw,700px);aspect-ratio:9/16;height:auto;object-fit:contain;border-radius:16px;background:#000}
+
+  /* HUD */
+  .hud{position:absolute;inset:0;z-index:5;pointer-events:none;display:grid;grid-template-rows:auto 1fr}
+  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:10px;padding:10px 14px;font-weight:800}
   .left{justify-self:start;pointer-events:auto}
   .center{justify-self:center;text-align:center;pointer-events:none}
   .right{justify-self:end;pointer-events:auto}
-
   .badge{display:inline-block;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900}
   .iconbtn{display:inline-flex;align-items:center;gap:8px;background:#1b2144;border:0;color:#fff;border-radius:14px;padding:10px 14px;
     font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);cursor:pointer}
   .iconbtn img{width:22px;height:22px;object-fit:contain;display:block}
 
-  /* 結算面板 */
-  .panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.98);
-    pointer-events:auto;min-width:clamp(240px,80%,520px);text-align:center;padding:18px 16px 20px;border-radius:16px;
-    background:rgba(10,12,34,.82);box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08);
-    backdrop-filter:blur(6px);z-index:15;opacity:0;transition:opacity .4s ease, transform .4s ease}
-  .panel.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  /* 面板 */
+  .panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:auto;min-width:clamp(240px,80%,520px);
+    text-align:center;padding:18px 16px 20px;border-radius:16px;background:rgba(10,12,34,.88);
+    box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08);backdrop-filter:blur(4px);z-index:15}
   .panel h1{margin:8px 0 10px;font-size:clamp(22px,5.2vw,30px)}
   .panel p{margin:0 0 14px;color:#c8d2ff;font-size:14px;line-height:1.55}
   .row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
@@ -51,20 +42,12 @@
   .btn.alt{background:#1f2648;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
   .hidden{display:none !important}
 
-  /* 手機窄屏：避免擠壓走位 */
+  /* 手機窄屏：topbar 絕對布局防擠壓 */
   @media (max-width:600px){
     .topbar{position:relative;display:block;padding:10px 14px}
     .topbar .left{position:absolute;left:10px;top:10px}
     .topbar .right{position:absolute;right:10px;top:10px}
     .topbar .center{position:absolute;left:50%;top:10px;transform:translateX(-50%);pointer-events:none}
-    
-    /* 修正橫向版背景 Zoom-out 比例 */
-  @media (orientation: landscape) {
-    .bgvid video {
-    object-fit: cover;     /* 改為 cover，鋪滿整個舞台 */
-    transform: scale(0.72); /* 縮細 82%，可視頂部完整 */
-    transform-origin: center center;
-    }
   }
 </style>
 </head>
