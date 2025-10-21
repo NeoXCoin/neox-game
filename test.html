@@ -396,7 +396,12 @@ function drawItems(){
 }
 
 /* ===== Misc ===== */
-document.getElementById('btnHome').addEventListener('click',()=>location.href='index.html');
+document.getElementById('btnHome').addEventListener('click', ()=>location.href='index.html');
+
+// 🔹 新增：Ending 按鈕 → 返回主頁
+document.getElementById('btnEnding').addEventListener('click', ()=>{
+  window.location.href = 'index.html';
+});
 </script>
 </body>
 </html>
