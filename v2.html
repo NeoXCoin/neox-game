@@ -186,11 +186,25 @@ function beep(f,d=.1){ if(!audioCtx) return; const n=audioCtx.currentTime,o=audi
 const SFX={star(){beep(880,.08); setTimeout(()=>beep(1320,.08),40)}, win(){[660,880,990,1320].forEach((f,i)=>setTimeout(()=>beep(f,.14),90*i))}};
 
 /* ====== Buttons ====== */
-document.getElementById('btnHome').onclick = ()=>{window.location.href='index.html';};
-document.getElementById('btnNextLevel').onclick=()=>{window.location.href='v3.html#continue';};
-document.getElementById('btnReplay').onclick=()=>{restart();};
-const btnPause=document.getElementById('btnPause'); btnPause.onclick=()=>togglePause();
+const btnHome       = document.getElementById('btnHome');
+const btnNextLevel  = document.getElementById('btnNextLevel');
+const btnReplay     = document.getElementById('btnReplay');
+const btnPause      = document.getElementById('btnPause');
 
+btnHome.onclick      = ()=>{ window.location.href = 'index.html'; };
+btnReplay.onclick    = ()=>{ restart(); };
+btnPause.onclick     = ()=>{ togglePause(); };
+btnNextLevel.onclick = ()=>{ gotoOpening3(); }; // ⬅️ 改成去 opening3.html
+
+// 🔹 新增這個 function：在跳轉前儲存分數
+function gotoOpening3(){
+  const s = Math.floor(score);
+  const b = Math.floor(Math.max(best, s));
+  localStorage.setItem('nx_last_score', String(s));  // 當前分數
+  localStorage.setItem('nx_carry',      String(s));  // 兼容舊 key
+  localStorage.setItem('nx_best_all',   String(b));  // 全域最佳分
+  window.location.href = 'opening3.html';            // 跳去 opening3.html
+}
 /* ====== Input ====== */
 const keys=new Set();
 addEventListener('keydown',e=>{
@@ -252,12 +266,25 @@ function restart(){
   state=State.PLAYING; panelWin.classList.add('hidden'); btnPause.textContent='⏸ Pause'; refreshHUD();
 }
 function finish(reasonText){
-  state=State.WIN;
-  best=Math.max(best,Math.floor(score));
+  state = State.WIN;
+  best  = Math.max(best, Math.floor(score));
+
+  // 儲存本關最佳
   localStorage.setItem('neox_catch_best_l2', String(best));
-  localStorage.setItem('nx_carry', String(Math.floor(score))); // 傳去 v3
-  winTitle.textContent=reasonText||"Time’s up ⏱️";
-  refreshHUD(); panelWin.classList.remove('hidden'); SFX.win();
+
+  // ✅ 把分數存起來，讓 opening3.html / v3.html 都能取用
+  const s = Math.floor(score);
+  localStorage.setItem('nx_last_score', String(s));
+  localStorage.setItem('nx_carry',      String(s));
+  localStorage.setItem('nx_best_all',   String(best));
+
+  winTitle.textContent = reasonText || "Time’s up ⏱️";
+  refreshHUD();
+  panelWin.classList.remove('hidden');
+  SFX.win();
+
+  // （可選）自動 1 秒後跳去 opening3.html：
+  // setTimeout(gotoOpening3, 1000);
 }
 
 /* ====== Loop ====== */
