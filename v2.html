@@ -260,10 +260,16 @@ function togglePause(forcePause){
   else if(state===State.PAUSED){ state=State.PLAYING; btnPause.textContent='⏸ Pause'; }
 }
 function restart(){
-  // 重玩：保留之前 carry
-  score = carry;
-  timeLeft = TOTAL_TIME_SEC; coins.length=0; spawnTimer=0; chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
-  state=State.PLAYING; panelWin.classList.add('hidden'); btnPause.textContent='⏸ Pause'; refreshHUD();
+  // 🔄 重玩：由「本關起始分」重新開始，不改動 localStorage
+  score = startCarry;
+  timeLeft = TOTAL_TIME_SEC;
+  coins.length = 0; spawnTimer = 0;
+  chest.x = canvas.clientWidth/2; chest.vx = 0; placeChest();
+
+  state = State.PLAYING;
+  panelWin.classList.add('hidden');
+  btnPause.textContent = '⏸ Pause';
+  refreshHUD();
 }
 function finish(reasonText){
   state = State.WIN;
