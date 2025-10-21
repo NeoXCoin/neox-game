@@ -75,6 +75,7 @@
         <span class="badge" id="scoreBadge">Score: 0</span>
         <span class="badge" id="timeBadge">Time: 03:00</span>
         <span class="badge" id="bestBadge">Best: 0</span>
+        <span class="badge" id="missBadge">Miss: 0</span>
       </div>
       <div class="right">
         <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
@@ -99,6 +100,7 @@
 <script>
 /* ===== 基本設定 ===== */
 const TOTAL_TIME_SEC = 180;
+const MAX_MISSES = 30;   // 🎯 最多漏接30次就 Game Over
 
 /* ===== 圖片資產 ===== */
 const CHEST_URL = "https://neoxcoin.github.io/neox-game/treasure-box.png";
@@ -150,6 +152,7 @@ function refreshHUD(){
   scoreBadge.textContent=`Score: ${Math.floor(score)}`;
   bestBadge.textContent =`Best: ${Math.floor(best)}`;
   timeBadge.textContent =`Time: ${fmt(timeLeft)}`;
+  missBadge.textContent  = `Miss: ${missCount}`;
   finalScore.textContent=`Score: ${Math.floor(score)}`;
   bestScore.textContent =`Best: ${Math.floor(best)}`;
 }
@@ -341,9 +344,10 @@ function loop(now){
         items.splice(i,1);
         SFX.miss();
         refreshHUD();
-        if(missCount > catchCount){
-          return gameOver();
-        }
+
+      // 💀 若 miss 多於 catch 或者達 30 次 → Game Over
+      if (missCount > catchCount || missCount >= MAX_MISSES)
+        return gameOver();
       }
     }
   }
