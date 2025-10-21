@@ -208,7 +208,23 @@ addEventListener('pointermove',e=>{
 document.getElementById('btnHome').onclick = ()=>{window.location.href='index.html';};
 btnPause.onclick=()=>togglePause();
 btnReplay.onclick=()=>restart();
-btnEnding.onclick=()=>gotoEnd();
+function gotoEnd(){
+  // 先更新一次分數到 localStorage
+  const s = Math.floor(score);
+  best = Math.max(best, s);
+  localStorage.setItem('neox_catch_best_l3', String(best));
+  localStorage.setItem('nx_carry',          String(s));
+  localStorage.setItem('nx_last_score',     String(s));
+  localStorage.setItem('nx_best_all',       String(best));
+
+  if (state === State.WIN) {
+    // ✅ 爆機時（顯示 Congratulations）→ 去片尾動畫
+    window.location.href = `endgame.html?score=${s}&best=${best}`;
+  } else {
+    // ❌ Game Over（顯示 Game Over 💀）→ 回主頁
+    window.location.href = 'index.html';
+  }
+}
 
 /* ===== Simple SFX ===== */
 let audioCtx=null, masterGain=null;
@@ -398,10 +414,6 @@ function drawItems(){
 /* ===== Misc ===== */
 document.getElementById('btnHome').addEventListener('click', ()=>location.href='index.html');
 
-// 🔹 新增：Ending 按鈕 → 返回主頁
-document.getElementById('btnEnding').addEventListener('click', ()=>{
-  window.location.href = 'index.html';
-});
 </script>
 </body>
 </html>
