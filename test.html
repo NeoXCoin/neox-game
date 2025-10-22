@@ -205,9 +205,11 @@ addEventListener('pointermove',e=>{
 ['pointerup','pointercancel'].forEach(evt=>addEventListener(evt,()=>{pointerId=null; chest.vx=0;},{passive:false}));
 
 /* ===== Buttons ===== */
-document.getElementById('btnHome').onclick = ()=>{window.location.href='index.html';};
-btnPause.onclick=()=>togglePause();
-btnReplay.onclick=()=>restart();
+document.getElementById('btnHome').onclick = ()=>{ window.location.href = 'index.html'; };
+btnPause.onclick  = ()=>togglePause();
+btnReplay.onclick = ()=>restart();
+btnEnding.onclick = ()=>gotoEnd();      // ⬅️ 新增這行
+
 function gotoEnd(){
   // 先更新一次分數到 localStorage
   const s = Math.floor(score);
@@ -218,7 +220,7 @@ function gotoEnd(){
   localStorage.setItem('nx_best_all',       String(best));
 
   if (state === State.WIN) {
-    // ✅ 爆機時（顯示 Congratulations）→ 去片尾動畫
+    // ✅ 爆機（顯示 Congratulations）→ 去片尾動畫
     window.location.href = `endgame.html?score=${s}&best=${best}`;
   } else {
     // ❌ Game Over（顯示 Game Over 💀）→ 回主頁
@@ -410,10 +412,6 @@ function drawItems(){
     ctx.restore();
   }
 }
-
-/* ===== Misc ===== */
-document.getElementById('btnHome').addEventListener('click', ()=>location.href='index.html');
-
 </script>
 </body>
 </html>
