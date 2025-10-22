@@ -342,7 +342,7 @@ function finishWin(){
   // 過關先把分數帶去 v2
   localStorage.setItem('nx_carry', String(Math.floor(score)));
 
-  winTitle.textContent = "Time’s up ⏱️";
+  winTitle.textContent = "Stage Clear! 🎉";
   refreshHUD();
   btnNextLevel.classList.remove('hidden'); // 允許過關
   panelWin.classList.remove('hidden'); SFX.win();
