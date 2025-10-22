@@ -41,11 +41,11 @@ if (!sessionStorage.getItem("seenOpening2")) {
     display:grid;
     grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
     align-items:start; gap:10px; padding:10px 14px; font-weight:800;
-    justify-items:center; /* 中間列自然置中 */
+    justify-items:center;
   }
   .left{  justify-self:start; pointer-events:auto; }
   .center{justify-self:center; text-align:center; pointer-events:none; }
-  .right{ justify-self=end;   pointer-events:auto; }
+  .right{ justify-self:end;   pointer-events:auto; }
   .badge{display:inline-block;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
          box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900;}
 
@@ -80,16 +80,22 @@ if (!sessionStorage.getItem("seenOpening2")) {
         <span class="badge" id="scoreBadge">Score: 0</span>
         <span class="badge" id="timeBadge">Time: 03:00</span>
         <span class="badge" id="bestBadge">Best: 0</span>
+        <!-- ✅ 新增 Miss 標籤 -->
+        <span class="badge" id="missBadge">Miss: 0/30</span>
       </div>
       <div class="right">
         <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
       </div>
     </div>
 
-    <!-- 結算 -->
+    <!-- 結算（Win / Game Over 共用） -->
     <div id="panelWin" class="panel hidden">
       <h1 id="winTitle">Time’s up ⏱️</h1>
-      <p><span id="finalScore">Score: 0</span> · <span id="bestScore">Best: 0</span></p>
+      <p>
+        <span id="finalScore">Score: 0</span> ·
+        <span id="bestScore">Best: 0</span><br>
+        <small id="statInfo" style="opacity:.85"></small>
+      </p>
       <div class="row">
         <button id="btnNextLevel" class="btn">Go to Level 3 ▶</button>
         <button id="btnReplay" class="btn alt">Replay</button>
@@ -101,6 +107,7 @@ if (!sessionStorage.getItem("seenOpening2")) {
 <script>
 /* ====== Config ====== */
 const TOTAL_TIME_SEC = 180;
+const MAX_MISSES = 60;          // ← 想幾多次 Game Over 就改呢度
 
 /* ====== Assets ====== */
 const BG_URL     = "https://neoxcoin.github.io/neox-game/v2blackground.png";
@@ -122,23 +129,27 @@ function fitHiDPI(){
 fitHiDPI(); addEventListener('resize', fitHiDPI);
 
 /* ====== State ====== */
-const State={READY:0,PLAYING:1,PAUSED:2,WIN:3};
+const State={READY:0,PLAYING:1,PAUSED:2,WIN:3,OVER:4};
 let state=State.READY;
 
 /* ====== HUD refs ====== */
 const scoreBadge=document.getElementById('scoreBadge');
 const bestBadge =document.getElementById('bestBadge');
 const timeBadge =document.getElementById('timeBadge');
+const missBadge =document.getElementById('missBadge');
 const panelWin  =document.getElementById('panelWin');
 const finalScore=document.getElementById('finalScore');
 const bestScore =document.getElementById('bestScore');
 const winTitle  =document.getElementById('winTitle');
+const statInfo  =document.getElementById('statInfo');
+const btnNext   =document.getElementById('btnNextLevel');
+const btnReplay =document.getElementById('btnReplay');
 
 /* ====== Images ====== */
-const bgImg   = new Image(); bgImg.src=BG_URL;    let bgReady=false;   bgImg.onload   =()=>bgReady=true;
-const chestImg= new Image(); chestImg.src=CHEST_URL; let chestReady=false; chestImg.onload =()=>chestReady=true;
-const coinImg = new Image(); coinImg.src=COIN_URL;  let coinReady=false;  coinImg.onload  =()=>coinReady=true;
-const specImg = new Image(); specImg.src=SPEC_URL;  let specReady=false;  specImg.onload  =()=>specReady=true;
+const bgImg   = new Image(); bgImg.src=BG_URL;      let bgReady=false;   bgImg.onload   =()=>bgReady=true;
+const chestImg= new Image(); chestImg.src=CHEST_URL;let chestReady=false; chestImg.onload=()=>chestReady=true;
+const coinImg = new Image(); coinImg.src=COIN_URL;  let coinReady=false;  coinImg.onload =()=>coinReady=true;
+const specImg = new Image(); specImg.src=SPEC_URL;  let specReady=false;  specImg.onload =()=>specReady=true;
 
 /* ====== Player (Chest) ====== */
 const chest={x:225,y:0,w:220,h:160,speed:6.2,vx:0};
@@ -163,23 +174,19 @@ placeChest();
 addEventListener('resize', placeChest);
 addEventListener('orientationchange', placeChest);
 
-/* ====== Score & Timer ====== */
-// 只在進入本關時讀一次，作為 Replay 的起始點
+/* ====== Score / Timer / Miss ====== */
 const startCarry = Number(localStorage.getItem('nx_carry') || 0);
-
-// 遊戲中使用的分數（Replay 會回到 startCarry）
 let score = startCarry;
-
-// 本關最佳
 let best  = Number(localStorage.getItem('neox_catch_best_l2')||0);
-
 let timeLeft = TOTAL_TIME_SEC;
+let missCount = 0, caughtCount = 0;
 
 function fmt(t){ const m=Math.floor(t/60), s=Math.floor(t%60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
 function refreshHUD(){
   scoreBadge.textContent=`Score: ${Math.floor(score)}`;
   bestBadge.textContent =`Best: ${Math.floor(best)}`;
   timeBadge.textContent =`Time: ${fmt(timeLeft)}`;
+  missBadge.textContent =`Miss: ${missCount}/${MAX_MISSES}`;
   finalScore.textContent=`Score: ${Math.floor(score)}`;
   bestScore.textContent =`Best: ${Math.floor(best)}`;
 }
@@ -189,13 +196,12 @@ let audioCtx=null, masterGain=null;
 function ensureAudio(){ if(audioCtx) return; audioCtx=new (window.AudioContext||window.webkitAudioContext)(); masterGain=audioCtx.createGain(); masterGain.gain.value=.8; masterGain.connect(audioCtx.destination); }
 async function resumeAudio(){ try{ ensureAudio(); if(audioCtx.state!=='running') await audioCtx.resume(); }catch(e){} }
 function beep(f,d=.1){ if(!audioCtx) return; const n=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type='sine'; o.frequency.setValueAtTime(f,n); g.gain.setValueAtTime(.18,n); g.gain.exponentialRampToValueAtTime(0.0001,n+d*.9); o.connect(g).connect(masterGain); o.start(n); o.stop(n+d); }
-const SFX={star(){beep(880,.08); setTimeout(()=>beep(1320,.08),40)}, win(){[660,880,990,1320].forEach((f,i)=>setTimeout(()=>beep(f,.14),90*i))}};
+const SFX={ star(){beep(880,.08); setTimeout(()=>beep(1320,.08),40)}, miss(){beep(260,.1)}, win(){[660,880,990,1320].forEach((f,i)=>setTimeout(()=>beep(f,.14),90*i))}};
 
 /* ====== Buttons ====== */
 document.getElementById('btnHome').onclick = ()=>{window.location.href='index.html';};
 document.getElementById('btnReplay').onclick=()=>{restart();};
 const btnPause=document.getElementById('btnPause'); btnPause.onclick=()=>togglePause();
-// 去 Level 3：先到 opening3.html
 document.getElementById('btnNextLevel').onclick=()=>{ gotoOpening3(); };
 
 /* ====== Input ====== */
@@ -223,7 +229,7 @@ document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState
 
 /* ====== Coins ====== */
 const coins=[]; let spawnTimer=0;
-const EDGE=2;  // clamp 與 spawn 同步
+const EDGE=2;
 function spawnCoins(dt){
   spawnTimer-=dt;
   const maxOnScreen=5;
@@ -257,31 +263,48 @@ function restart(){
   // 🔄 重玩：用「本關起始分」重新開始，不改 localStorage
   score = startCarry;
   timeLeft = TOTAL_TIME_SEC;
+  missCount = 0; caughtCount = 0;
   coins.length=0; spawnTimer=0;
   chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
   state=State.PLAYING; panelWin.classList.add('hidden');
   btnPause.textContent='⏸ Pause'; refreshHUD();
 }
-function finish(reasonText){
+function finishWin(){
   state=State.WIN;
   best=Math.max(best,Math.floor(score));
   localStorage.setItem('neox_catch_best_l2', String(best));
 
-  // ✅ 真正完成時先把分數傳到下一關使用
+  // ✅ Win 才把分數交去下一關
   const s = Math.floor(score);
   localStorage.setItem('nx_last_score', String(s));
-  localStorage.setItem('nx_carry',      String(s)); // 只在結算時更新
+  localStorage.setItem('nx_carry',      String(s));
   localStorage.setItem('nx_best_all',   String(best));
 
-  winTitle.textContent=reasonText||"Time’s up ⏱️";
+  winTitle.textContent="Time’s up ⏱️";
+  statInfo.textContent = `Caught: ${caughtCount} · Missed: ${missCount}`;
   refreshHUD();
+
+  // Win 時顯示「去第 3 關」
+  btnNext.classList.remove('hidden');
   panelWin.classList.remove('hidden');
   SFX.win();
 }
-function gotoOpening3(){
-  // 這裡唔需要再 set 分數；finish() 已處理
-  window.location.href = 'opening3.html';
+function gameOver(){
+  state=State.OVER;
+  best=Math.max(best,Math.floor(score));
+  localStorage.setItem('neox_catch_best_l2', String(best));
+
+  winTitle.textContent="Game Over 💀";
+  statInfo.textContent = `Caught: ${caughtCount} · Missed: ${missCount}`;
+  refreshHUD();
+
+  // Game Over 只留 Replay（隱藏去第 3 關）
+  btnNext.classList.add('hidden');
+  panelWin.classList.remove('hidden');
 }
+
+/* 去 Level 3：先到 opening3.html */
+function gotoOpening3(){ window.location.href = 'opening3.html'; }
 
 /* ====== Loop ====== */
 let last=performance.now();
@@ -294,7 +317,7 @@ function loop(now){
 
   if(state===State.PLAYING){
     timeLeft=Math.max(0, timeLeft - dt/60);
-    if(timeLeft<=0){ refreshHUD(); return finish("Time’s up ⏱️"); }
+    if(timeLeft<=0){ return finishWin(); }
 
     chest.vx=(keys.has('L')?-chest.speed:0)+(keys.has('R')?chest.speed:0) || chest.vx*0.92;
     const margin=2;
@@ -311,13 +334,26 @@ function loop(now){
     const mouth = { cx:chest.x, cy:chest.y - chest.h*0.58, rx:baseRx + edgeBoost, ry:baseRy };
 
     for(let i=coins.length-1;i>=0;i--){
-      const c=coins[i]; const ex=(c.x-mouth.cx)/mouth.rx, ey=(c.y-mouth.cy)/mouth.ry;
+      const c=coins[i];
+      const ex=(c.x-mouth.cx)/mouth.rx, ey=(c.y-mouth.cy)/mouth.ry;
+
       if(ex*ex+ey*ey<=1){
+        // ✅ 抓到
         score += (c.special? 30 : 10);
-        coins.splice(i,1); SFX.star(); refreshHUD();
-      }else if(c.y>canvas.clientHeight+30){ coins.splice(i,1); }
+        coins.splice(i,1);
+        caughtCount++;
+        SFX.star();
+        refreshHUD();
+
+      }else if(c.y>canvas.clientHeight+30){
+        // ❌ 漏掉（v2 不扣分；只計 Miss）
+        coins.splice(i,1);
+        missCount++;
+        SFX.miss();
+        refreshHUD();
+        if(missCount>=MAX_MISSES){ return gameOver(); }
+      }
     }
-    refreshHUD();
   }
 }
 requestAnimationFrame(loop);
@@ -345,10 +381,7 @@ function drawChest(){
 }
 function drawCoins(){
   for(const c of coins){
-    // 兩種 coin 同一尺寸
-    const size = 2.2 * c.r;
-    const r = size/2;
-
+    const size = 2.2 * c.r, r = size/2;
     ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
 
     if(c.special){
