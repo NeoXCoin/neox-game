@@ -77,14 +77,14 @@
           <span class="badge" id="scoreBadge">Score: 0</span>
           <span class="badge" id="timeBadge">Time: 03:00</span>
           <span class="badge" id="bestBadge">Best: 0</span>
-          <span class="badge" id="missBadge">Miss: 0/30</span>
+          <span class="badge" id="missBadge">Miss: 0/99</span>
         </div>
         <div class="right">
           <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
         </div>
       </div>
 
-      <!-- 結算面板（Win / Game Over 共用） -->
+      <!-- 面板（Win / Game Over 共用） -->
       <div id="panelWin" class="panel hidden">
         <h1 id="winTitle">Congratulations! 🎉</h1>
         <p>
@@ -93,7 +93,8 @@
           <small id="statInfo" style="opacity:.85"></small>
         </p>
         <div class="row">
-          <button id="btnReplay" class="btn alt">Replay</button>
+          <button id="btnReplay"  class="btn alt">Replay</button>
+          <button id="btnEndgame" class="btn hidden">Game Finished</button>
         </div>
       </div>
     </div>
@@ -108,8 +109,8 @@ const MAX_MISSES = 99;
 
 /* ===== Asset URLs ===== */
 const CHEST_URL = "https://neoxcoin.github.io/neox-game/treasure-box.png";
-const COIN_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoinBack.png";       // 普通金幣
-const GOLD_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png";     // 特別金幣
+const COIN_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoinBack.png";   // 普通金幣
+const GOLD_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png"; // 特別金幣
 const RUBY_URL  = "https://neoxcoin.github.io/neox-game/ruby.png";
 const SAPP_URL  = "https://neoxcoin.github.io/neox-game/sapphire.png";
 
@@ -140,7 +141,7 @@ const bestScore   = document.getElementById('bestScore');
 const statInfo    = document.getElementById('statInfo');
 const btnPause    = document.getElementById('btnPause');
 const btnReplay   = document.getElementById('btnReplay');
-const btnEnding   = document.getElementById('btnEnding');
+const btnEndgame  = document.getElementById('btnEndgame');
 
 /* ===== Media ===== */
 const bgVideo = document.getElementById('bgVideo');
@@ -148,7 +149,7 @@ bgVideo.play().catch(()=>{});
 
 /* ===== Data (carry 由 v2 帶入) ===== */
 let carry = Number(localStorage.getItem('nx_carry') || 0);
-let score = carry;                                   // 起始分數 = v2 的結算
+let score = carry; // 起始分數 = v2 的結算
 let best  = Number(localStorage.getItem('neox_catch_best_l3')||0);
 let timeLeft = TOTAL_TIME_SEC;
 let missCount = 0;
@@ -207,24 +208,7 @@ addEventListener('pointermove',e=>{
 document.getElementById('btnHome').onclick = ()=>{ window.location.href = 'index.html'; };
 btnPause.onclick  = ()=>togglePause();
 btnReplay.onclick = ()=>restart();
-
-function gotoEnd(){
-  // 先更新一次分數到 localStorage
-  const s = Math.floor(score);
-  best = Math.max(best, s);
-  localStorage.setItem('neox_catch_best_l3', String(best));
-  localStorage.setItem('nx_carry',          String(s));
-  localStorage.setItem('nx_last_score',     String(s));
-  localStorage.setItem('nx_best_all',       String(best));
-
-  if (state === State.WIN) {
-    // ✅ 爆機（顯示 Congratulations）→ 去片尾動畫
-    window.location.href = `endgame.html?score=${s}&best=${best}`;
-  } else {
-    // ❌ Game Over（顯示 Game Over 💀）→ 回主頁
-    window.location.href = 'index.html';
-  }
-}
+btnEndgame.onclick = ()=>gotoEnd();
 
 /* ===== Simple SFX ===== */
 let audioCtx=null, masterGain=null;
@@ -289,11 +273,15 @@ function gotoEnd(){
 }
 
 /* 結算面板顯示/隱藏 */
-function showPanel(title){
-  winTitle.textContent = title;
+function showPanel(title, showEnd=false){
+  winTitle.textContent   = title;
   finalScore.textContent = `Score: ${Math.floor(score)}`;
   bestScore.textContent  = `Best: ${Math.floor(best)}`;
   statInfo.textContent   = `Caught: ${caughtCount} · Missed: ${missCount}`;
+
+  // 只有爆機時顯示「Game Finished」
+  btnEndgame.classList.toggle('hidden', !showEnd);
+
   panelWin.classList.remove('hidden');
   requestAnimationFrame(()=>panelWin.classList.add('show'));
 }
@@ -324,7 +312,9 @@ function loop(now){
     timeLeft=Math.max(0, timeLeft - dt/60);
     if(timeLeft<=0){
       best = Math.max(best, Math.floor(score));
-      refreshHUD(); SFX.win(); state=State.WIN; showPanel('Congratulations! 🎉'); return;
+      refreshHUD(); SFX.win(); state=State.WIN;
+      showPanel('Congratulations! 🎉', true);  // Win：顯示 Game Finished
+      return;
     }
 
     chest.vx=(keys.has('L')?-chest.speed:0)+(keys.has('R')?chest.speed:0) || chest.vx*0.92;
@@ -356,7 +346,8 @@ function loop(now){
         missCount++; SFX.miss(); refreshHUD();
         if(missCount>=MAX_MISSES){
           best = Math.max(best, Math.floor(score));
-          refreshHUD(); state=State.OVER; showPanel('Game Over 💀'); SFX.over();
+          refreshHUD(); state=State.OVER; SFX.over();
+          showPanel('Game Over 💀', false);   // Over：唔顯示 Game Finished
           return;
         }
       }
