@@ -423,7 +423,9 @@ function drawChest(){
 }
 function drawCoins(){
   for(const c of coins){
-    const size=c.r*3, r=size/2; ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
+    let size = c.r * 3;
+    if (window.innerWidth < 600) size *= 0.75; // 📱 手機縮細 25%
+    const r = size / 2; ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
     if(coinReady){ ctx.save(); ctx.shadowColor='rgba(255,223,128,.8)'; ctx.shadowBlur=18; ctx.drawImage(coinImg,-r,-r,size,size); ctx.restore(); }
     else{ const g=ctx.createRadialGradient(0,0,r*.2,0,0,r); g.addColorStop(0,'#fff6cc'); g.addColorStop(1,'#e3b23c'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); }
     ctx.restore();
