@@ -94,7 +94,6 @@
         </p>
         <div class="row">
           <button id="btnReplay" class="btn alt">Replay</button>
-          <button id="btnEndgame" class="btn hidden">Game Finished ▶</button>
         </div>
       </div>
     </div>
@@ -205,23 +204,28 @@ addEventListener('pointermove',e=>{
 ['pointerup','pointercancel'].forEach(evt=>addEventListener(evt,()=>{pointerId=null; chest.vx=0;},{passive:false}));
 
 /* ===== Buttons ===== */
-document.getElementById('btnHome').onclick = ()=>{ window.location.href='index.html'; };
-btnPause.onclick = ()=>togglePause();
+document.getElementById('btnHome').onclick = ()=>{ window.location.href = 'index.html'; };
+btnPause.onclick  = ()=>togglePause();
 btnReplay.onclick = ()=>restart();
 
-// ✅ 正確加上 const（已經有 const btnReplay 所以保持一致）
-const btnEndgame = document.getElementById('btnEndgame');
-btnEndgame.onclick = ()=>gotoEnd();
-
 function gotoEnd(){
+  // 先更新一次分數到 localStorage
   const s = Math.floor(score);
   best = Math.max(best, s);
   localStorage.setItem('neox_catch_best_l3', String(best));
   localStorage.setItem('nx_carry',          String(s));
   localStorage.setItem('nx_last_score',     String(s));
   localStorage.setItem('nx_best_all',       String(best));
-  window.location.href = `endgame.html?score=${s}&best=${best}`;
+
+  if (state === State.WIN) {
+    // ✅ 爆機（顯示 Congratulations）→ 去片尾動畫
+    window.location.href = `endgame.html?score=${s}&best=${best}`;
+  } else {
+    // ❌ Game Over（顯示 Game Over 💀）→ 回主頁
+    window.location.href = 'index.html';
+  }
 }
+
 /* ===== Simple SFX ===== */
 let audioCtx=null, masterGain=null;
 function ensureAudio(){ if(audioCtx) return; audioCtx=new (window.AudioContext||window.webkitAudioContext)(); masterGain=audioCtx.createGain(); masterGain.gain.value=.85; masterGain.connect(audioCtx.destination); }
@@ -285,15 +289,11 @@ function gotoEnd(){
 }
 
 /* 結算面板顯示/隱藏 */
-function showPanel(title, showEnd=false){
-  winTitle.textContent   = title;
+function showPanel(title){
+  winTitle.textContent = title;
   finalScore.textContent = `Score: ${Math.floor(score)}`;
   bestScore.textContent  = `Best: ${Math.floor(best)}`;
   statInfo.textContent   = `Caught: ${caughtCount} · Missed: ${missCount}`;
-
-  // 只在爆機時顯示「Game Finished」
-  btnEndgame.classList.toggle('hidden', !showEnd);
-
   panelWin.classList.remove('hidden');
   requestAnimationFrame(()=>panelWin.classList.add('show'));
 }
@@ -320,11 +320,11 @@ function loop(now){
 
   drawScene();
 
-     if(timeLeft<=0){
-       best = Math.max(best, Math.floor(score));
-       refreshHUD(); SFX.win(); state=State.WIN;
-       showPanel('Congratulations! 🎉', true);   // ← 顯示 Game Finished
-     return;
+  if(state===State.PLAYING){
+    timeLeft=Math.max(0, timeLeft - dt/60);
+    if(timeLeft<=0){
+      best = Math.max(best, Math.floor(score));
+      refreshHUD(); SFX.win(); state=State.WIN; showPanel('Congratulations! 🎉'); return;
     }
 
     chest.vx=(keys.has('L')?-chest.speed:0)+(keys.has('R')?chest.speed:0) || chest.vx*0.92;
@@ -356,8 +356,7 @@ function loop(now){
         missCount++; SFX.miss(); refreshHUD();
         if(missCount>=MAX_MISSES){
           best = Math.max(best, Math.floor(score));
-          refreshHUD(); state=State.OVER; SFX.over();
-          showPanel('Game Over 💀', false);         // ← 只顯示 Replay
+          refreshHUD(); state=State.OVER; showPanel('Game Over 💀'); SFX.over();
           return;
         }
       }
