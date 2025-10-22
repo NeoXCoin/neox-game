@@ -351,7 +351,7 @@ function finishOver(){
   state=State.OVER;
   best=Math.max(best,Math.floor(score));
   localStorage.setItem('neox_catch_best_l1', String(best));
-  winTitle.textContent = "Game Over 💀";
+  winTitle.textContent = "Game Over 🤭";
   refreshHUD();
   btnNextLevel.classList.add('hidden');    // Game Over 不允許過關
   panelWin.classList.remove('hidden'); SFX.over();
