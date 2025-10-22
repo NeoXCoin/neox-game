@@ -16,30 +16,25 @@
     border-radius:16px;background:#000;
     box-shadow:0 20px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
     touch-action:none;
-    position:relative; z-index:1; /* ⬅️ 讓面板可以蓋在上面 */
+    position:relative; z-index:1;
   }
 
-  /* HUD（在畫面上層，但預設不攔截滑動/拖拉） */
-  .hud{
-    position:absolute; inset:0; z-index:5; pointer-events:none;
-    display:grid; grid-template-rows:auto 1fr;
-  }
-  /* 手機等窄屏：強制左右貼邊＋中間絕對置中 */
+  /* HUD */
+  .hud{position:absolute; inset:0; z-index:5; pointer-events:none; display:grid; grid-template-rows:auto 1fr;}
   @media (max-width: 600px) {
-  .topbar{ position:relative; display:block; padding:10px 14px; }
-  .topbar .left  { position:absolute; left:10px;  top:10px; }
-  .topbar .right { position:absolute; right:10px; top:10px; }
-  .topbar .center{
-    position:absolute; left:50%; top:10px; transform:translateX(-50%);
-    text-align:center; pointer-events:none;
+    .topbar{ position:relative; display:block; padding:10px 14px; }
+    .topbar .left  { position:absolute; left:10px;  top:10px; }
+    .topbar .right { position:absolute; right:10px; top:10px; }
+    .topbar .center{
+      position:absolute; left:50%; top:10px; transform:translateX(-50%);
+      text-align:center; pointer-events:none;
     }
   }
-  /* 其他情況：grid，確保欄位唔被撐歪 */
   .topbar{
     display:grid;
     grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
     align-items:start; gap:10px; padding:10px 14px; font-weight:800;
-    justify-items:center; /* 中間列自然置中 */
+    justify-items:center;
   }
   .left{  justify-self:start; pointer-events:auto; }
   .center{justify-self:center; text-align:center; pointer-events:none; }
@@ -56,7 +51,7 @@
   }
   .iconbtn img{width:22px;height:22px;object-fit:contain;display:block;}
 
-  /* Panels（一定蓋在最上層而且可點） */
+  /* Panels */
   .panel{
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
     pointer-events:auto; z-index:10;
@@ -90,6 +85,7 @@
         <span class="badge" id="scoreBadge">Score: 0</span>
         <span class="badge" id="timeBadge">Time: 03:00</span>
         <span class="badge" id="bestBadge">Best: 0</span>
+        <span class="badge" id="missBadge">Miss: 0/30</span><!-- 新增 -->
       </div>
 
       <div class="right">
@@ -127,7 +123,8 @@
 <script>
 /* ====== Config ====== */
 const TOTAL_TIME_SEC = 180;   // 3 分鐘
-const EDGE = 2;               // 👈 全域邊距：左右都用同一數值（spawn/clamp/碰撞一致）
+const EDGE = 2;
+const MAX_MISSES = 60;        // 👈 v1 的 Game Over 門檻（不扣分，只計數）
 
 /* ====== Assets ====== */
 const BG_URL    = "https://neoxcoin.github.io/neox-game/forest%20background%20.PNG";
@@ -148,19 +145,22 @@ function fitHiDPI(){
 fitHiDPI(); addEventListener('resize', fitHiDPI);
 
 /* ====== State ====== */
-const State={READY:0,PLAYING:1,PAUSED:2,WIN:3};
+const State={READY:0,PLAYING:1,PAUSED:2,WIN:3,OVER:4};
 let state=State.READY;
 
 /* ====== HUD refs ====== */
-const scoreBadge=document.getElementById('scoreBadge');
-const bestBadge =document.getElementById('bestBadge');
-const timeBadge =document.getElementById('timeBadge');
-const panelStart=document.getElementById('panelStart');
-const panelPause=document.getElementById('panelPause');
-const panelWin  =document.getElementById('panelWin');
-const finalScore=document.getElementById('finalScore');
-const bestScore =document.getElementById('bestScore');
-const winTitle  =document.getElementById('winTitle');
+const scoreBadge   = document.getElementById('scoreBadge');
+const bestBadge    = document.getElementById('bestBadge');
+const timeBadge    = document.getElementById('timeBadge');
+const missBadge    = document.getElementById('missBadge');
+const panelStart   = document.getElementById('panelStart');
+const panelPause   = document.getElementById('panelPause');
+const panelWin     = document.getElementById('panelWin');
+const finalScore   = document.getElementById('finalScore');
+const bestScore    = document.getElementById('bestScore');
+const winTitle     = document.getElementById('winTitle');
+const btnNextLevel = document.getElementById('btnNextLevel');
+const btnReplay    = document.getElementById('btnReplay');
 
 /* ====== Images ====== */
 const bgImg=new Image(); bgImg.src=BG_URL; let bgReady=false; bgImg.onload=()=>bgReady=true;
@@ -179,15 +179,9 @@ function placeChest(){
   const H=visibleCanvasHeight();
   const land=matchMedia('(orientation: landscape)').matches;
   const bottomMargin = isMobile()? 18 : (land ? Math.max(24, H*0.05) : Math.max(24, H*0.035));
-
-  // 寶箱細少少
   const targetW = Math.min(canvas.clientWidth*(isMobile()?0.30:0.28), 280);
   chest.w = targetW; chest.h = Math.round(targetW*0.72);
-
-  // Y：貼近底部
   chest.y = Math.max(chest.h, H - bottomMargin);
-
-  // X：兩邊預留 EDGE，可接到邊緣 coin（用全域 EDGE）
   const cx = (chest.x || canvas.clientWidth/2);
   chest.x = Math.max(chest.w/2 + EDGE, Math.min(cx, canvas.clientWidth - chest.w/2 - EDGE));
 }
@@ -195,24 +189,24 @@ placeChest();
 addEventListener('resize', placeChest);
 addEventListener('orientationchange', placeChest);
 
-/* ====== Score & Timer ====== */
+/* ====== Score/Timer/Miss ====== */
 let score=0;
-let best = Number(localStorage.getItem('neox_catch_best')||0);
+let best = Number(localStorage.getItem('neox_catch_best_l1') ?? localStorage.getItem('neox_catch_best') ?? 0);
 let timeLeft = TOTAL_TIME_SEC;
+let missCount = 0;
 
 function fmt(t){ const m=Math.floor(t/60), s=Math.floor(t%60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
 function refreshHUD(){
   scoreBadge.textContent=`Score: ${Math.floor(score)}`;
   bestBadge.textContent =`Best: ${Math.floor(best)}`;
   timeBadge.textContent =`Time: ${fmt(timeLeft)}`;
+  missBadge.textContent =`Miss: ${missCount}/${MAX_MISSES}`;
   finalScore.textContent=`Score: ${Math.floor(score)}`;
   bestScore.textContent =`Best: ${Math.floor(best)}`;
 }
 
 /* ====== Audio (mobile-safe) ====== */
 let audioCtx = null, masterGain = null;
-let soundOn = true;
-
 function ensureAudio(){
   if (audioCtx) return;
   const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -221,8 +215,6 @@ function ensureAudio(){
   masterGain.gain.value = 0.8;
   masterGain.connect(audioCtx.destination);
 }
-
-// iOS 解鎖：極短 buffer
 function unlockAudioOnce(){
   ensureAudio();
   if (!audioCtx) return;
@@ -232,8 +224,6 @@ function unlockAudioOnce(){
   src.connect(masterGain);
   try { src.start(0); } catch(e){}
 }
-
-// 用戶手勢/回前景時叫呢個
 async function resumeAudio(){
   ensureAudio();
   try{
@@ -241,52 +231,40 @@ async function resumeAudio(){
     if (audioCtx.state === 'suspended') await audioCtx.resume();
   }catch(e){}
 }
-
-function beep({f=440,d=0.12,t='sine',g=0.2,decay=0.02,start=0}={}){
-  if (!soundOn) return;
+function beep(f=440,d=0.12,v=0.2,type='sine'){
   ensureAudio();
-  if (audioCtx.state !== 'running') unlockAudioOnce();
-  if (audioCtx.state !== 'running') return;
-
-  const n = audioCtx.currentTime + start;
-  const o = audioCtx.createOscillator();
-  const ga = audioCtx.createGain();
-  o.type = t;
-  o.frequency.setValueAtTime(f, n);
-  ga.gain.setValueAtTime(g, n);
-  ga.gain.exponentialRampToValueAtTime(0.0001, n + Math.max(0.01, d - decay));
-  o.connect(ga).connect(masterGain);
-  o.start(n); o.stop(n + d);
+  if (!audioCtx || audioCtx.state!=='running') return;
+  const n=audioCtx.currentTime, o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,n); g.gain.setValueAtTime(v,n);
+  g.gain.exponentialRampToValueAtTime(0.0001, n + d*0.9);
+  o.connect(g).connect(masterGain); o.start(n); o.stop(n+d);
 }
-
 const SFX = {
-  click(){ beep({f:700,d:.07,t:'triangle',g:.12}); },
-  star(){  beep({f:880,d:.08,g:.18}); beep({f:1320,d:.10,g:.12,start:.04}); },
-  level(){ [500,750,1100].forEach((f,i)=>beep({f,d:.10+.02*i,t:'square',g:.15,start:i*.08})); },
-  win(){   [660,880,990,1320].forEach((f,i)=>beep({f,d:.14,g:.14,start:i*.09})); }
+  click(){ beep(700,.07,.12,'triangle'); },
+  star(){  beep(880,.08,.18); setTimeout(()=>beep(1320,.10,.12),40); },
+  win(){   [660,880,990,1320].forEach((f,i)=>setTimeout(()=>beep(f,.14,.16),90*i)); },
+  miss(){  beep(260,.12,.18); },
+  over(){  [300,260,220].forEach((f,i)=>setTimeout(()=>beep(f,.18,.22),120*i)); }
 };
-
-// 多覆蓋幾個手勢事件（只需一次）
 ['pointerdown','touchend','mousedown','keydown','click'].forEach(evt=>{
   window.addEventListener(evt, resumeAudio, {once:true, passive:true});
 });
-// 回前景時自動恢復
-document.addEventListener('visibilitychange', ()=>{
-  if (document.visibilityState === 'visible') resumeAudio();
-});
+document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'visible') resumeAudio(); });
 
 /* ====== Buttons ====== */
 document.getElementById('btnHome').onclick = ()=>{window.location.href='index.html';};
 document.getElementById('btnStart').onclick=()=>{start();};
 document.getElementById('btnRestart2').onclick=()=>{restart();};
 document.getElementById('btnReplay').onclick=()=>{restart();};
-document.getElementById('btnNextLevel').onclick = () => {
-  localStorage.setItem('nx_carry', String(Math.floor(score))); // 🔹帶住分數去下一關
+document.getElementById('btnResume').onclick=()=>{togglePause(false);};
+const btnPause=document.getElementById('btnPause');
+btnPause.onclick=()=>togglePause();
+
+btnNextLevel.onclick = () => {
+  // 帶住分數去下一關（v2 會由 carry 開始）
+  localStorage.setItem('nx_carry', String(Math.floor(score)));
   window.location.href = 'v2.html#continue';
 };
-const btnPause=document.getElementById('btnPause');
-document.getElementById('btnResume').onclick = () => { togglePause(false); };
-btnPause.onclick=()=>togglePause();
 
 /* ====== Input ====== */
 const keys=new Set();
@@ -301,7 +279,11 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{ if(e.key==='ArrowLeft') keys.delete('L'); if(e.key==='ArrowRight') keys.delete('R'); });
 
 let pointerId=null;
-canvas.addEventListener('pointerdown',e=>{ const p=(e.changedTouches&&e.changedTouches[0])||e; pointerId=p.identifier??'mouse'; if(state===State.READY) start(); e.preventDefault(); },{passive:false});
+canvas.addEventListener('pointerdown',e=>{
+  const p=(e.changedTouches&&e.changedTouches[0])||e; pointerId=p.identifier??'mouse';
+  if(state===State.READY) start();
+  e.preventDefault();
+},{passive:false});
 addEventListener('pointermove',e=>{
   const p=(e.changedTouches && ([...e.changedTouches].find(t => (t.identifier ?? 'mouse')===pointerId)))||e; if(!p) return;
   const rect=canvas.getBoundingClientRect(); const cx=(p.clientX-rect.left)/rect.width*canvas.clientWidth;
@@ -309,7 +291,6 @@ addEventListener('pointermove',e=>{
 },{passive:false});
 addEventListener('pointerup',()=>{pointerId=null; chest.vx=0;},{passive:false});
 addEventListener('pointercancel',()=>{pointerId=null; chest.vx=0;},{passive:false});
-['pointerdown','keydown'].forEach(evt=>window.addEventListener(evt, resumeAudio, {once:true, passive:true}));
 addEventListener('blur',()=>{ if(state===State.PLAYING) togglePause(true); });
 
 /* ====== Coins ====== */
@@ -319,9 +300,7 @@ function spawnCoins(dt) {
   spawnTimer -= dt;
   const maxOnScreen = 5;
   if (spawnTimer <= 0 && coins.length < maxOnScreen) {
-    // ✅ 加入安全邊距，防止太貼左右邊
     const SAFE_MARGIN = chest.w * 0.12;
-
     coins.push({
       x: EDGE + SAFE_MARGIN + Math.random() * (canvas.clientWidth - 2 * (EDGE + SAFE_MARGIN)),
       y: -20, 
@@ -330,14 +309,14 @@ function spawnCoins(dt) {
       spin: Math.random() * Math.PI * 2,
       vspin: -0.12 + Math.random() * 0.24
     });
-
     spawnTimer = 0.55 + Math.random() * 0.55;
   }
 }
 
 /* ====== Flow ====== */
 function start(){
-  score=0; timeLeft=TOTAL_TIME_SEC; coins.length=0; spawnTimer=0;
+  score=0; timeLeft=TOTAL_TIME_SEC; missCount=0;
+  coins.length=0; spawnTimer=0;
   chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
   state=State.PLAYING; panelStart.classList.add('hidden'); panelPause.classList.add('hidden'); panelWin.classList.add('hidden');
   refreshHUD(); btnPause.textContent='⏸ Pause';
@@ -346,17 +325,36 @@ function togglePause(forcePause){
   if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; panelPause.classList.remove('hidden'); btnPause.textContent='⏵ Resume'; }
   else if(state===State.PAUSED){ state=State.PLAYING; panelPause.classList.add('hidden'); btnPause.textContent='⏸ Pause'; }
 }
-function restart(){ panelWin.classList.add('hidden'); panelPause.classList.add('hidden'); start(); }
-function finish(reasonText){
+function restart(){
+  // v1 由 0 分開始
+  panelWin.classList.add('hidden'); panelPause.classList.add('hidden');
+  start();
+}
+function finishWin(){
   state=State.WIN;
   best=Math.max(best,Math.floor(score));
-  localStorage.setItem('neox_catch_best', String(best));
+  localStorage.setItem('neox_catch_best_l1', String(best));
   localStorage.setItem('neox_last_score', String(Math.floor(score)));
   const prevTotal=Number(localStorage.getItem('neox_total_score')||0);
   localStorage.setItem('neox_total_score', String(prevTotal+Math.floor(score)));
   localStorage.setItem('neox_last_level','1');
-  winTitle.textContent = reasonText||"Time’s up ⏱️";
-  refreshHUD(); panelWin.classList.remove('hidden'); SFX.win();
+
+  // 過關先把分數帶去 v2
+  localStorage.setItem('nx_carry', String(Math.floor(score)));
+
+  winTitle.textContent = "Time’s up ⏱️";
+  refreshHUD();
+  btnNextLevel.classList.remove('hidden'); // 允許過關
+  panelWin.classList.remove('hidden'); SFX.win();
+}
+function finishOver(){
+  state=State.OVER;
+  best=Math.max(best,Math.floor(score));
+  localStorage.setItem('neox_catch_best_l1', String(best));
+  winTitle.textContent = "Game Over 💀";
+  refreshHUD();
+  btnNextLevel.classList.add('hidden');    // Game Over 不允許過關
+  panelWin.classList.remove('hidden'); SFX.over();
 }
 
 /* ====== Loop ====== */
@@ -371,7 +369,7 @@ function loop(now){
   if(state===State.PLAYING){
     // 計時
     timeLeft = Math.max(0, timeLeft - dt/60);
-    if(timeLeft<=0){ refreshHUD(); return finish("Time’s up ⏱️"); }
+    if(timeLeft<=0){ return finishWin(); }
 
     // 移動（與 spawn 同一 EDGE）
     chest.vx=(keys.has('L')?-chest.speed:0)+(keys.has('R')?chest.speed:0) || chest.vx*0.92;
@@ -383,18 +381,11 @@ function loop(now){
     for(const c of coins){ c.y+=c.vy*dt; c.spin+=c.vspin*dt; }
 
     // 橢圓口碰撞（貼邊補償）
-    const baseRx = chest.w * 0.36;   // 比 0.34 稍寬一點，手感更易吃到
-    const baseRy = chest.h * 0.18;   // 比 0.16 稍高一點
+    const baseRx = chest.w * 0.36, baseRy = chest.h * 0.18;
     const overhangL = Math.max(0, (chest.w/2 + EDGE) - chest.x);
     const overhangR = Math.max(0, (chest.w/2 + EDGE) - (canvas.clientWidth - chest.x));
-    const edgeBoost = overhangL + overhangR + 4; // +4 緩衝
-
-    const mouth = {
-      cx: chest.x,
-      cy: chest.y - chest.h * 0.58,
-      rx: baseRx + edgeBoost,
-      ry: baseRy
-    };
+    const edgeBoost = overhangL + overhangR + 4;
+    const mouth = { cx: chest.x, cy: chest.y - chest.h * 0.58, rx: baseRx + edgeBoost, ry: baseRy };
 
     for (let i=coins.length-1; i>=0; i--){
       const c = coins[i];
@@ -404,9 +395,10 @@ function loop(now){
         score += 10; coins.splice(i,1); SFX.star(); refreshHUD();
       } else if (c.y > canvas.clientHeight + 30){
         coins.splice(i,1);
+        missCount++; SFX.miss(); refreshHUD();
+        if(missCount>=MAX_MISSES){ return finishOver(); }
       }
     }
-    refreshHUD();
   }
 
   drawChest(); drawCoins();
