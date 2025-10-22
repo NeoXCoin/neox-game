@@ -94,7 +94,6 @@
         </p>
         <div class="row">
           <button id="btnReplay" class="btn alt">Replay</button>
-          <button id="btnEnding" class="btn">▶ Ending</button>
         </div>
       </div>
     </div>
@@ -208,7 +207,6 @@ addEventListener('pointermove',e=>{
 document.getElementById('btnHome').onclick = ()=>{ window.location.href = 'index.html'; };
 btnPause.onclick  = ()=>togglePause();
 btnReplay.onclick = ()=>restart();
-btnEnding.onclick = ()=>gotoEnd();      // ⬅️ 新增這行
 
 function gotoEnd(){
   // 先更新一次分數到 localStorage
