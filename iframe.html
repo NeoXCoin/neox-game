@@ -13,7 +13,7 @@
     box-shadow:0 10px 40px rgba(0,0,0,.45);
   }
   .scorebox,.top3{
-    position:fixed; left:50%; transform:translateX(-50%); 
+    position:fixed; left:50%; transform:translateX(-50%);
     background:rgba(255,255,255,.08); border-radius:10px; padding:8px 14px;
     font-weight:800; font-size:14px; box-shadow:0 4px 10px rgba(0,0,0,.3); backdrop-filter:blur(4px)
   }
@@ -37,12 +37,10 @@
 <div class="scorebox" id="scoreBox">Last Score: 0</div>
 
 <script>
-/* =============== Config =============== */
-/* 這兩個換成你的 Apps Script 部署網址與 Token */
-const API_URL   = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE'; // 例如 https://script.google.com/macros/s/XXXX/exec
-const API_TOKEN = 'neox_top3_token';
+/* ====== Cloud API ====== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbw44w4f5hpmKiledO1XfIKsGgfMgCksmcU2Qsst56l68CPLvQs4GvIg0PrItIuUqkOT2g/exec';
 
-/* =============== 本地最近分數顯示 =============== */
+/* ====== 本地最近分數盒 ====== */
 const APPKEY='neox_iframe_lastscore';
 const box=document.getElementById('scoreBox');
 const state=(()=>{try{return JSON.parse(localStorage.getItem(APPKEY)||'{}')}catch(_){return{}}})();
@@ -50,7 +48,7 @@ function save(){ localStorage.setItem(APPKEY, JSON.stringify(state)); }
 function showLast(){ box.textContent='Last Score: ' + (state.last||0); }
 showLast();
 
-/* =============== 玩家名稱（只問一次） =============== */
+/* ====== 玩家名稱（只問一次） ====== */
 function getPlayerName(){
   let name = localStorage.getItem('nx_player_name');
   if(!name){
@@ -61,47 +59,41 @@ function getPlayerName(){
   return name;
 }
 
-/* =============== 雲端 Top3 =============== */
+/* ====== 讀榜（你的 Apps Script：GET 回傳陣列） ====== */
 async function loadTop3(){
   const ul = document.getElementById('top3List');
   const hint = document.getElementById('top3Hint');
-  if(!API_URL.startsWith('http')){ ul.innerHTML='<li>Cloud not configured</li>'; hint.textContent=''; return;}
   try{
     const res = await fetch(API_URL);
-    const data = await res.json();
+    const data = await res.json();   // ← e.g. [{name,score,time}, ...]
     ul.innerHTML = '';
-    (data.top||[]).forEach(r=>{
+    (data||[]).slice(0,3).forEach((r)=>{
       const li = document.createElement('li');
       li.textContent = `${r.name} — ${r.score}`;
       ul.appendChild(li);
     });
-    if(!ul.children.length) ul.innerHTML = '<li>No records</li>';
+    if(!ul.children.length){ ul.innerHTML = '<li>No records</li>'; }
     hint.textContent = 'Updated: ' + new Date().toLocaleString();
   }catch(e){
     ul.innerHTML = '<li>Network error</li>'; hint.textContent='';
   }
 }
+
+/* ====== 上傳分數（你的 Apps Script：POST body = {name, score}） ====== */
 async function submitFinal(total){
-  if(!API_URL.startsWith('http')) return; // 未配置時略過
   try{
     await fetch(API_URL, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        token: API_TOKEN,
-        name: getPlayerName(),
-        score: Math.floor(total),
-        level: 999     // 999 = 打爆機
-      })
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name:getPlayerName(), score: Math.floor(total) })
     });
   }catch(e){}
 }
 
-/* =============== 子頁通訊協議（動畫/關卡/結尾） =============== 
-   子頁請在適當時機 postMessage：
-   - {type:'NX_GOTO', next:'v1.html'}                      → 在同一 iframe 內載入下一頁
-   - {type:'NX_CARRY', score:1234}                         → （可選）途中同步分數
-   - {type:'NX_GAME_CLEARED', total:9999, next:'endgame.html'} 
-                                                          → 爆機回報分數，並可選擇再跳頁
+/* ====== 子頁通訊（動畫/關卡/結尾） ======
+   - {type:'NX_GOTO', next:'v1.html'}
+   - {type:'NX_CARRY', score:1234}
+   - {type:'NX_GAME_CLEARED', total:9999, next:'endgame.html'}
 */
 const frame=document.getElementById('game');
 window.addEventListener('message', async (e)=>{
@@ -116,12 +108,12 @@ window.addEventListener('message', async (e)=>{
     state.last = Math.floor(m.total || m.score || 0);
     save(); showLast();
     await submitFinal(state.last);   // 上傳雲端
-    await loadTop3();                // 立即刷新排行榜
+    await loadTop3();                // 立即刷新榜
     if(m.next) frame.src = m.next;   // 例如 endgame.html
   }
 });
 
-/* 首次載入拉取排行榜 */
+/* 首次載入抓一次榜 */
 loadTop3();
 </script>
 </html>
