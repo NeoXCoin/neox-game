@@ -189,6 +189,9 @@ function refreshHUD(){
   missBadge.textContent =`Miss: ${missCount}/${MAX_MISSES}`;
   finalScore.textContent=`Score: ${Math.floor(score)}`;
   bestScore.textContent =`Best: ${Math.floor(best)}`;
+  
+    // 🛰️ 向 iframe 傳送即時分數
+  window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
 
 /* ====== Audio（簡版） ====== */
