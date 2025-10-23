@@ -4,20 +4,42 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Game (iframe)</title>
 <style>
-  body{margin:0;background:#0a0b1f;display:grid;place-items:center;height:100vh;
-       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;color:#fff}
-  iframe{width:min(92vw,440px);aspect-ratio:9/16;border:0;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
-  .scorebox{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
-            background:rgba(255,255,255,.08);border-radius:10px;padding:6px 14px;font-weight:800;font-size:14px;
-            box-shadow:0 4px 10px rgba(0,0,0,.3);backdrop-filter:blur(4px)}
+  body {
+    margin: 0;
+    background: #0a0b1f;
+    display: grid;
+    place-items: center;
+    height: 100vh;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
+    color: #fff;
+  }
+  iframe {
+    width: min(92vw, 440px);
+    aspect-ratio: 9/16;
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.45);
+  }
+  .scorebox {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,.08);
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-weight: 800;
+    font-size: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.3);
+    backdrop-filter: blur(4px);
+  }
 </style>
 
-<!-- 🎬 起點請改為你的第一個動畫頁 -->
+<!-- 🎮 起點：整個遊戲流程入口 -->
 <iframe id="game" src="index.html" allow="gamepad *"></iframe>
 <div class="scorebox" id="scoreBox">Last Score: 0</div>
 
 <script>
-/* —— 本地最近分數顯示 —— */
 const APPKEY='neox_iframe_v1_scores';
 const box=document.getElementById('scoreBox');
 const state=(()=>{try{return JSON.parse(localStorage.getItem(APPKEY)||'{}')}catch(_){return{}}})();
@@ -25,21 +47,15 @@ function save(){ localStorage.setItem(APPKEY, JSON.stringify(state)); }
 function showLast(){ box.textContent='Last Score: ' + (state.last||0); }
 showLast();
 
-/* —— 子頁導覽協議 —— 
-   子頁在適當時機 postMessage：  
-   1) {type:'NX_GOTO', next:'v1.html'}                → 父頁載入下一頁
-   2) {type:'NX_CARRY', score:1234}                   → （可選）途中顯示分數
-   3) {type:'NX_GAME_CLEARED', total:9999, next:'endgame.html'} 
-                                                     → 記錄分數，載入結束頁
-*/
+/* 子頁通訊協議 */
 const frame=document.getElementById('game');
-window.addEventListener('message', (e)=>{
+window.addEventListener('message',(e)=>{
   const m=e.data||{};
   if(m.type==='NX_GOTO' && m.next){ frame.src=m.next; }
   if(m.type==='NX_CARRY'){ box.textContent='Score: ' + Math.floor(m.score||0); }
   if(m.type==='NX_GAME_CLEARED'){
     state.last=Math.floor(m.total||m.score||0); save(); showLast();
-    if(m.next) frame.src=m.next; // 例如 endgame.html
+    if(m.next) frame.src=m.next;
   }
 });
 </script>
