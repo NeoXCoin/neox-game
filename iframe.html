@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>NeoX Game (iframe)</title>
+<style>
+  body {
+    margin: 0;
+    background: #0a0b1f;
+    display: grid;
+    place-items: center;
+    height: 100vh;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
+    color: #fff;
+  }
+  iframe {
+    width: min(92vw, 440px);
+    aspect-ratio: 9/16;
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.45);
+  }
+  .scorebox {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,.08);
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-weight: 800;
+    font-size: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.3);
+    backdrop-filter: blur(4px);
+  }
+</style>
+
+<!-- 🎮 遊戲主畫面 iframe -->
+<iframe id="game" src="v1.html" allow="gamepad *"></iframe>
+
+<!-- 🧾 下方顯示最近分數 -->
+<div class="scorebox" id="scoreBox">Last Score: 0</div>
+
+<script>
+/* 儲存遊戲分數紀錄 (localStorage) */
+const APPKEY = 'neox_iframe_v1_scores';
+const store = {
+  get(){ try{return JSON.parse(localStorage.getItem(APPKEY)||'{}')}catch(_){return{}} },
+  set(v){ localStorage.setItem(APPKEY, JSON.stringify(v)) }
+};
+const state = Object.assign({ last:0 }, store.get());
+
+const scoreBox = document.getElementById('scoreBox');
+function updateScoreBox(){
+  scoreBox.textContent = 'Last Score: ' + (state.last || 0);
+}
+updateScoreBox();
+
+/* 接收遊戲頁面 (v1.html) 傳過來嘅分數 */
+window.addEventListener('message', (e)=>{
+  const msg = e.data || {};
+  if (msg.type === 'NX_GAME_CLEARED') {
+    state.last = Math.floor(msg.total || msg.score || 0);
+    store.set(state);
+    updateScoreBox();
+  }
+  if (msg.type === 'NX_CARRY') {
+    // 可選：途中更新分數
+    scoreBox.textContent = 'Score: ' + Math.floor(msg.score || 0);
+  }
+});
+</script>
+</html>
