@@ -4,59 +4,124 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Game (iframe)</title>
 <style>
-  body {
-    margin: 0;
-    background: #0a0b1f;
-    display: grid;
-    place-items: center;
-    height: 100vh;
-    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
-    color: #fff;
+  body{
+    margin:0;background:#0a0b1f;color:#fff;height:100vh;display:grid;place-items:center;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
   }
-  iframe {
-    width: min(92vw, 440px);
-    aspect-ratio: 9/16;
-    border: 0;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,.45);
+  iframe{
+    width:min(92vw,440px); aspect-ratio:9/16; border:0; border-radius:16px;
+    box-shadow:0 10px 40px rgba(0,0,0,.45);
   }
-  .scorebox {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255,255,255,.08);
-    border-radius: 10px;
-    padding: 6px 14px;
-    font-weight: 800;
-    font-size: 14px;
-    box-shadow: 0 4px 10px rgba(0,0,0,.3);
-    backdrop-filter: blur(4px);
+  .scorebox,.top3{
+    position:fixed; left:50%; transform:translateX(-50%); 
+    background:rgba(255,255,255,.08); border-radius:10px; padding:8px 14px;
+    font-weight:800; font-size:14px; box-shadow:0 4px 10px rgba(0,0,0,.3); backdrop-filter:blur(4px)
   }
+  .top3{ top:10px; }
+  .scorebox{ bottom:10px; }
+  .top3 ol{ margin:6px 0 0; padding-left:18px }
+  .top3 small{ opacity:.85; font-weight:600 }
 </style>
 
-<!-- 🎮 起點：整個遊戲流程入口 -->
+<!-- 🎮 起點：沿用你原本的 index.html 全流程（動畫→v1→…→endgame） -->
 <iframe id="game" src="index.html" allow="gamepad *"></iframe>
+
+<!-- 🏆 全球 Top3（雲端） -->
+<div class="top3">
+  Top 3
+  <ol id="top3List"><li>Loading…</li></ol>
+  <small id="top3Hint"></small>
+</div>
+
+<!-- 📟 即時/最後分數顯示（本地） -->
 <div class="scorebox" id="scoreBox">Last Score: 0</div>
 
 <script>
-const APPKEY='neox_iframe_v1_scores';
+/* =============== Config =============== */
+/* 這兩個換成你的 Apps Script 部署網址與 Token */
+const API_URL   = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE'; // 例如 https://script.google.com/macros/s/XXXX/exec
+const API_TOKEN = 'neox_top3_token';
+
+/* =============== 本地最近分數顯示 =============== */
+const APPKEY='neox_iframe_lastscore';
 const box=document.getElementById('scoreBox');
 const state=(()=>{try{return JSON.parse(localStorage.getItem(APPKEY)||'{}')}catch(_){return{}}})();
 function save(){ localStorage.setItem(APPKEY, JSON.stringify(state)); }
 function showLast(){ box.textContent='Last Score: ' + (state.last||0); }
 showLast();
 
-/* 子頁通訊協議 */
+/* =============== 玩家名稱（只問一次） =============== */
+function getPlayerName(){
+  let name = localStorage.getItem('nx_player_name');
+  if(!name){
+    name = prompt('Enter your name for Top 3:','Player') || 'Player';
+    name = String(name).slice(0,20);
+    localStorage.setItem('nx_player_name', name);
+  }
+  return name;
+}
+
+/* =============== 雲端 Top3 =============== */
+async function loadTop3(){
+  const ul = document.getElementById('top3List');
+  const hint = document.getElementById('top3Hint');
+  if(!API_URL.startsWith('http')){ ul.innerHTML='<li>Cloud not configured</li>'; hint.textContent=''; return;}
+  try{
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    ul.innerHTML = '';
+    (data.top||[]).forEach(r=>{
+      const li = document.createElement('li');
+      li.textContent = `${r.name} — ${r.score}`;
+      ul.appendChild(li);
+    });
+    if(!ul.children.length) ul.innerHTML = '<li>No records</li>';
+    hint.textContent = 'Updated: ' + new Date().toLocaleString();
+  }catch(e){
+    ul.innerHTML = '<li>Network error</li>'; hint.textContent='';
+  }
+}
+async function submitFinal(total){
+  if(!API_URL.startsWith('http')) return; // 未配置時略過
+  try{
+    await fetch(API_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        token: API_TOKEN,
+        name: getPlayerName(),
+        score: Math.floor(total),
+        level: 999     // 999 = 打爆機
+      })
+    });
+  }catch(e){}
+}
+
+/* =============== 子頁通訊協議（動畫/關卡/結尾） =============== 
+   子頁請在適當時機 postMessage：
+   - {type:'NX_GOTO', next:'v1.html'}                      → 在同一 iframe 內載入下一頁
+   - {type:'NX_CARRY', score:1234}                         → （可選）途中同步分數
+   - {type:'NX_GAME_CLEARED', total:9999, next:'endgame.html'} 
+                                                          → 爆機回報分數，並可選擇再跳頁
+*/
 const frame=document.getElementById('game');
-window.addEventListener('message',(e)=>{
+window.addEventListener('message', async (e)=>{
   const m=e.data||{};
   if(m.type==='NX_GOTO' && m.next){ frame.src=m.next; }
-  if(m.type==='NX_CARRY'){ box.textContent='Score: ' + Math.floor(m.score||0); }
+
+  if(m.type==='NX_CARRY'){
+    box.textContent='Score: ' + Math.floor(m.score||0);
+  }
+
   if(m.type==='NX_GAME_CLEARED'){
-    state.last=Math.floor(m.total||m.score||0); save(); showLast();
-    if(m.next) frame.src=m.next;
+    state.last = Math.floor(m.total || m.score || 0);
+    save(); showLast();
+    await submitFinal(state.last);   // 上傳雲端
+    await loadTop3();                // 立即刷新排行榜
+    if(m.next) frame.src = m.next;   // 例如 endgame.html
   }
 });
+
+/* 首次載入拉取排行榜 */
+loadTop3();
 </script>
 </html>
