@@ -225,6 +225,19 @@ function endFlow(){
 /* 面板按鈕 */
 btnHome.onclick = ()=>location.href='https://neoxcoin.github.io/';
 btnReplay.onclick = ()=>location.href='v3.html#replay';
+
+/* 🏆 若在 iframe 中運行，回報最終分數給父頁 */
+if (window.top !== window.self) {
+  const total =
+    Number(localStorage.getItem('nx_carry') || 0) ||
+    Number(localStorage.getItem('nx_last_score') || 0) || 0;
+
+  window.parent.postMessage({
+    type: 'NX_GAME_CLEARED',
+    total: total,
+    next: ''
+  }, '*');
+}
 </script>
 </body>
 </html>
