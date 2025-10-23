@@ -381,7 +381,10 @@ function drawChest(){
 }
 function drawCoins(){
   for(const c of coins){
-    const size = 2.2 * c.r, r = size/2;
+    const normalScale  = 2.2;  // 金幣比例（維持原狀）
+    const specialScale = 2.2;  // 黑鑽比例（你想幾大就改呢個數）
+    const size = (c.special ? specialScale : normalScale) * c.r;
+    const r = size / 2;
     ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
 
     if(c.special){
