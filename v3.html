@@ -297,6 +297,9 @@ function refreshHUD(){
   bestBadge.textContent  = `Best: ${Math.floor(best)}`;
   timeBadge.textContent  = `Time: ${fmt(timeLeft)}`;
   missBadge.textContent  = `Miss: ${missCount}/${MAX_MISSES}`;
+  
+    // 🛰️ 向 iframe 傳送即時分數
+  window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
 
 /* ===== Loop ===== */
