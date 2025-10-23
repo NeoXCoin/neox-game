@@ -384,12 +384,19 @@ function drawChest(){
   else{ ctx.fillStyle='#1c274f'; ctx.fillRect(x-w/2, y-h, w, h); }
 }
 function drawCoins(){
-  for(const c of coins){
-    const normalScale  = 2.2;  // 金幣比例（維持原狀）
-    const specialScale = 2.5;  // 黑鑽比例（你想幾大就改呢個數）
+  const isDesktop = window.matchMedia('(pointer:fine)').matches &&
+                  !/Android|iPhone|iPad/i.test(navigator.userAgent);
+
+  // 💰 大小設定：desktop 可自行微調
+  const normalScale  = isDesktop ? 2.6 : 2.2;  // 金幣比例（桌面版略大）
+  const specialScale = isDesktop ? 2.8 : 2.4;  // 黑鑽比例（桌面版略大）
+
+  for (const c of coins) {
     const size = (c.special ? specialScale : normalScale) * c.r;
     const r = size / 2;
-    ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.spin);
 
     if(c.special){
       if(specReady){
