@@ -2,118 +2,111 @@
 <html lang="en">
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>NeoX Game (iframe)</title>
+<title>NeoX Game (iframe clean)</title>
 <style>
   body{
-    margin:0;background:#0a0b1f;color:#fff;height:100vh;display:grid;place-items:center;
+    margin:0; background:#0a0b1f; color:#fff; height:100vh;
+    display:grid; place-items:center;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
   }
+
   iframe{
-    width:min(92vw,440px); aspect-ratio:9/16; border:0; border-radius:16px;
+    width:min(92vw,440px);
+    aspect-ratio:9/16;
+    border:0; border-radius:16px;
     box-shadow:0 10px 40px rgba(0,0,0,.45);
   }
-  .scorebox,.top3{
-    position:fixed; left:50%; transform:translateX(-50%);
-    background:rgba(255,255,255,.08); border-radius:10px; padding:8px 14px;
-    font-weight:800; font-size:14px; box-shadow:0 4px 10px rgba(0,0,0,.3); backdrop-filter:blur(4px)
+
+  /* 🏆 Top 3 Box */
+  .top3{
+    position:fixed;
+    top:16px; left:50%; transform:translateX(-50%);
+    background:rgba(255,255,255,.08);
+    border-radius:12px;
+    padding:10px 16px;
+    font-weight:800;
+    font-size:15px;
+    box-shadow:0 6px 20px rgba(0,0,0,.3);
+    backdrop-filter:blur(6px);
+    display:none;
+    opacity:0;
+    transition:opacity .8s ease;
   }
-  .top3{ top:10px; }
-  .scorebox{ bottom:10px; }
-  .top3 ol{ margin:6px 0 0; padding-left:18px }
-  .top3 small{ opacity:.85; font-weight:600 }
+  .top3.show{ display:block; opacity:1; }
+
+  .top3 ol{ margin:6px 0 0; padding-left:20px; }
+  .top3 small{ opacity:.8; font-weight:600; }
 </style>
 
-<!-- 🎮 起點：沿用你原本的 index.html 全流程（動畫→v1→…→endgame） -->
+<!-- 🎮 起始頁：整個遊戲流程（opening → v1 → v2 → endgame） -->
 <iframe id="game" src="index.html" allow="gamepad *"></iframe>
 
-<!-- 🏆 全球 Top3（雲端） -->
-<div class="top3">
-  Top 3
-  <ol id="top3List"><li>Loading…</li></ol>
+<!-- 🏆 全球排行榜 -->
+<div class="top3" id="top3Box">
+  <div>🏆 NeoX Top 3 Players</div>
+  <ol id="top3List"><li>Loading...</li></ol>
   <small id="top3Hint"></small>
 </div>
 
-<!-- 📟 即時/最後分數顯示（本地） -->
-<div class="scorebox" id="scoreBox">Last Score: 0</div>
-
 <script>
-/* ====== Cloud API ====== */
+/* ====== 🌐 API Config ====== */
 const API_URL = 'https://script.google.com/macros/s/AKfycbw44w4f5hpmKiledO1XfIKsGgfMgCksmcU2Qsst56l68CPLvQs4GvIg0PrItIuUqkOT2g/exec';
 
-/* ====== 本地最近分數盒 ====== */
-const APPKEY='neox_iframe_lastscore';
-const box=document.getElementById('scoreBox');
-const state=(()=>{try{return JSON.parse(localStorage.getItem(APPKEY)||'{}')}catch(_){return{}}})();
-function save(){ localStorage.setItem(APPKEY, JSON.stringify(state)); }
-function showLast(){ box.textContent='Last Score: ' + (state.last||0); }
-showLast();
-
-/* ====== 玩家名稱（只問一次） ====== */
+/* ====== 👤 Player Name (首次詢問) ====== */
 function getPlayerName(){
   let name = localStorage.getItem('nx_player_name');
   if(!name){
-    name = prompt('Enter your name for Top 3:','Player') || 'Player';
+    name = prompt('Enter your player name for the leaderboard:','Player') || 'Player';
     name = String(name).slice(0,20);
     localStorage.setItem('nx_player_name', name);
   }
   return name;
 }
 
-/* ====== 讀榜（你的 Apps Script：GET 回傳陣列） ====== */
+/* ====== 🏆 Fetch Top 3 from Google Script ====== */
 async function loadTop3(){
-  const ul = document.getElementById('top3List');
+  const box = document.getElementById('top3Box');
+  const list = document.getElementById('top3List');
   const hint = document.getElementById('top3Hint');
   try{
     const res = await fetch(API_URL);
-    const data = await res.json();   // ← e.g. [{name,score,time}, ...]
-    ul.innerHTML = '';
-    (data||[]).slice(0,3).forEach((r)=>{
-      const li = document.createElement('li');
+    const data = await res.json();
+    list.innerHTML = '';
+    (data||[]).slice(0,3).forEach(r=>{
+      const li=document.createElement('li');
       li.textContent = `${r.name} — ${r.score}`;
-      ul.appendChild(li);
+      list.appendChild(li);
     });
-    if(!ul.children.length){ ul.innerHTML = '<li>No records</li>'; }
-    hint.textContent = 'Updated: ' + new Date().toLocaleString();
+    if(!list.children.length) list.innerHTML='<li>No scores yet</li>';
+    hint.textContent='Updated: '+new Date().toLocaleTimeString();
+    box.classList.add('show');
   }catch(e){
-    ul.innerHTML = '<li>Network error</li>'; hint.textContent='';
+    list.innerHTML='<li>Network error</li>';
   }
 }
 
-/* ====== 上傳分數（你的 Apps Script：POST body = {name, score}） ====== */
-async function submitFinal(total){
+/* ====== 📨 Upload score to Google Script ====== */
+async function submitScore(score){
   try{
-    await fetch(API_URL, {
+    await fetch(API_URL,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ name:getPlayerName(), score: Math.floor(total) })
+      body:JSON.stringify({ name:getPlayerName(), score:Math.floor(score) })
     });
   }catch(e){}
 }
 
-/* ====== 子頁通訊（動畫/關卡/結尾） ======
-   - {type:'NX_GOTO', next:'v1.html'}
-   - {type:'NX_CARRY', score:1234}
-   - {type:'NX_GAME_CLEARED', total:9999, next:'endgame.html'}
-*/
+/* ====== 🎮 Communication with iframe ====== */
 const frame=document.getElementById('game');
-window.addEventListener('message', async (e)=>{
+window.addEventListener('message',async e=>{
   const m=e.data||{};
-  if(m.type==='NX_GOTO' && m.next){ frame.src=m.next; }
-
-  if(m.type==='NX_CARRY'){
-    box.textContent='Score: ' + Math.floor(m.score||0);
-  }
-
+  
+  // 🏁 Game cleared
   if(m.type==='NX_GAME_CLEARED'){
-    state.last = Math.floor(m.total || m.score || 0);
-    save(); showLast();
-    await submitFinal(state.last);   // 上傳雲端
-    await loadTop3();                // 立即刷新榜
-    if(m.next) frame.src = m.next;   // 例如 endgame.html
+    const total=Math.floor(m.total||m.score||0);
+    await submitScore(total);   // 上傳分數
+    await loadTop3();           // 取榜顯示
   }
 });
-
-/* 首次載入抓一次榜 */
-loadTop3();
 </script>
 </html>
