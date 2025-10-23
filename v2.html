@@ -241,7 +241,7 @@ function spawnCoins(dt){
     coins.push({
       x: EDGE + SAFE_MARGIN + Math.random()*(canvas.clientWidth - 2*(EDGE + SAFE_MARGIN)),
       y: -20,
-      r: isSpecial ? 13 : 12,               // ← 黑鑽大少少
+      r: isSpecial ? 15 : 12,               // ← 黑鑽大少少
       vy: 2.6 + Math.random()*2.2,
       spin: Math.random()*Math.PI*2,
       vspin: -0.12 + Math.random()*0.24,
@@ -386,7 +386,7 @@ function drawChest(){
 function drawCoins(){
   for(const c of coins){
     const normalScale  = 2.2;  // 金幣比例（維持原狀）
-    const specialScale = 2.3;  // 黑鑽比例（你想幾大就改呢個數）
+    const specialScale = 2.5;  // 黑鑽比例（你想幾大就改呢個數）
     const size = (c.special ? specialScale : normalScale) * c.r;
     const r = size / 2;
     ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
