@@ -4,69 +4,42 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Game (iframe)</title>
 <style>
-  body {
-    margin: 0;
-    background: #0a0b1f;
-    display: grid;
-    place-items: center;
-    height: 100vh;
-    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
-    color: #fff;
-  }
-  iframe {
-    width: min(92vw, 440px);
-    aspect-ratio: 9/16;
-    border: 0;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,.45);
-  }
-  .scorebox {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255,255,255,.08);
-    border-radius: 10px;
-    padding: 6px 14px;
-    font-weight: 800;
-    font-size: 14px;
-    box-shadow: 0 4px 10px rgba(0,0,0,.3);
-    backdrop-filter: blur(4px);
-  }
+  body{margin:0;background:#0a0b1f;display:grid;place-items:center;height:100vh;
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;color:#fff}
+  iframe{width:min(92vw,440px);aspect-ratio:9/16;border:0;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  .scorebox{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
+            background:rgba(255,255,255,.08);border-radius:10px;padding:6px 14px;font-weight:800;font-size:14px;
+            box-shadow:0 4px 10px rgba(0,0,0,.3);backdrop-filter:blur(4px)}
 </style>
 
-<!-- 🎮 遊戲主畫面 iframe -->
-<iframe id="game" src="v1.html" allow="gamepad *"></iframe>
-
-<!-- 🧾 下方顯示最近分數 -->
+<!-- 🎬 起點請改為你的第一個動畫頁 -->
+<iframe id="game" src="opening1.html" allow="gamepad *"></iframe>
 <div class="scorebox" id="scoreBox">Last Score: 0</div>
 
 <script>
-/* 儲存遊戲分數紀錄 (localStorage) */
-const APPKEY = 'neox_iframe_v1_scores';
-const store = {
-  get(){ try{return JSON.parse(localStorage.getItem(APPKEY)||'{}')}catch(_){return{}} },
-  set(v){ localStorage.setItem(APPKEY, JSON.stringify(v)) }
-};
-const state = Object.assign({ last:0 }, store.get());
+/* —— 本地最近分數顯示 —— */
+const APPKEY='neox_iframe_v1_scores';
+const box=document.getElementById('scoreBox');
+const state=(()=>{try{return JSON.parse(localStorage.getItem(APPKEY)||'{}')}catch(_){return{}}})();
+function save(){ localStorage.setItem(APPKEY, JSON.stringify(state)); }
+function showLast(){ box.textContent='Last Score: ' + (state.last||0); }
+showLast();
 
-const scoreBox = document.getElementById('scoreBox');
-function updateScoreBox(){
-  scoreBox.textContent = 'Last Score: ' + (state.last || 0);
-}
-updateScoreBox();
-
-/* 接收遊戲頁面 (v1.html) 傳過來嘅分數 */
+/* —— 子頁導覽協議 —— 
+   子頁在適當時機 postMessage：  
+   1) {type:'NX_GOTO', next:'v1.html'}                → 父頁載入下一頁
+   2) {type:'NX_CARRY', score:1234}                   → （可選）途中顯示分數
+   3) {type:'NX_GAME_CLEARED', total:9999, next:'endgame.html'} 
+                                                     → 記錄分數，載入結束頁
+*/
+const frame=document.getElementById('game');
 window.addEventListener('message', (e)=>{
-  const msg = e.data || {};
-  if (msg.type === 'NX_GAME_CLEARED') {
-    state.last = Math.floor(msg.total || msg.score || 0);
-    store.set(state);
-    updateScoreBox();
-  }
-  if (msg.type === 'NX_CARRY') {
-    // 可選：途中更新分數
-    scoreBox.textContent = 'Score: ' + Math.floor(msg.score || 0);
+  const m=e.data||{};
+  if(m.type==='NX_GOTO' && m.next){ frame.src=m.next; }
+  if(m.type==='NX_CARRY'){ box.textContent='Score: ' + Math.floor(m.score||0); }
+  if(m.type==='NX_GAME_CLEARED'){
+    state.last=Math.floor(m.total||m.score||0); save(); showLast();
+    if(m.next) frame.src=m.next; // 例如 endgame.html
   }
 });
 </script>
