@@ -4,6 +4,55 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX — End Game</title>
+
+<!-- 🔒 EndGame 守門：防直接改 URL、限制來源網域／頁面 -->
+<script>
+(function(){
+  const HUB    = 'https://neoxcoin.github.io/neox-game/';   // 官方遊戲入口
+  const L3     = 'https://neoxcoin.github.io/neox-game/v3.html';
+  const PARENT = 'https://neoxcoin.github.io';
+
+  // 1) 若被第三方網站 iframe 嵌入 → 一律回 HUB（只容許自家域名）
+  if (window.top !== window.self) {
+    try {
+      const origin = (document.referrer ? new URL(document.referrer).origin : '');
+      if (origin !== PARENT) {
+        window.top.location.replace(HUB);
+        return;
+      }
+    } catch (e) {
+      window.top.location.replace(HUB);
+      return;
+    }
+  }
+
+  // 2) 必須由 L3 進來：
+  //    條件任一成立才放行：a) referrer 係 v3.html；b) URL 有 score 參數（由 L3 帶來）；
+  //    c) sessionStorage 有 cameFromL3（可於 L3 導入前 set）。
+  const url = new URL(location.href);
+  const hasScoreParam = url.searchParams.has('score');
+  const cameFromRef   = (document.referrer || '').startsWith(L3);
+  const cameFlag      = sessionStorage.getItem('cameFromL3') === '1';
+
+  // （補一重）上次通關紀錄
+  const lastLv    = Number(localStorage.getItem('neox_last_level') || 0);
+  const lastScore = Number(localStorage.getItem('nx_last_score') || 0);
+
+  if (!(cameFromRef || hasScoreParam || cameFlag)) {
+    // 未符合 → 根據情況送回 L3 或 HUB
+    if (lastLv >= 3 || lastScore > 0) {
+      location.replace(L3 + '#guard');
+    } else {
+      location.replace(HUB);
+    }
+    return;
+  }
+
+  // 用過就清掉旗標（可選）
+  sessionStorage.removeItem('cameFromL3');
+})();
+</script>
+
 <style>
 html,body{
   height:100%;margin:0;background:#05081A;color:#fff;
@@ -27,10 +76,7 @@ html,body{
 #vid{width:100%;height:100%;object-fit:contain;background:#000;opacity:0;transition:opacity .6s ease}
 
 /* 🧾 頁面文字淡出動畫 */
-.fade-out{
-  opacity:0;
-  transition:opacity 1.2s ease-in-out;
-}
+.fade-out{ opacity:0; transition:opacity 1.2s ease-in-out; }
 
 /* 🌈 疊在影片上的資訊層 */
 .overlay{
@@ -58,27 +104,19 @@ h1{margin:.2em 0 .4em;font-weight:900;font-size:clamp(22px,6vw,40px)}
   box-shadow:0 10px 28px rgba(0,0,0,.25);
   transition:all .25s ease;
 }
-.btn.primary:hover{
-  transform:scale(1.05);
-  box-shadow:0 14px 36px rgba(0,0,0,.35);
-}
+.btn.primary:hover{ transform:scale(1.05); box-shadow:0 14px 36px rgba(0,0,0,.35); }
 
 /* 🌌 副按鈕樣式 */
 .btn.ghost{
-  background:#101634;
-  color:#dce3ff;
+  background:#101634; color:#dce3ff;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 10px 25px rgba(0,0,0,.3);
-  position:relative;
-  overflow:hidden;
+  position:relative; overflow:hidden;
 }
 
 /* ✨ Replay 藍光閃爍效果 */
 .btn.ghost::after{
-  content:"";
-  position:absolute;inset:0;
-  border-radius:12px;
-  border:2px solid rgba(43,124,255,0);
-  box-shadow:0 0 12px rgba(43,124,255,0);
+  content:""; position:absolute;inset:0; border-radius:12px;
+  border:2px solid rgba(43,124,255,0); box-shadow:0 0 12px rgba(43,124,255,0);
   transition:all .25s ease;
 }
 .btn.ghost:hover::after{
@@ -87,19 +125,8 @@ h1{margin:.2em 0 .4em;font-weight:900;font-size:clamp(22px,6vw,40px)}
 }
 
 /* 🪙 圖標型按鈕 */
-.btn.icon{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  padding:10px 18px;
-  transition:all .25s ease;
-}
-.btn.icon img{
-  width:22px;height:22px;
-  object-fit:contain;
-  filter:drop-shadow(0 2px 5px rgba(0,0,0,.35));
-}
+.btn.icon{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 18px; transition:all .25s ease; }
+.btn.icon img{ width:22px;height:22px; object-fit:contain; filter:drop-shadow(0 2px 5px rgba(0,0,0,.35)); }
 
 /* 📦 結算面板（淡入半透明） */
 #panel{
@@ -109,8 +136,7 @@ h1{margin:.2em 0 .4em;font-weight:900;font-size:clamp(22px,6vw,40px)}
   background:rgba(10,12,34,.7);
   box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08);
   backdrop-filter:blur(8px);
-  opacity:0;display:none;
-  transition:opacity 1.2s ease-in-out;
+  opacity:0;display:none; transition:opacity 1.2s ease-in-out;
 }
 #panel.show{display:block;opacity:1;}
 #panel h2{margin:.2em 0 .3em;font-size:clamp(22px,6vw,36px)}
@@ -118,28 +144,16 @@ h1{margin:.2em 0 .4em;font-weight:900;font-size:clamp(22px,6vw,40px)}
 
 /* 📱 手機直版：底部靠下 */
 @media (orientation:portrait){
-  .overlay{
-    justify-content:flex-end;
-    background:linear-gradient(transparent 40%,rgba(0,0,0,.65));
-    padding-bottom:5vh;
-  }
+  .overlay{ justify-content:flex-end; background:linear-gradient(transparent 40%,rgba(0,0,0,.65)); padding-bottom:5vh; }
   .overlay h1,.overlay p{margin-bottom:12px;}
   .row{margin-bottom:env(safe-area-inset-bottom,10px);}
-  }
-  /* 🔹 共用淡入動畫（文字 + 面板） */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+}
 
-  .fade-up   { opacity: 0; animation: fadeUp 0.8s ease forwards; }
-  .fade-200  { animation-delay: 0.2s; }
-  .fade-400  { animation-delay: 0.4s; }
-  .fade-600  { animation-delay: 0.6s; }
-
-  /* 🔹 結算面板淡入 */
-  #panel { opacity: 0; transition: opacity 1s ease; }
-  #panel.show { opacity: 1; }
+/* 共用淡入動畫 */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px);} to { opacity: 1; transform: translateY(0);} }
+.fade-up{ opacity:0; animation: fadeUp 0.8s ease forwards; }
+.fade-200{ animation-delay:.2s; } .fade-400{ animation-delay:.4s; } .fade-600{ animation-delay:.6s; }
+#panel{ opacity:0; transition:opacity 1s ease; } #panel.show{ opacity:1; }
 </style>
 </head>
 <body>
@@ -222,21 +236,17 @@ function endFlow(){
   requestAnimationFrame(()=> panel.classList.add('show')); // ← 淡入面板
 }
 
-/* 面板按鈕 */
-btnHome.onclick = ()=>location.href='https://neoxcoin.github.io/';
-btnReplay.onclick = ()=>location.href='v3.html#replay';
+/* 面板按鈕（用 window.top，避免被 iframe 鎖住） */
+btnHome.onclick   = ()=>window.top.location.href='https://neoxcoin.github.io/';
+btnReplay.onclick = ()=>window.location.href='v3.html#replay';
 
-/* 🏆 若在 iframe 中運行，回報最終分數給父頁 */
+/* 若在 iframe 中，回報最終分數 */
 if (window.top !== window.self) {
   const total =
     Number(localStorage.getItem('nx_carry') || 0) ||
     Number(localStorage.getItem('nx_last_score') || 0) || 0;
 
-  window.parent.postMessage({
-    type: 'NX_GAME_CLEARED',
-    total: total,
-    next: ''
-  }, '*');
+  window.parent.postMessage({ type:'NX_GAME_CLEARED', total, next:'' }, '*');
 }
 </script>
 </body>
