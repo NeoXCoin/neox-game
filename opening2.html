@@ -2,198 +2,194 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>NeoX Catch — Opening 2</title>
 <style>
+  :root{ --pad: clamp(10px, 3.5vw, 18px); }
+
   html, body {
-    margin: 0;
-    height: 100%;
-    background-color: #000;
-    color: #fff;
+    margin: 0; height: 100%;
+    background: #000; color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans", Arial, sans-serif;
     overflow: hidden;
   }
 
   #wrap {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #000 url('TreasureL2.png') center/contain no-repeat;
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    height: 100vh; height: 100svh; height: 100dvh;
+    background: #000 url('TreasureL2.png') center / contain no-repeat;
   }
 
   /* 影片顯示設定 */
-  video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    background-color: #000;
-    border-radius: 0;
+  #introVideo {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: contain; object-position: center center;
+    background: #000 url('TreasureL2.png') center/contain no-repeat;
     transition: opacity .4s ease;
     opacity: 0;
   }
-  video.loaded { opacity: 1; }
+  #introVideo.loaded { opacity: 1; }
 
-  /* 底部控制區 */
+  /* 控制層（會自動淡出） */
   .overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-    text-align: center;
-    background: linear-gradient(transparent 60%, rgba(0,0,0,0.7));
-    padding-bottom: 40px;
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: flex-end; align-items: center; text-align: center;
+    background: linear-gradient(transparent 60%, rgba(0,0,0,.7));
+    padding-bottom: calc(var(--pad) + env(safe-area-inset-bottom));
+    transition: opacity .35s ease;
+    opacity: 1;
   }
+  .overlay.hide{ opacity: 0; pointer-events: none; }
 
   h1 {
-    margin-bottom: 8px;
-    font-size: clamp(22px, 6vw, 34px);
-    font-weight: 900;
-    letter-spacing: 0.02em;
-    text-shadow: 0 0 22px rgba(43,124,255,0.45);
+    margin: 0 0 8px; font-size: clamp(22px, 6vw, 34px); font-weight: 900;
+    letter-spacing: .02em; text-shadow: 0 0 22px rgba(43,124,255,.45);
   }
-
-  p {
-    margin: 0 0 20px;
-    font-size: 15px;
-    color: #cfd5ff;
-  }
+  p  { margin: 0 0 14px; font-size: 15px; color: #cfd5ff; }
 
   /* === 按鈕排版 === */
-  .btnrow {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+  .btnrow { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
-  /* === 按鈕統一樣式 === */
-  .btnrow button {
+  /* === 按鈕統一樣式（與 Opening3 一致） === */
+  .btnrow button{
     appearance: none;
-    border: none;
-    border-radius: 14px;
+    border: 0; border-radius: 14px;
     padding: 12px 18px;
-    font-weight: 800;
-    letter-spacing: .02em;
+    font-weight: 800; letter-spacing: .02em;
     color: #fff;
     background: linear-gradient(180deg, #2c3363 0%, #1a1f40 100%);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 28px rgba(0,0,0,.4),
+                inset 0 0 0 1px rgba(255,255,255,.08);
     cursor: pointer;
     transition: transform .15s ease, box-shadow .25s ease, filter .25s ease;
+    display: inline-flex; align-items: center; gap: 6px;
   }
-
-  .btnrow button:hover {
+  .btnrow button:hover{
     transform: translateY(-2px);
     filter: brightness(1.15);
     box-shadow: 0 14px 34px rgba(43,124,255,.35),
                 inset 0 0 0 1px rgba(255,255,255,.12);
   }
-
-  .btnrow button:active {
+  .btnrow button:active{
     transform: translateY(0);
     filter: brightness(.95);
     box-shadow: 0 8px 18px rgba(0,0,0,.35);
   }
+  .btnrow button:focus-visible{
+    outline: none;
+    box-shadow:
+      0 0 0 3px rgba(43,124,255,.25),
+      0 0 0 6px rgba(43,124,255,.2),
+      0 10px 28px rgba(0,0,0,.4),
+      inset 0 0 0 1px rgba(255,255,255,.1);
+  }
 
-  /* 主按鈕 */
-  .primary {
+  /* 主按鈕（Start） */
+  .primary{
     background: linear-gradient(180deg, #4c8dff 0%, #2b7cff 70%, #236cf0 100%);
     box-shadow: 0 0 25px rgba(43,124,255,.25),
                 0 10px 28px rgba(0,0,0,.4),
                 inset 0 0 0 1px rgba(255,255,255,.15);
   }
-
-  .primary:hover {
+  .primary:hover{
     filter: brightness(1.2);
     box-shadow: 0 0 30px rgba(43,124,255,.4),
                 0 12px 32px rgba(0,0,0,.45);
   }
 
-  /* 響應式 */
   @media (max-width:500px){
-    h1{ font-size: 22px; }
-    .btnrow button { padding: 11px 14px; font-size: 14px; }
+    .btnrow button{ padding: 11px 14px; font-size: 14px; }
   }
 </style>
 </head>
 <body>
-<div id="wrap">
-  <video
-    id="introVideo"
-    src="https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4"
-    poster="TreasureL2.png"
-    preload="auto"
-    muted
-    playsinline
-    webkit-playsinline
-  ></video>
+  <section id="wrap">
+    <video
+      id="introVideo"
+      src="https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4"
+      poster="TreasureL2.png"
+      preload="auto" muted playsinline webkit-playsinline
+    ></video>
 
-  <div class="overlay">
-    <h1>Treasure Journey</h1>
-    <p>Watch the short opening, or skip and start the level.</p>
-    <div class="btnrow">
-      <button id="btnSound">🔈 Sound on</button>
-      <button id="btnStart" class="primary">▶ Start Play</button>
-      <button id="btnSkip">⏭ Skip</button>
+    <div class="overlay" id="overlay">
+      <h1>Treasure Journey</h1>
+      <p>Watch the short opening, or skip and start the level.</p>
+      <div class="btnrow">
+        <button id="btnSound">🔈 Sound off</button>
+        <button id="btnStart" class="primary">▶ Start Play</button>
+        <button id="btnSkip">⏭ Skip</button>
+      </div>
     </div>
-  </div>
-</div>
+  </section>
 
 <script>
-const video = document.getElementById('introVideo');
+/* ===== DOM ===== */
+const video    = document.getElementById('introVideo');
+const overlay  = document.getElementById('overlay');
 const btnSound = document.getElementById('btnSound');
 const btnStart = document.getElementById('btnStart');
-const btnSkip = document.getElementById('btnSkip');
+const btnSkip  = document.getElementById('btnSkip');
 
-// 顯示影片第一幀（防黑屏）
-function showFirstFrame(){
-  video.classList.add('loaded');
+/* 顯示第一幀（防黑屏） */
+function reveal(){ video.classList.add('loaded'); }
+video.addEventListener('loadeddata', reveal);
+video.addEventListener('loadedmetadata', reveal);
+video.play().catch(()=>{}); // 嘗試靜音自動播放
+
+/* ===== 自動收起控制層（與 Opening3 一樣） ===== */
+let hideTimer = null;
+function scheduleHide(){
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(()=> overlay.classList.add('hide'), 5000);
 }
-video.addEventListener('loadeddata', showFirstFrame);
-video.addEventListener('loadedmetadata', showFirstFrame);
-video.play().catch(()=>{});
+function showControls(){
+  overlay.classList.remove('hide');
+  scheduleHide();
+}
+scheduleHide(); // 初始 5 秒倒數
+['mousemove','pointermove','pointerdown','touchstart','keydown'].forEach(evt=>{
+  window.addEventListener(evt, showControls, { passive: true });
+});
 
-// iPhone 防黑屏（首次觸碰播放）
-window.addEventListener("touchstart", () => {
-  video.play().catch(()=>{});
-}, { once:true });
+/* ===== iPhone 解鎖：首次互動確保可播放 ===== */
+['pointerdown','touchend','click','keydown'].forEach(evt=>{
+  window.addEventListener(evt, async ()=>{
+    if(video.paused){ try{ await video.play(); }catch(e){} }
+  }, { once:true, passive:true });
+});
 
-// 聲音控制
-let soundEnabled = false;
+/* ===== 聲音開/關（切換文案） ===== */
 let audioCtx = null;
-function ensureAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+function updateSoundLabel(){
+  btnSound.textContent = video.muted ? '🔈 Sound off' : '🔊 Sound on';
 }
-
-btnSound.onclick = async () => {
+btnSound.addEventListener('click', async ()=>{
   ensureAudio();
-  soundEnabled = !soundEnabled;
-  if (soundEnabled) {
-    try {
-      await audioCtx.resume();
-      video.muted = false;
-      btnSound.textContent = "🔊 Sound on";
-    } catch (e) {}
-  } else {
-    video.muted = true;
-    btnSound.textContent = "🔈 Sound off";
-  }
-};
+  try{
+    await audioCtx.resume();
+    video.muted = !video.muted;
+    if(!video.muted && video.paused){ try{ await video.play(); }catch(e){} }
+    updateSoundLabel();
+  }catch(e){}
+});
+updateSoundLabel();
 
-// 播放影片
-btnStart.onclick = () => {
-  video.play().catch(()=>{});
-};
+/* ===== Start：播放影片；Skip/片完 → v2 ===== */
+btnStart.addEventListener('click', ()=>{ video.play().catch(()=>{}); });
 
-// Skip／影片完自動前往下一頁
-function goNext(){ window.location.href = "v2.html"; }
-btnSkip.onclick = goNext;
+function goNext(){ location.href = 'v2.html'; }
+btnSkip.addEventListener('click', goNext);
 video.addEventListener('ended', goNext);
+
+/* 回可視時維持播放 */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' && video.paused){
+    video.play().catch(()=>{});
+  }
+});
 </script>
 </body>
 </html>
