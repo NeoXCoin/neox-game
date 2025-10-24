@@ -60,6 +60,7 @@
                 inset 0 0 0 1px rgba(255,255,255,.08);
     cursor:pointer;
     transition: transform .15s ease, box-shadow .25s ease, filter .25s ease;
+    display:inline-flex; align-items:center; gap:6px;
   }
   .btnrow button:hover{
     transform: translateY(-2px);
@@ -115,7 +116,7 @@
       <h1>Treasure Journey</h1>
       <p>Watch the short opening, or skip and start the level.</p>
       <div class="btnrow">
-        <button id="btnSound">🔈 Play with sound</button>
+        <button id="btnSound">🔈 Sound on</button>
         <button id="btnStart" class="primary">▶ Start Play</button>
         <button id="btnSkip">⏭ Skip</button>
       </div>
@@ -150,26 +151,59 @@ scheduleHide(); // 初始計時
   window.addEventListener(evt, showControls, {passive:true});
 });
 
-/* ===== 按鈕動作 ===== */
+/* ===== 音訊：Sound on/off 切換 ===== */
 let audioCtx;
 function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
 
+function updateSoundLabel(){
+  btnSound.textContent = video.muted ? '🔈 Sound off' : '🔊 Sound on';
+}
 btnSound.addEventListener('click', async ()=>{
   ensureAudio();
   try{
     await audioCtx.resume();
-    if(video.paused) await video.play();
-    video.muted = false;
-    btnSound.textContent = '🔊 Sound on';
-    btnSound.disabled = true;
+    // 切換靜音
+    video.muted = !video.muted;
+    // 如開聲且影片未播，嘗試播放
+    if(!video.muted && video.paused){
+      try{ await video.play(); }catch(e){}
+    }
+    updateSoundLabel();
   }catch(e){}
 });
+updateSoundLabel();
 
+/* ===== Start Play：先嘗試播放；若無反應，退而求其次打開 mp4 ===== */
+async function tryPlayWithFallback(){
+  // 盡力解鎖播放（部分裝置需要使用者手勢）
+  try{ ensureAudio(); await audioCtx?.resume?.(); }catch(e){}
+  // 嘗試播放（保持現有 muted 狀態）
+  let started = false;
+  const onPlaying = ()=>{ started = true; cleanup(); };
+  const onTime = ()=>{ if (video.currentTime > 0) { started = true; cleanup(); } };
+  function cleanup(){
+    video.removeEventListener('playing', onPlaying);
+    video.removeEventListener('timeupdate', onTime);
+  }
+  video.addEventListener('playing', onPlaying, { once:true });
+  video.addEventListener('timeupdate', onTime);
+
+  try{ await video.play(); }catch(e){ /* ignore */ }
+
+  // 設一個短暫 watchdog：若 1.2s 內仍未開始，就直接開原始 mp4（用系統播放器）
+  setTimeout(()=>{
+    if(!started){
+      cleanup();
+      location.href = video.currentSrc || video.src || 'TreasureL3Opening.mp4';
+    }
+  }, 1200);
+}
+
+btnStart.addEventListener('click', tryPlayWithFallback);
+
+/* ===== Skip / 影片播完 → 進 v3.html ===== */
 function goNext(){ location.href = 'v3.html'; }
-btnStart.addEventListener('click', goNext);
-btnSkip .addEventListener('click', goNext);
-
-/* 影片播完也自動進入遊戲 */
+btnSkip.addEventListener('click', goNext);
 video.addEventListener('ended', goNext);
 
 /* 第一次觸控時確保可以播放（iOS 解鎖） */
