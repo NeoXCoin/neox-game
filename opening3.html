@@ -13,14 +13,13 @@
     overflow:hidden;
   }
 
-  /* 影片容器：固定鋪滿視窗，先顯示海報避免黑屏 */
+  /* 影片容器 */
   #wrap{
     position:fixed; inset:0; display:grid; place-items:center;
     height:100vh; height:100svh; height:100dvh;
     background:#000 url('PhotoOpening3.PNG') center / contain no-repeat;
   }
 
-  /* 影片：等比完整顯示 */
   #openerVideo{
     position:absolute; inset:0; width:100%; height:100%;
     object-fit:contain; object-position:center center;
@@ -28,7 +27,7 @@
     opacity:0; transition:opacity .4s ease;
   }
 
-  /* 底部控制欄（會自動淡出） */
+  /* 底部控制欄 */
   .overlay{
     position:absolute; inset:0; display:flex; flex-direction:column;
     justify-content:flex-end; align-items:center; text-align:center;
@@ -45,10 +44,8 @@
   }
   p { margin:0 0 14px; font-size:clamp(13px,3.5vw,16px); color:#cfe0ff; }
 
-  /* === 按鈕排版 === */
   .btnrow{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
 
-  /* === 統一漂亮按鈕樣式（和 Opening2 一致） === */
   .btnrow button{
     appearance:none;
     border:0; border-radius:14px;
@@ -82,7 +79,6 @@
       inset 0 0 0 1px rgba(255,255,255,.1);
   }
 
-  /* 主按鈕（Start）：藍色亮面 + 外發光 */
   .primary{
     background: linear-gradient(180deg, #4c8dff 0%, #2b7cff 70%, #236cf0 100%);
     box-shadow: 0 0 25px rgba(43,124,255,.25),
@@ -95,7 +91,6 @@
                 0 12px 32px rgba(0,0,0,.45);
   }
 
-  /* 窄屏優化 */
   @media (orientation:landscape){
     .overlay{ padding-bottom:calc(10px + env(safe-area-inset-bottom)); }
     .btnrow{ gap:12px; }
@@ -119,6 +114,7 @@
         <button id="btnSound">🔈 Sound on</button>
         <button id="btnStart" class="primary">▶ Start Play</button>
         <button id="btnSkip">⏭ Skip</button>
+        <button id="btnSkin">💎 Skin</button>
       </div>
     </div>
   </section>
@@ -129,6 +125,7 @@ const overlay  = document.getElementById('overlay');
 const btnSound = document.getElementById('btnSound');
 const btnStart = document.getElementById('btnStart');
 const btnSkip  = document.getElementById('btnSkip');
+const btnSkin  = document.getElementById('btnSkin');
 
 /* 顯示影片畫面（避免黑屏） */
 function reveal(){ video.style.opacity = '1'; }
@@ -136,7 +133,7 @@ video.addEventListener('loadeddata', reveal);
 video.addEventListener('loadedmetadata', reveal);
 video.play().catch(()=>{}); // 嘗試自動播放（靜音）
 
-/* ===== 控制欄：5 秒無操作自動淡出；有互動就再顯示並重置計時 ===== */
+/* 控制欄自動隱藏 */
 let hideTimer=null;
 function scheduleHide(){
   clearTimeout(hideTimer);
@@ -146,12 +143,12 @@ function showControls(){
   overlay.classList.remove('hide');
   scheduleHide();
 }
-scheduleHide(); // 初始計時
+scheduleHide();
 ['mousemove','pointermove','pointerdown','touchstart','keydown'].forEach(evt=>{
   window.addEventListener(evt, showControls, {passive:true});
 });
 
-/* ===== 音訊：Sound on/off 切換 ===== */
+/* 音訊開關 */
 let audioCtx;
 function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
 function updateSoundLabel(){
@@ -161,9 +158,7 @@ btnSound.addEventListener('click', async ()=>{
   ensureAudio();
   try{
     await audioCtx.resume();
-    // 切換靜音
     video.muted = !video.muted;
-    // 開聲時如未播放就嘗試播放
     if(!video.muted && video.paused){
       try{ await video.play(); }catch(e){}
     }
@@ -172,12 +167,12 @@ btnSound.addEventListener('click', async ()=>{
 });
 updateSoundLabel();
 
-/* ===== 統一前往 v3：用絕對網址 + 回程旗標 ===== */
+/* 前往 v3.html */
 function goNext(){
   location.replace('https://neoxcoin.github.io/neox-game/v3.html#fromOpening3');
 }
 
-/* ===== Start Play：先嘗試播放；若 1.2s 內無反應 → 直接打開 mp4 ===== */
+/* Start Play：播放影片；若無反應則開 mp4 */
 async function tryPlayWithFallback(){
   try{ ensureAudio(); await audioCtx?.resume?.(); }catch(e){}
   let started = false;
@@ -190,12 +185,11 @@ async function tryPlayWithFallback(){
   video.addEventListener('playing', onPlaying, { once:true });
   video.addEventListener('timeupdate', onTime);
 
-  try{ await video.play(); }catch(e){ /* ignore */ }
+  try{ await video.play(); }catch(e){}
 
   setTimeout(()=>{
     if(!started){
       cleanup();
-      // 用絕對路徑打開原始 mp4（系統播放器）
       location.href = 'https://neoxcoin.github.io/neox-game/TreasureL3Opening.mp4';
     }
   }, 1200);
@@ -203,9 +197,10 @@ async function tryPlayWithFallback(){
 
 btnStart.addEventListener('click', tryPlayWithFallback);
 btnSkip .addEventListener('click', goNext);
+btnSkin .addEventListener('click', ()=>{ location.replace('https://neoxcoin.github.io/neox-game/v3.html'); });
 video.addEventListener('ended', goNext);
 
-/* 第一次觸控時確保可以播放（iOS 解鎖） */
+/* 第一次觸控時確保可播放 */
 ['pointerdown','touchend','click','keydown'].forEach(evt=>{
   window.addEventListener(evt, async ()=>{
     if(video.paused){ try{ await video.play(); }catch(e){} }
