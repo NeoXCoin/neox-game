@@ -177,10 +177,36 @@ btnSound.addEventListener('click', async ()=>{
 });
 updateSoundLabel();
 
-/* ===== Start：播放影片；Skip/片完 → v2 ===== */
-btnStart.addEventListener('click', ()=>{ video.play().catch(()=>{}); });
+/* ===== Start：先嘗試播放；若 1.2s 內無反應 → 直接開 MP4 ===== */
+async function tryPlayWithFallback(){
+  try{ ensureAudio(); await audioCtx?.resume?.(); }catch(e){}
+  let started = false;
+  const onPlaying = ()=>{ started = true; cleanup(); };
+  const onTime = ()=>{ if (video.currentTime > 0) { started = true; cleanup(); } };
+  function cleanup(){
+    video.removeEventListener('playing', onPlaying);
+    video.removeEventListener('timeupdate', onTime);
+  }
+  video.addEventListener('playing', onPlaying, { once:true });
+  video.addEventListener('timeupdate', onTime);
 
-function goNext(){ location.href = 'v2.html'; }
+  try{ await video.play(); }catch(e){ /* ignore */ }
+
+  setTimeout(()=>{
+    if(!started){
+      cleanup();
+      // 用絕對路徑打開原始 mp4（系統播放器）
+      location.href = 'https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4';
+    }
+  }, 1200);
+}
+btnStart.addEventListener('click', tryPlayWithFallback);
+
+/* ===== Skip / 影片播完 → 進 v2.html ===== */
+function goNext(){
+  // 統一用絕對網址 + 回程旗標
+  location.replace('https://neoxcoin.github.io/neox-game/v2.html#fromOpening2');
+}
 btnSkip.addEventListener('click', goNext);
 video.addEventListener('ended', goNext);
 
