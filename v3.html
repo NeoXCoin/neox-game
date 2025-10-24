@@ -312,7 +312,12 @@ function gotoEnd(){
   localStorage.setItem('nx_carry',          String(s));
   localStorage.setItem('nx_last_score',     String(s));
   localStorage.setItem('nx_best_all',       String(best));
-  window.location.href = `endgame.html?score=${s}&best=${best}`;
+
+  // ✅ 加入這行：設立旗標，讓 endgame.html 知道來自 Level 3
+  sessionStorage.setItem('cameFromL3', '1');
+
+  // ✅ 再導向 endgame.html
+  location.href = `endgame.html?score=${s}&best=${best}`;
 }
 
 /* 結算面板顯示/隱藏 */
