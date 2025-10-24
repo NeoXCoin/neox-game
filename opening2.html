@@ -21,19 +21,22 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #000 url('TreasureL2.png') center/contain no-repeat; /* 👈 改 cover → contain */
+    background: #000 url('TreasureL2.png') center/contain no-repeat;
   }
 
-  /* 影片比例與背景處理 */
+  /* 影片顯示設定 */
   video {
     width: 100%;
     height: 100%;
     object-fit: contain;
     background-color: #000;
     border-radius: 0;
+    transition: opacity .4s ease;
+    opacity: 0;
   }
+  video.loaded { opacity: 1; }
 
-  /* 按鈕與標題區 */
+  /* 底部控制區 */
   .overlay {
     position: absolute;
     inset: 0;
@@ -42,51 +45,84 @@
     justify-content: flex-end;
     align-items: center;
     text-align: center;
-    background: linear-gradient(transparent 60%, rgba(0,0,0,0.65));
-    padding-bottom: 30px;
+    background: linear-gradient(transparent 60%, rgba(0,0,0,0.7));
+    padding-bottom: 40px;
   }
 
   h1 {
-    margin-bottom: 10px;
-    font-size: clamp(20px, 6vw, 30px);
-    font-weight: 800;
+    margin-bottom: 8px;
+    font-size: clamp(22px, 6vw, 34px);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 22px rgba(43,124,255,0.45);
   }
+
   p {
     margin: 0 0 20px;
     font-size: 15px;
-    color: #d0d4ff;
+    color: #cfd5ff;
   }
 
+  /* === 按鈕排版 === */
   .btnrow {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
   }
 
-  button {
+  /* === 按鈕統一樣式 === */
+  .btnrow button {
+    appearance: none;
     border: none;
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-weight: 700;
-    cursor: pointer;
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-weight: 800;
+    letter-spacing: .02em;
     color: #fff;
-    background: #1b2144;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3),
+    background: linear-gradient(180deg, #2c3363 0%, #1a1f40 100%);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-    transition: background 0.2s;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .25s ease, filter .25s ease;
   }
-  button:hover {
-    background: #2b7cff;
+
+  .btnrow button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.15);
+    box-shadow: 0 14px 34px rgba(43,124,255,.35),
+                inset 0 0 0 1px rgba(255,255,255,.12);
   }
+
+  .btnrow button:active {
+    transform: translateY(0);
+    filter: brightness(.95);
+    box-shadow: 0 8px 18px rgba(0,0,0,.35);
+  }
+
+  /* 主按鈕 */
   .primary {
-    background: #2b7cff;
+    background: linear-gradient(180deg, #4c8dff 0%, #2b7cff 70%, #236cf0 100%);
+    box-shadow: 0 0 25px rgba(43,124,255,.25),
+                0 10px 28px rgba(0,0,0,.4),
+                inset 0 0 0 1px rgba(255,255,255,.15);
+  }
+
+  .primary:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 30px rgba(43,124,255,.4),
+                0 12px 32px rgba(0,0,0,.45);
+  }
+
+  /* 響應式 */
+  @media (max-width:500px){
+    h1{ font-size: 22px; }
+    .btnrow button { padding: 11px 14px; font-size: 14px; }
   }
 </style>
 </head>
 <body>
 <div id="wrap">
-  <!-- 👇 新加 poster，確保載入時顯示 TreasureL2.png -->
   <video
     id="introVideo"
     src="https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4"
@@ -114,18 +150,24 @@ const btnSound = document.getElementById('btnSound');
 const btnStart = document.getElementById('btnStart');
 const btnSkip = document.getElementById('btnSkip');
 
-// 避免 iPhone 黑屏 — 第一次觸碰立即顯示第一幀
+// 顯示影片第一幀（防黑屏）
+function showFirstFrame(){
+  video.classList.add('loaded');
+}
+video.addEventListener('loadeddata', showFirstFrame);
+video.addEventListener('loadedmetadata', showFirstFrame);
+video.play().catch(()=>{});
+
+// iPhone 防黑屏（首次觸碰播放）
 window.addEventListener("touchstart", () => {
   video.play().catch(()=>{});
 }, { once:true });
 
+// 聲音控制
 let soundEnabled = false;
 let audioCtx = null;
-
 function ensureAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 }
 
 btnSound.onclick = async () => {
@@ -143,17 +185,15 @@ btnSound.onclick = async () => {
   }
 };
 
-btnSkip.onclick = () => {
-  window.location.href = "v2.html";
-};
-
+// 播放影片
 btnStart.onclick = () => {
-  video.play();
+  video.play().catch(()=>{});
 };
 
-video.addEventListener('ended', () => {
-  window.location.href = "v2.html";
-});
+// Skip／影片完自動前往下一頁
+function goNext(){ window.location.href = "v2.html"; }
+btnSkip.onclick = goNext;
+video.addEventListener('ended', goNext);
 </script>
 </body>
 </html>
