@@ -202,7 +202,7 @@ function beep(f,d=.1){ if(!audioCtx) return; const n=audioCtx.currentTime,o=audi
 const SFX={ star(){beep(880,.08); setTimeout(()=>beep(1320,.08),40)}, miss(){beep(260,.1)}, win(){[660,880,990,1320].forEach((f,i)=>setTimeout(()=>beep(f,.14),90*i))}};
 
 /* ====== Buttons ====== */
-document.getElementById('btnHome').onclick = ()=>{window.location.href='index.html';};
+document.getElementById('btnHome').onclick = ()=>{window.location.href='https://neoxcoin.github.io/';};
 document.getElementById('btnReplay').onclick=()=>{restart();};
 const btnPause=document.getElementById('btnPause'); btnPause.onclick=()=>togglePause();
 document.getElementById('btnNextLevel').onclick=()=>{ gotoOpening3(); };
