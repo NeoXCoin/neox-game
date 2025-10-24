@@ -4,6 +4,71 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Catch — Level 3</title>
+
+<script>
+(function(){
+  const HUB          = 'https://neoxcoin.github.io/neox-game/';
+  const ORIGIN_ALLOW = 'https://neoxcoin.github.io';
+  const L2_URL       = HUB + 'v2.html';
+  const L3_URL       = HUB + 'v3.html';
+  const OPENING3_URL = HUB + 'opening3.html';
+
+  // 0) 方便判斷是否剛從 opening3 回來
+  const url   = new URL(location.href);
+  const ref   = document.referrer || '';
+  const cameFromOpening =
+    ref.includes('/opening3.html') ||
+    url.hash.includes('fromOpening3') ||
+    url.searchParams.get('from') === 'opening3';
+
+  // 1) 防熱鏈：外站 iframe 直接回 Hub
+  if (window.top !== window.self) {
+    try {
+      const origin = ref ? new URL(ref).origin : '';
+      if (origin !== ORIGIN_ALLOW) {
+        window.top.location.replace(HUB);
+        return;
+      }
+    } catch (e) {
+      window.top.location.replace(HUB);
+      return;
+    }
+  }
+
+  // 2) 防跳關：只看 last level，不看分數
+  const safeNum = k => { try { return Number(localStorage.getItem(k) || 0); } catch { return 0; } };
+  const lastLv  = safeNum('neox_last_level');
+
+  // ⚠️ 只有「不是從 opening3 回來」才會擋；避免回程被彈回 v2
+  if (lastLv < 2 && !cameFromOpening) {
+    location.replace(L2_URL + '#fromGuard');
+    return;
+  }
+
+  // 3) 首次進 L3：去 opening3，只播一次；回來帶 #fromOpening3
+  try {
+    const seen = sessionStorage.getItem('seenOpening3');
+    if (!seen) {
+      sessionStorage.setItem('seenOpening3', 'pending');
+      // 帶回程標記，回來時 v3 會知道跳過檢查
+      location.href = OPENING3_URL + '?return=' + encodeURIComponent(L3_URL + '#fromOpening3');
+      return;
+    } else if (seen === 'pending') {
+      sessionStorage.setItem('seenOpening3', 'true');
+
+      // （可選補償）如果真的發現 lastLv 仍 < 2，但確定是從 opening3 回來，
+      // 幫你補成 2，避免又被其它流程彈走。
+      if (lastLv < 2) {
+        try { localStorage.setItem('neox_last_level', '2'); } catch(e){}
+      }
+    }
+  } catch (e) {}
+
+  // 調試：可以暫開看看
+  // console.log('[v3 guard] lastLv=', lastLv, 'cameFromOpening=', cameFromOpening, 'ref=', ref);
+})();
+</script>
+
 <style>
   html,body{height:100%;margin:0;background:#070a18;color:#fff;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;overflow:hidden}
