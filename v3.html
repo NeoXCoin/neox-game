@@ -4,6 +4,49 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Catch — Level 3</title>
+
+<!-- 🔒 Level 3 守門：防熱鏈、防跳關、opening3 -->
+<script>
+(function(){
+  const ENTRY2 = 'https://neoxcoin.github.io/neox-game/v2.html';
+  const HUB    = 'https://neoxcoin.github.io/neox-game/';
+  const ALLOWED_PARENT = 'https://neoxcoin.github.io';
+
+  // 1) 防熱鏈：只允許自家網域的父頁 iframe
+  if (window.top !== window.self) {
+    try {
+      const ref = document.referrer || '';
+      const origin = ref ? new URL(ref).origin : '';
+      if (origin !== ALLOWED_PARENT) {
+        window.top.location.replace(HUB);
+        return;
+      }
+    } catch (e) {
+      window.top.location.replace(HUB);
+      return;
+    }
+  }
+
+  // 2) 防跳關：必須先通過 L2（v2 會寫入 nx_carry & neox_last_level=2）
+  const safeNum = k => { try { return Number(localStorage.getItem(k) || 0); } catch { return 0; } };
+  const carry   = safeNum('nx_carry');
+  const lastLv  = safeNum('neox_last_level');
+  if (!carry || lastLv < 2) {
+    window.location.replace(ENTRY2 + '#fromGuard');
+    return;
+  }
+
+  // 3) 第一次進入 L3 先看 opening3.html
+  try {
+    if (!sessionStorage.getItem('seenOpening3')) {
+      sessionStorage.setItem('seenOpening3', 'true');
+      window.location.replace('opening3.html');
+      return;
+    }
+  } catch {}
+})();
+</script>
+
 <style>
   html,body{height:100%;margin:0;background:#070a18;color:#fff;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;overflow:hidden}
