@@ -6,11 +6,44 @@
 <title>NeoX Catch — Level 2</title>
 
 <script>
-// 若未看過 opening2.html，先跳過去
-if (!sessionStorage.getItem("seenOpening2")) {
-  sessionStorage.setItem("seenOpening2", "true");
-  window.location.href = "opening2.html";
-}
+/* ====== Level 2 守門（放在 <head> 裏、任何其他腳本之前）====== */
+(function () {
+  const HOME   = 'https://neoxcoin.github.io/';
+  const ENTRY1 = 'https://neoxcoin.github.io/neox-game/v1.html';
+  const HUB    = 'https://neoxcoin.github.io/neox-game/';
+  const ALLOWED_PARENT = 'https://neoxcoin.github.io';
+
+  /* 1) 防熱鏈：不允許被其他網站的 iframe 直接嵌入 */
+  if (window.top !== window.self) {
+    try {
+      const ref = document.referrer || '';
+      const origin = ref ? new URL(ref).origin : '';
+      if (origin !== ALLOWED_PARENT) {
+        window.top.location.replace(HUB);
+        return;
+      }
+    } catch (e) {
+      window.top.location.replace(HUB);
+      return;
+    }
+  }
+
+  /* 2) 防跳關：必須經過 Level 1（由 v1 設下的旗標/分數） */
+  const carry = Number(localStorage.getItem('nx_carry') || 0);        // v1 通關會設
+  const lastLv = Number(localStorage.getItem('neox_last_level') || 0); // v1 通關會設為 1
+  if (!carry || lastLv < 1) {
+    // 未經 v1 正常進來 → 送回 v1
+    window.location.replace(ENTRY1 + '#start');
+    return;
+  }
+
+  /* 3) 一次性開場動畫（opening2） */
+  if (!sessionStorage.getItem('seenOpening2')) {
+    sessionStorage.setItem('seenOpening2', 'true');
+    window.location.replace('opening2.html');
+    return;
+  }
+})();
 </script>
 
 <style>
