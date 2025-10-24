@@ -152,8 +152,8 @@ const MAX_MISSES = 90;
 
 /* ===== Asset URLs ===== */
 const CHEST_URL = "https://neoxcoin.github.io/neox-game/treasure-box.png";
-const COIN_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoinBack.png";   // 普通金幣
-const GOLD_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png"; // 特別金幣
+const COIN_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoinBack.png";
+const GOLD_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png";
 const RUBY_URL  = "https://neoxcoin.github.io/neox-game/ruby.png";
 const SAPP_URL  = "https://neoxcoin.github.io/neox-game/sapphire.png";
 
@@ -192,7 +192,7 @@ bgVideo.play().catch(()=>{});
 
 /* ===== Data (carry 由 v2 帶入) ===== */
 let carry = Number(localStorage.getItem('nx_carry') || 0);
-let score = carry; // 起始分數 = v2 的結算
+let score = carry;
 let best  = Number(localStorage.getItem('neox_catch_best_l3')||0);
 let timeLeft = TOTAL_TIME_SEC;
 let missCount = 0;
@@ -248,7 +248,7 @@ addEventListener('pointermove',e=>{
 ['pointerup','pointercancel'].forEach(evt=>addEventListener(evt,()=>{pointerId=null; chest.vx=0;},{passive:false}));
 
 /* ===== Buttons ===== */
-document.getElementById('btnHome').onclick = ()=>{ window.location.href = 'https://neoxcoin.github.io/'; };
+document.getElementById('btnHome').onclick = ()=>{ window.top.location.href = 'https://neoxcoin.github.io/'; };
 btnPause.onclick  = ()=>togglePause();
 btnReplay.onclick = ()=>restart();
 btnEndgame.onclick = ()=>gotoEnd();
@@ -321,10 +321,7 @@ function showPanel(title, showEnd=false){
   finalScore.textContent = `Score: ${Math.floor(score)}`;
   bestScore.textContent  = `Best: ${Math.floor(best)}`;
   statInfo.textContent   = `Caught: ${caughtCount} · Missed: ${missCount}`;
-
-  // 只有爆機時顯示「Game Finished」
   btnEndgame.classList.toggle('hidden', !showEnd);
-
   panelWin.classList.remove('hidden');
   requestAnimationFrame(()=>panelWin.classList.add('show'));
 }
@@ -340,8 +337,7 @@ function refreshHUD(){
   bestBadge.textContent  = `Best: ${Math.floor(best)}`;
   timeBadge.textContent  = `Time: ${fmt(timeLeft)}`;
   missBadge.textContent  = `Miss: ${missCount}/${MAX_MISSES}`;
-  
-    // 🛰️ 向 iframe 傳送即時分數
+  // 向父頁傳分數（如有 iframe）
   window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
 
@@ -359,7 +355,7 @@ function loop(now){
     if(timeLeft<=0){
       best = Math.max(best, Math.floor(score));
       refreshHUD(); SFX.win(); state=State.WIN;
-      showPanel('Congratulations! 🥰🎉', true);  // Win：顯示 Game Finished
+      showPanel('🥰 Congratulations! 🎉 ', true);
       return;
     }
 
@@ -387,13 +383,12 @@ function loop(now){
         (it.type===TYPES.COIN?SFX.coin: it.type===TYPES.GOLD?SFX.gold: it.type===TYPES.RUBY?SFX.ruby:SFX.sapp)();
         caughtCount++; refreshHUD();
       }else if(it.y>canvas.clientHeight+30){
-        // v3：只計 Miss，不扣分；Miss 達上限 → Game Over
         items.splice(i,1);
         missCount++; SFX.miss(); refreshHUD();
         if(missCount>=MAX_MISSES){
           best = Math.max(best, Math.floor(score));
           refreshHUD(); state=State.OVER; SFX.over();
-          showPanel('Game Over 😭', false);   // Over：唔顯示 Game Finished
+          showPanel('Game Over 😭', false);
           return;
         }
       }
