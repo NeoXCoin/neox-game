@@ -3,42 +3,57 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Game (iframe clean)</title>
+
 <style>
-  body{
-    margin:0; background:#0a0b1f; color:#fff; height:100vh;
-    display:grid; place-items:center;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
+  :root { --vh: 1vh; }
+
+  html, body {
+    margin: 0;
+    background: #0a0b1f;
+    color: #fff;
+    height: calc(var(--vh, 1vh) * 100);
+    display: grid;
+    place-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans", Arial, sans-serif;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: auto;
+    touch-action: manipulation;
   }
 
-  iframe{
-    width:min(92vw,440px);
-    aspect-ratio:9/16;
-    border:0; border-radius:16px;
-    box-shadow:0 10px 40px rgba(0,0,0,.45);
+  iframe {
+    width: min(92vw, 440px);
+    aspect-ratio: 9/16;
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.45);
+    padding: constant(safe-area-inset-top) constant(safe-area-inset-right)
+             constant(safe-area-inset-bottom) constant(safe-area-inset-left);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+             env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   /* 🏆 Top 3 Box */
-  .top3{
-    position:fixed;
-    top:16px; left:50%; transform:translateX(-50%);
-    background:rgba(255,255,255,.08);
-    border-radius:12px;
-    padding:10px 16px;
-    font-weight:800;
-    font-size:15px;
-    box-shadow:0 6px 20px rgba(0,0,0,.3);
-    backdrop-filter:blur(6px);
-    display:none;
-    opacity:0;
-    transition:opacity .8s ease;
+  .top3 {
+    position: fixed;
+    top: 16px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 800;
+    font-size: 15px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.3);
+    backdrop-filter: blur(6px);
+    display: none;
+    opacity: 0;
+    transition: opacity .8s ease;
   }
-  .top3.show{ display:block; opacity:1; }
-
-  .top3 ol{ margin:6px 0 0; padding-left:20px; }
-  .top3 small{ opacity:.8; font-weight:600; }
+  .top3.show { display: block; opacity: 1; }
+  .top3 ol { margin: 6px 0 0; padding-left: 20px; }
+  .top3 small { opacity: .8; font-weight: 600; }
 </style>
 
-<!-- 🎮 起始頁：整個遊戲流程（opening → v1 → v2 → endgame） -->
+<!-- 🎮 起始頁：整個遊戲流程 -->
 <iframe id="game" src="index.html" allow="gamepad *"></iframe>
 
 <!-- 🏆 全球排行榜 -->
@@ -47,6 +62,23 @@
   <ol id="top3List"><li>Loading...</li></ol>
   <small id="top3Hint"></small>
 </div>
+
+<!-- 🔧 固定可視高度（防止 iOS 地址列導致 iframe 高度跳動） -->
+<script>
+  (function setVh(){
+    function update(){
+      var h = (window.visualViewport ? visualViewport.height : window.innerHeight);
+      document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+    }
+    update();
+    window.addEventListener('resize', update, {passive:true});
+    window.addEventListener('orientationchange', update, {passive:true});
+    if (window.visualViewport) {
+      visualViewport.addEventListener('resize', update, {passive:true});
+      visualViewport.addEventListener('scroll', update, {passive:true});
+    }
+  })();
+</script>
 
 <script>
 /* ====== 🌐 API Config ====== */
