@@ -18,7 +18,6 @@
     touch-action:none;
     position:relative; z-index:1;
   }
-
   /* HUD */
   .hud{position:absolute; inset:0; z-index:5; pointer-events:none; display:grid; grid-template-rows:auto 1fr;}
   @media (max-width: 600px) {
@@ -50,8 +49,6 @@
     pointer-events:auto;
   }
   .iconbtn img{width:22px;height:22px;object-fit:contain;display:block;}
-
-  /* Panels */
   .panel{
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
     pointer-events:auto; z-index:10;
@@ -80,14 +77,12 @@
           <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home">Home
         </button>
       </div>
-
       <div class="center">
         <span class="badge" id="scoreBadge">Score: 0</span>
         <span class="badge" id="timeBadge">Time: 03:00</span>
         <span class="badge" id="bestBadge">Best: 0</span>
-        <span class="badge" id="missBadge">Miss: 0/30</span><!-- 新增 -->
+        <span class="badge" id="missBadge">Miss: 0/30</span>
       </div>
-
       <div class="right">
         <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
       </div>
@@ -121,10 +116,26 @@
 </div>
 
 <script>
+/* ====== 防熱鏈／父頁來源檢查 ====== */
+(function(){
+  const ALLOWED_PARENT_ORIGIN = 'https://neoxcoin.github.io';
+  if (window.top !== window.self) {
+    try {
+      const ref = document.referrer || '';
+      const parentOrigin = ref ? new URL(ref).origin : '';
+      if (parentOrigin !== ALLOWED_PARENT_ORIGIN) {
+        window.top.location.replace('https://neoxcoin.github.io/neox-game/');
+      }
+    } catch (e) {
+      window.top.location.replace('https://neoxcoin.github.io/neox-game/');
+    }
+  }
+})();
+
 /* ====== Config ====== */
-const TOTAL_TIME_SEC = 180;   // 3 分鐘
+const TOTAL_TIME_SEC = 180;
 const EDGE = 2;
-const MAX_MISSES = 60;        // 👈 v1 的 Game Over 門檻（不扣分，只計數）
+const MAX_MISSES = 60;
 
 /* ====== Assets ====== */
 const BG_URL    = "https://neoxcoin.github.io/neox-game/forest%20background%20.PNG";
