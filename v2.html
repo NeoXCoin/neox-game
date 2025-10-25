@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Catch — Level 2</title>
 
+<!-- ====== Level 2 守門（置頂、任何腳本前） ====== -->
 <script>
-/* ====== Level 2 守門（放在 <head> 裏、任何其他腳本之前）====== */
 (function () {
   const HOME   = 'https://neoxcoin.github.io/';
   const ENTRY1 = 'https://neoxcoin.github.io/neox-game/v1.html';
   const HUB    = 'https://neoxcoin.github.io/neox-game/';
   const ALLOWED_PARENT = 'https://neoxcoin.github.io';
 
-  /* 1) 防熱鏈：不允許被其他網站的 iframe 直接嵌入 */
+  // 1) 防熱鏈：不允許被其他網站的 iframe 直接嵌入
   if (window.top !== window.self) {
     try {
       const ref = document.referrer || '';
@@ -28,19 +28,25 @@
     }
   }
 
-  /* 2) 防跳關：必須經過 Level 1（由 v1 設下的旗標/分數） */
-  const carry = Number(localStorage.getItem('nx_carry') || 0);        // v1 通關會設
-  const lastLv = Number(localStorage.getItem('neox_last_level') || 0); // v1 通關會設為 1
-  if (!carry || lastLv < 1) {
-    // 未經 v1 正常進來 → 送回 v1
+  // 2) 防跳關（A+B）
+  // - 允許 #fromOpening2 直入並補寫 last_level=1
+  // - 否則要求 last_level >= 1（注意 0 分都合法，不用 !carry）
+  const fromOpening2 = /fromOpening2/i.test(location.hash || '');
+  const lastLv  = Number(localStorage.getItem('neox_last_level') || 0);
+
+  if (fromOpening2) {
+    try { localStorage.setItem('neox_last_level', '1'); } catch(e){}
+    sessionStorage.setItem('seenOpening2', 'true');
+    // 直入關卡
+  } else if (lastLv < 1) {
     window.location.replace(ENTRY1 + '#start');
     return;
   }
 
-  /* 3) 一次性開場動畫（opening2） */
+  // 3) 一次性開場動畫（未看過 Opening2 → 先去看）
   if (!sessionStorage.getItem('seenOpening2')) {
     sessionStorage.setItem('seenOpening2', 'true');
-    window.location.replace('opening2.html');
+    window.location.replace('https://neoxcoin.github.io/neox-game/opening2.html#fromV1');
     return;
   }
 })();
@@ -52,13 +58,10 @@
   #wrap{position:relative;height:100%;display:grid;place-items:center;}
   canvas{display:block;width:min(92vw,700px);aspect-ratio:9/16;height:auto;border-radius:16px;background:#000;
     box-shadow:0 20px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);touch-action:none;}
-
-  /* HUD z-order 修正 */
   canvas{position:relative;z-index:1;}
   .hud{position:absolute;inset:0;z-index:5;pointer-events:none;display:grid;grid-template-rows:auto 1fr;}
   .panel{z-index:10;pointer-events:auto;}
 
-  /* 手機等窄屏：強制左右貼邊＋中間絕對置中 */
   @media (max-width: 600px) {
     .topbar{ position:relative; display:block; padding:10px 14px; }
     .topbar .left  { position:absolute; left:10px;  top:10px; }
@@ -69,7 +72,6 @@
     }
   }
 
-  /* 其他情況：grid，確保欄位唔被撐歪 */
   .topbar{
     display:grid;
     grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
@@ -78,7 +80,7 @@
   }
   .left{  justify-self:start; pointer-events:auto; }
   .center{justify-self:center; text-align:center; pointer-events:none; }
-  .right{ justify-self:end;   pointer-events:auto; }
+  .right{ justify-self=end;   pointer-events:auto; }
   .badge{display:inline-block;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
          box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900;}
 
@@ -113,8 +115,7 @@
         <span class="badge" id="scoreBadge">Score: 0</span>
         <span class="badge" id="timeBadge">Time: 03:00</span>
         <span class="badge" id="bestBadge">Best: 0</span>
-        <!-- ✅ 新增 Miss 標籤 -->
-        <span class="badge" id="missBadge">Miss: 0/30</span>
+        <span class="badge" id="missBadge">Miss: 0/90</span>
       </div>
       <div class="right">
         <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
@@ -140,7 +141,7 @@
 <script>
 /* ====== Config ====== */
 const TOTAL_TIME_SEC = 180;
-const MAX_MISSES = 90;          // ← 想幾多次 Game Over 就改呢度
+const MAX_MISSES = 90;
 
 /* ====== Assets ====== */
 const BG_URL     = "https://neoxcoin.github.io/neox-game/v2blackground.png";
@@ -222,8 +223,7 @@ function refreshHUD(){
   missBadge.textContent =`Miss: ${missCount}/${MAX_MISSES}`;
   finalScore.textContent=`Score: ${Math.floor(score)}`;
   bestScore.textContent =`Best: ${Math.floor(best)}`;
-  
-    // 🛰️ 向 iframe 傳送即時分數
+  // 🛰️ 向父頁（如被 iframe 包著）傳即時分數
   window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
 
@@ -272,16 +272,16 @@ function spawnCoins(dt){
 
   if (spawnTimer <= 0 && coins.length < maxOnScreen){
     const SAFE_MARGIN = chest.w * 0.12;
-    const isSpecial = Math.random() < 0.12;  // ← 先決定係咪黑鑽
+    const isSpecial = Math.random() < 0.12;  // 黑鑽出現機率
 
     coins.push({
       x: EDGE + SAFE_MARGIN + Math.random()*(canvas.clientWidth - 2*(EDGE + SAFE_MARGIN)),
       y: -20,
-      r: isSpecial ? 15 : 12,               // ← 黑鑽大少少
+      r: isSpecial ? 15 : 12,
       vy: 2.6 + Math.random()*2.2,
       spin: Math.random()*Math.PI*2,
       vspin: -0.12 + Math.random()*0.24,
-      special: isSpecial                    // ← 同步保存旗標
+      special: isSpecial
     });
 
     spawnTimer = 0.55 + Math.random()*0.55;
@@ -300,7 +300,7 @@ function togglePause(forcePause){
   else if(state===State.PAUSED){ state=State.PLAYING; btnPause.textContent='⏸ Pause'; }
 }
 function restart(){
-  // 🔄 重玩：用「本關起始分」重新開始，不改 localStorage
+  // 用「本關起始分」重新開始，不改 localStorage
   score = startCarry;
   timeLeft = TOTAL_TIME_SEC;
   missCount = 0; caughtCount = 0;
@@ -319,15 +319,18 @@ function finishWin(){
   localStorage.setItem('nx_last_score', String(s));
   localStorage.setItem('nx_carry',      String(s));
   localStorage.setItem('nx_best_all',   String(best));
+  try { localStorage.setItem('neox_last_level','2'); } catch(e){}
 
   winTitle.textContent="Stage Clear! 🎉";
   statInfo.textContent = `Caught: ${caughtCount} · Missed: ${missCount}`;
   refreshHUD();
 
-  // Win 時顯示「去第 3 關」
   btnNext.classList.remove('hidden');
   panelWin.classList.remove('hidden');
   SFX.win();
+
+  // 如需自動跳去 Opening3，可解開呢行：
+  // setTimeout(gotoOpening3, 1200);
 }
 function gameOver(){
   state=State.OVER;
@@ -343,8 +346,17 @@ function gameOver(){
   panelWin.classList.remove('hidden');
 }
 
-/* 去 Level 3：先到 opening3.html */
-function gotoOpening3(){ window.location.href = 'opening3.html'; }
+/* 🚀 v2 → opening3（A+B） */
+function gotoOpening3(){
+  try { localStorage.setItem('neox_last_level', '2'); } catch(e){}
+  const url = 'https://neoxcoin.github.io/neox-game/opening3.html#fromV2';
+  try {
+    if (window.top && window.top !== window) window.top.location.href = url;
+    else location.replace(url);
+  } catch (e) {
+    location.href = url;
+  }
+}
 
 /* ====== Loop ====== */
 let last=performance.now();
@@ -371,14 +383,14 @@ function loop(now){
     const overhangL = Math.max(0, (chest.w/2 + EDGE) - chest.x);
     const overhangR = Math.max(0, (chest.w/2 + EDGE) - (canvas.clientWidth - chest.x));
     const edgeBoost = overhangL + overhangR + 4;
-    const mouth = { cx:chest.x, cy:chest.y - chest.h*0.58, rx:baseRx + edgeBoost, ry:baseRy };
+    const mouth = { cx:chest.x, cy:chest.y - chest.h * 0.58, rx:baseRx + edgeBoost, ry:baseRy };
 
     for(let i=coins.length-1;i>=0;i--){
       const c=coins[i];
       const ex=(c.x-mouth.cx)/mouth.rx, ey=(c.y-mouth.cy)/mouth.ry;
 
       if(ex*ex+ey*ey<=1){
-        // ✅ 抓到
+        // 抓到
         score += (c.special? 30 : 10);
         coins.splice(i,1);
         caughtCount++;
@@ -386,7 +398,7 @@ function loop(now){
         refreshHUD();
 
       }else if(c.y>canvas.clientHeight+30){
-        // ❌ 漏掉（v2 不扣分；只計 Miss）
+        // 漏掉（v2 不扣分；只計 Miss）
         coins.splice(i,1);
         missCount++;
         SFX.miss();
@@ -423,9 +435,8 @@ function drawCoins(){
   const isDesktop = window.matchMedia('(pointer:fine)').matches &&
                   !/Android|iPhone|iPad/i.test(navigator.userAgent);
 
-  // 💰 大小設定：desktop 可自行微調
-  const normalScale  = isDesktop ? 2.6 : 2.2;  // 金幣比例（桌面版略大）
-  const specialScale = isDesktop ? 2.8 : 2.4;  // 黑鑽比例（桌面版略大）
+  const normalScale  = isDesktop ? 2.6 : 2.2;  // 金幣比例
+  const specialScale = isDesktop ? 2.8 : 2.4;  // 黑鑽比例
 
   for (const c of coins) {
     const size = (c.special ? specialScale : normalScale) * c.r;
