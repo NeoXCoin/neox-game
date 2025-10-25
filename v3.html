@@ -128,7 +128,7 @@
 
       <!-- 面板（Win / Game Over 共用） -->
       <div id="panelWin" class="panel hidden">
-        <h1 id="winTitle">Congratulations! 🥰🎉</h1>
+        <h1 id="winTitle">🥰 Congratulations! 🎉</h1>
         <p>
           <span id="finalScore">Score: 0</span> ·
           <span id="bestScore">Best: 0</span><br>
@@ -147,7 +147,7 @@
 <script>
 /* ===== Config ===== */
 const TOTAL_TIME_SEC = 180;
-const MAX_MISSES = 99;
+const MAX_MISSES = 120;
 
 /* ===== Asset URLs ===== */
 const CHEST_URL = "https://neoxcoin.github.io/neox-game/treasure-box.png";
@@ -355,7 +355,7 @@ function loop(now){
     if(timeLeft<=0){
       best = Math.max(best, Math.floor(score));
       refreshHUD(); SFX.win(); state=State.WIN;
-      showPanel('Congratulations! 🥰🎉', true);  // Win：顯示 Game Finished
+      showPanel('🥰 Congratulations! 🎉', true);  // Win：顯示 Game Finished
       return;
     }
 
