@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>NeoX Game (iframe clean)</title>
-
+<title>NeoX Game (iframe host)</title>
 <style>
   :root { --vh: 1vh; }
 
@@ -27,6 +27,8 @@
     border: 0;
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(0,0,0,.45);
+    background: #000;
+    /* iOS safe-area padding (no harm on desktop) */
     padding: constant(safe-area-inset-top) constant(safe-area-inset-right)
              constant(safe-area-inset-bottom) constant(safe-area-inset-left);
     padding: env(safe-area-inset-top) env(safe-area-inset-right)
@@ -46,15 +48,25 @@
     backdrop-filter: blur(6px);
     display: none;
     opacity: 0;
-    transition: opacity .8s ease;
+    transition: opacity .6s ease;
+    max-width: min(92vw, 440px);
   }
   .top3.show { display: block; opacity: 1; }
   .top3 ol { margin: 6px 0 0; padding-left: 20px; }
-  .top3 small { opacity: .8; font-weight: 600; }
+  .top3 small { opacity: .8; font-weight: 600; display:block; margin-top: 6px; }
 </style>
+</head>
+<body>
 
-<!-- 🎮 起始頁：整個遊戲流程 -->
-<iframe id="game" src="index.html" allow="gamepad *"></iframe>
+<!-- 🎮 起始頁：整個遊戲流程（用絕對 URL + 旗標） -->
+<iframe
+  id="game"
+  title="NeoX Catch"
+  src="https://neoxcoin.github.io/neox-game/index.html#embed=1"
+  allow="autoplay *; fullscreen *; gamepad *; clipboard-write"
+  referrerpolicy="no-referrer-when-downgrade"
+  loading="eager">
+</iframe>
 
 <!-- 🏆 全球排行榜 -->
 <div class="top3" id="top3Box">
@@ -63,7 +75,7 @@
   <small id="top3Hint"></small>
 </div>
 
-<!-- 🔧 固定可視高度（防止 iOS 地址列導致 iframe 高度跳動） -->
+<!-- 🔧 固定可視高度（防 iOS 地址列導致高度跳動） -->
 <script>
   (function setVh(){
     function update(){
@@ -82,7 +94,10 @@
 
 <script>
 /* ====== 🌐 API Config ====== */
-const API_URL = 'https://script.google.com/macros/s/AKfycbw44w4f5hpmKiledO1XfIKsGgfMgCksmcU2Qsst56l68CPLvQs4GvIg0PrItIuUqkOT2g/exec';
+const API_URL     = 'https://script.google.com/macros/s/AKfycbw44w4f5hpmKiledO1XfIKsGgfMgCksmcU2Qsst56l68CPLvQs4GvIg0PrItIuUqkOT2g/exec';
+const GAME_ORIGIN = 'https://neoxcoin.github.io';
+const GAME_BASE   = 'https://neoxcoin.github.io/neox-game/';
+const frame       = document.getElementById('game');
 
 /* ====== 👤 Player Name (首次詢問) ====== */
 function getPlayerName(){
@@ -101,7 +116,7 @@ async function loadTop3(){
   const list = document.getElementById('top3List');
   const hint = document.getElementById('top3Hint');
   try{
-    const res = await fetch(API_URL);
+    const res  = await fetch(API_URL, { cache:'no-cache' });
     const data = await res.json();
     list.innerHTML = '';
     (data||[]).slice(0,3).forEach(r=>{
@@ -123,22 +138,36 @@ async function submitScore(score){
     await fetch(API_URL,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ name:getPlayerName(), score:Math.floor(score) })
+      body:JSON.stringify({ name:getPlayerName(), score:Math.floor(score||0) })
     });
   }catch(e){}
 }
 
-/* ====== 🎮 Communication with iframe ====== */
-const frame=document.getElementById('game');
-window.addEventListener('message',async e=>{
-  const m=e.data||{};
-  
-  // 🏁 Game cleared
-  if(m.type==='NX_GAME_CLEARED'){
-    const total=Math.floor(m.total||m.score||0);
+/* ====== 🔒 安全接收 postMessage（只接受來自 neoxcoin.github.io） ====== */
+window.addEventListener('message', async (event)=>{
+  if (event.origin !== GAME_ORIGIN) return;       // 安全：忽略未知來源
+  const m = event.data || {};
+  // 可選：console.log('MSG from game:', m);
+
+  // 你現有 v2/v3 內已 postMessage NX_CARRY，可在這裡做父頁 UI（例如改標題）
+  if (m.type === 'NX_CARRY' && typeof m.score === 'number') {
+    document.title = `NeoX Game — Score ${m.score}`;
+  }
+
+  // 🏁 遊戲完成（端內請發這個）
+  if (m.type === 'NX_GAME_CLEARED') {
+    const total = Math.floor(m.total ?? m.score ?? 0);
     await submitScore(total);   // 上傳分數
     await loadTop3();           // 取榜顯示
   }
 });
+
+/* ====== 📤 對子頁（iframe）下發玩家名稱（可選，供子頁展示） ====== */
+function sendPlayerName(){
+  const name = getPlayerName();
+  try{ frame.contentWindow?.postMessage({ type:'NX_PLAYER_NAME', name }, GAME_ORIGIN); }catch(e){}
+}
+window.addEventListener('load', sendPlayerName);
 </script>
+</body>
 </html>
