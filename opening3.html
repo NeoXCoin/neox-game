@@ -116,10 +116,10 @@
       <h1>Treasure Journey</h1>
       <p>Watch the short opening, or skip and start the level.</p>
       <div class="btnrow">
-        <button id="btnSound">🔈 Sound on</button>
+        <button id="btnSound">🔈 Sound off</button>
         <button id="btnStart" class="primary">▶ Start Play</button>
         <button id="btnSkip">⏭ Skip</button>
-        <button id="btnSkin">💎 Skin</button><!-- 新增：Skin 去 v3.html -->
+        <!-- ❌ 不要 Skin：已移除 -->
       </div>
     </div>
   </section>
@@ -130,7 +130,6 @@ const overlay  = document.getElementById('overlay');
 const btnSound = document.getElementById('btnSound');
 const btnStart = document.getElementById('btnStart');
 const btnSkip  = document.getElementById('btnSkip');
-const btnSkin  = document.getElementById('btnSkin'); // 新增
 
 /* 顯示影片畫面（避免黑屏） */
 function reveal(){ video.style.opacity = '1'; }
@@ -138,48 +137,45 @@ video.addEventListener('loadeddata', reveal);
 video.addEventListener('loadedmetadata', reveal);
 video.play().catch(()=>{}); // 嘗試自動播放（靜音）
 
-/* ===== 控制欄：5 秒無操作自動淡出；有互動就再顯示並重置計時 ===== */
+/* 控制欄：5 秒無操作自動淡出；有互動就再顯示並重置計時 */
 let hideTimer=null;
-function scheduleHide(){
-  clearTimeout(hideTimer);
-  hideTimer = setTimeout(()=> overlay.classList.add('hide'), 5000);
-}
-function showControls(){
-  overlay.classList.remove('hide');
-  scheduleHide();
-}
-scheduleHide(); // 初始計時
+function scheduleHide(){ clearTimeout(hideTimer); hideTimer = setTimeout(()=> overlay.classList.add('hide'), 5000); }
+function showControls(){ overlay.classList.remove('hide'); scheduleHide(); }
+scheduleHide();
 ['mousemove','pointermove','pointerdown','touchstart','keydown'].forEach(evt=>{
   window.addEventListener(evt, showControls, {passive:true});
 });
 
-/* ===== 音訊：Sound on/off 切換 ===== */
+/* 音訊：Sound on/off 切換 */
 let audioCtx;
 function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
-function updateSoundLabel(){
-  btnSound.textContent = video.muted ? '🔈 Sound off' : '🔊 Sound on';
-}
+function updateSoundLabel(){ btnSound.textContent = video.muted ? '🔈 Sound off' : '🔊 Sound on'; }
 btnSound.addEventListener('click', async ()=>{
   ensureAudio();
   try{
     await audioCtx.resume();
-    // 切換靜音
     video.muted = !video.muted;
-    // 開聲時如未播放就嘗試播放
-    if(!video.muted && video.paused){
-      try{ await video.play(); }catch(e){}
-    }
+    if(!video.muted && video.paused){ try{ await video.play(); }catch(e){} }
     updateSoundLabel();
   }catch(e){}
 });
 updateSoundLabel();
 
-/* ===== 前往 v3.html（Skip / 片尾 / Skin 都用） ===== */
-function goNext(){
-  location.replace('https://neoxcoin.github.io/neox-game/v3.html#fromOpening3');
+/* 🚀 強制導向 v3.html（避免被父頁/iframe 攔截） */
+const V3_URL = 'https://neoxcoin.github.io/neox-game/v3.html#fromOpening3';
+function goV3(){
+  try{
+    if (window.top && window.top !== window) {
+      window.top.location.href = V3_URL; // 直接頂層跳轉
+    } else {
+      location.replace(V3_URL);
+    }
+  }catch(e){
+    location.href = V3_URL;
+  }
 }
 
-/* ===== Start Play：先嘗試播放；若 1.2s 內無反應 → 直接打開 mp4 ===== */
+/* Start Play：先試播；若 1.2s 內無反應 → 直接開 mp4 */
 async function tryPlayWithFallback(){
   try{ ensureAudio(); await audioCtx?.resume?.(); }catch(e){}
   let started = false;
@@ -191,23 +187,20 @@ async function tryPlayWithFallback(){
   }
   video.addEventListener('playing', onPlaying, { once:true });
   video.addEventListener('timeupdate', onTime);
-
-  try{ await video.play(); }catch(e){ /* ignore */ }
+  try{ await video.play(); }catch(e){}
 
   setTimeout(()=>{
     if(!started){
       cleanup();
-      // 用絕對路徑打開原始 mp4（系統播放器）
       location.href = 'https://neoxcoin.github.io/neox-game/TreasureL3Opening.mp4';
     }
   }, 1200);
 }
 
-/* 綁定事件 */
+/* 綁定事件（只有三粒掣） */
 btnStart.addEventListener('click', tryPlayWithFallback);
-btnSkip .addEventListener('click', goNext);
-btnSkin .addEventListener('click', goNext);   // Skin → v3.html
-video.addEventListener('ended', goNext);
+btnSkip .addEventListener('click', goV3);
+video.addEventListener('ended', goV3);
 
 /* 第一次觸控時確保可以播放（iOS 解鎖） */
 ['pointerdown','touchend','click','keydown'].forEach(evt=>{
