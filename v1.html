@@ -32,31 +32,31 @@
   /* 🧱 田字型分數牌：固定畫面正中 */
   .scoreboard{
     position:absolute;
-    top:50%; left:50%;
+    top:44%;                    /* 由 50% 下調，視覺更居中 */
+    left:50%;
     transform:translate(-50%,-50%);
     display:grid;
-    grid-template-columns: 1fr 1fr;   /* 兩欄 */
-    gap:8px 10px;
+    grid-template-columns: 1fr 1fr;
+    gap:6px 8px;                /* 緊湊少少 */
     justify-items:center;
     z-index:10;
-    pointer-events:none;              /* 唔阻住操作 */
-  }
+    pointer-events:none;
+    max-width:320px;            /* 防止 iPad 太闊 */
+  } 
+  .scoreboard > div{ display:contents; }
 
-  /* 兩行包住的 <div> 變成 grid 的兩行 */
-  .scoreboard > div{
-    display:contents;                 /* 令裡面兩個 .badge 自己站一格 */
-  }
-
-  /* 分數牌外觀稍作統一 */
+  /* 分數牌細一點 */
   .scoreboard .badge{
-    min-width:110px;
+    min-width:95px;             /* 由 110px 降到 95px */
+    font-size:14px;
+    padding:6px 10px;
     text-align:center;
     font-weight:900;
     color:#fff;
     background:rgba(255,255,255,.14);
     backdrop-filter:blur(6px);
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
-    border-radius:12px;
+    border-radius:10px;
   }
 
   /* 覆蓋原本手機佈局對 .center 的定位（確保仍然置中） */
