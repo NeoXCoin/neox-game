@@ -29,6 +29,43 @@
       text-align:center; pointer-events:none;
     }
   }
+  /* 🧱 田字型分數牌：固定畫面正中 */
+  .scoreboard{
+    position:absolute;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    display:grid;
+    grid-template-columns: 1fr 1fr;   /* 兩欄 */
+    gap:8px 10px;
+    justify-items:center;
+    z-index:10;
+    pointer-events:none;              /* 唔阻住操作 */
+  }
+
+  /* 兩行包住的 <div> 變成 grid 的兩行 */
+  .scoreboard > div{
+    display:contents;                 /* 令裡面兩個 .badge 自己站一格 */
+  }
+
+  /* 分數牌外觀稍作統一 */
+  .scoreboard .badge{
+    min-width:110px;
+    text-align:center;
+    font-weight:900;
+    color:#fff;
+    background:rgba(255,255,255,.14);
+    backdrop-filter:blur(6px);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+    border-radius:12px;
+  }
+
+  /* 覆蓋原本手機佈局對 .center 的定位（確保仍然置中） */
+  .topbar .scoreboard{
+    top:50% !important;
+    left:50% !important;
+    transform:translate(-50%,-50%) !important;
+    position:absolute !important;
+  }
   .topbar{
     display:grid;
     grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
