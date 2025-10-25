@@ -4,6 +4,46 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>NeoX Catch — Opening 2</title>
+
+<!-- ✅ 守門（A+B）：允許 #fromV1 放行並補寫進度；否則要求 last_level ≥ 1 -->
+<script>
+(function(){
+  const HUB          = 'https://neoxcoin.github.io/neox-game/';
+  const ORIGIN_ALLOW = 'https://neoxcoin.github.io';
+  const L1_URL       = HUB + 'v1.html';
+
+  // 防熱鏈：如被外站 iframe 載入，回 Hub
+  if (window.top !== window.self) {
+    try {
+      const ref = document.referrer || '';
+      const origin = ref ? new URL(ref).origin : '';
+      if (origin !== ORIGIN_ALLOW) {
+        window.top.location.replace(HUB);
+        return;
+      }
+    } catch (e) {
+      window.top.location.replace(HUB);
+      return;
+    }
+  }
+
+  // 放行條件
+  const safeNum = k => { try { return Number(localStorage.getItem(k) || 0); } catch { return 0; } };
+  const lastLv  = safeNum('neox_last_level');
+  const fromV1  = /fromV1/i.test(location.hash || '');
+
+  if (fromV1) {
+    try { localStorage.setItem('neox_last_level', '1'); } catch(e){}
+    return; // 直入
+  }
+
+  if (lastLv < 1) {
+    location.replace(L1_URL + '#fromGuard');
+    return;
+  }
+})();
+</script>
+
 <style>
   :root{ --pad: clamp(10px, 3.5vw, 18px); }
 
@@ -202,13 +242,24 @@ async function tryPlayWithFallback(){
 }
 btnStart.addEventListener('click', tryPlayWithFallback);
 
-/* ===== Skip / 影片播完 → 進 v2.html ===== */
-function goNext(){
-  // 統一用絕對網址 + 回程旗標
-  location.replace('https://neoxcoin.github.io/neox-game/v2.html#fromOpening2');
+/* ===== Skip / 影片播完 → 進 v2.html（A+B） ===== */
+const V2_URL = 'https://neoxcoin.github.io/neox-game/v2.html#fromOpening2';
+function goV2(){
+  // A: 補寫進度，確保已通過 L1
+  try { localStorage.setItem('neox_last_level', '1'); } catch(e){}
+  // B: 頂層跳轉，避免 iframe 攔截；失敗則退回本層
+  try{
+    if (window.top && window.top !== window) {
+      window.top.location.href = V2_URL;
+    } else {
+      location.replace(V2_URL);
+    }
+  }catch(e){
+    location.href = V2_URL;
+  }
 }
-btnSkip.addEventListener('click', goNext);
-video.addEventListener('ended', goNext);
+btnSkip.addEventListener('click', goV2);
+video.addEventListener('ended', goV2);
 
 /* 回可視時維持播放 */
 document.addEventListener('visibilitychange', ()=>{
