@@ -42,24 +42,14 @@
   .vctrl button{background:#1f2a5a;border:0;color:#fff;font-weight:800;letter-spacing:.02em;
     padding:12px 16px;border-radius:12px;box-shadow:0 6px 18px rgba(43,124,255,.35);cursor:pointer}
   #btnPlaySound{background:#2563eb}
-  /* 自動淡出 */
   .vctrl.fadeout{opacity:0;transition:opacity 1.2s ease;pointer-events:none}
-  
-  /*/* 手機直向：兩個按鍵同一水平、置底 */
-@media (orientation: portrait) {
-  .vctrl{
-    flex-direction: row;       /* 並排 */
-    flex-wrap: nowrap;         /* 唔換行 */
-    gap: 10px;
-    bottom: calc(6% + env(safe-area-inset-bottom)); /* 稍為貼底 */
+
+  /* 手機直向：兩個按鍵並排貼底 */
+  @media (orientation: portrait){
+    .vctrl{flex-direction:row;flex-wrap:nowrap;gap:10px;
+      bottom:calc(6% + env(safe-area-inset-bottom))}
+    .vctrl button{white-space:nowrap;font-size:clamp(14px,3.4vw,16px);padding:10px 14px}
   }
-  /* 俾窄屏都唔會擠爆 */
-  .vctrl button{
-    white-space: nowrap;                 /* 文字唔換行 */
-    font-size: clamp(14px, 3.4vw, 16px); /* 細少少更fit */
-    padding: 10px 14px;
-  }
-}
 
   /* ===== Start layer ===== */
   #startLayer{position:fixed;inset:0;display:none;place-items:center;background:rgba(5,8,20,.85);
@@ -111,7 +101,7 @@
 <!-- Transition FX -->
 <div id="fx"><div class="flash"></div><div class="pulse"></div></div>
 
-<!-- Short transition BGM (plays when Start is pressed) -->
+<!-- Short transition BGM -->
 <audio id="startBGM" preload="auto"
   src="https://neoxcoin.github.io/neox-game/NeoX_OpeningTheme_Cartoon.m4a" style="display:none"></audio>
 
@@ -153,7 +143,7 @@ function showControlsAndArmTimer(ms=6000){ ctrls.hidden=false; ctrls.classList.r
 
 function startOpening(){
   opener.style.display='flex';
-  video.src='https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4';
+  video.src='https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4'; // ← 開場影片
   video.muted=true;
   video.play().then(()=>{
     loading.style.display='none';
@@ -166,11 +156,11 @@ function startOpening(){
 
 btnPlay.addEventListener('click', async ()=>{
   try{ if (video.paused) await video.play(); video.muted=false; btnPlay.textContent='🔊 Sound on'; btnPlay.disabled=true; }catch(e){}
-  fadeControlsSoon(600);  // 有按也會淡出
+  fadeControlsSoon(600);
 });
 
 btnSkip.addEventListener('click', ()=>{
-  fadeControlsSoon(0);    // 立即淡出
+  fadeControlsSoon(0);
   try{ video.pause(); }catch(e){}
   playFX();
   setTimeout(showStart, 900);
@@ -178,7 +168,7 @@ btnSkip.addEventListener('click', ()=>{
 
 video.addEventListener('playing', ()=>{ loading.style.display='none'; video.style.opacity='1'; scheduleControlsFade(6000); });
 video.addEventListener('ended', ()=>{
-  video.style.filter='brightness(1.25)'; // 亮一點
+  video.style.filter='brightness(1.25)';
   playFX();
   setTimeout(showStart, 900);
 });
@@ -187,9 +177,8 @@ video.addEventListener('ended', ()=>{
 function showStart(){ opener.style.display='none'; start.style.display='grid'; requestAnimationFrame(()=>start.classList.add('visible')); }
 
 startBtn.addEventListener('click', ()=>{
-  // 播短過場 BGM，再跳 v1.html
   try{ startBGM.currentTime=0; startBGM.volume=1; startBGM.muted=false; startBGM.play().catch(()=>{});}catch(e){}
-  setTimeout(()=>{ window.location.href='v1.html'; }, 800);
+  setTimeout(()=>{ window.location.href='v1.html'; }, 800); // ← 開始遊戲要去的頁面（需要就改）
 });
 
 /* ---------- FX ---------- */
