@@ -266,7 +266,9 @@ const SFX = {
 document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'visible') resumeAudio(); });
 
 /* ====== Buttons ====== */
-document.getElementById('btnHome').onclick = ()=>{window.location.href='https://neoxcoin.github.io/';};
+document.getElementById('btnHome').onclick = () => {
+  (window.top || window).location.replace('https://neoxcoin.github.io/');
+};
 document.getElementById('btnStart').onclick=()=>{start();};
 document.getElementById('btnRestart2').onclick=()=>{restart();};
 document.getElementById('btnReplay').onclick=()=>{restart();};
