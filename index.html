@@ -37,18 +37,60 @@
   @keyframes spin{to{transform:rotate(360deg)}}
 
   /* 控制鍵（Sound / Start Play / Skip） */
-  .vctrl{position:absolute;left:50%;bottom:calc(10% + env(safe-area-inset-bottom));
-    transform:translateX(-50%);display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-  .vctrl button{background:#1f2a5a;border:0;color:#fff;font-weight:800;letter-spacing:.02em;
-    padding:12px 16px;border-radius:12px;box-shadow:0 6px 18px rgba(43,124,255,.35);cursor:pointer}
-  #btnStart{background:#2563eb}
-  .vctrl.fadeout{opacity:0;transition:opacity 1.2s ease;pointer-events:none}
+  .vctrl {
+    position:absolute;
+    left:50%;
+    bottom:calc(10% + env(safe-area-inset-bottom));
+    transform:translateX(-50%);
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .vctrl button {
+    background:rgba(40,40,55,.75);
+    border:1px solid rgba(255,255,255,.15);
+    color:#fff;
+    font-weight:700;
+    letter-spacing:.02em;
+    padding:12px 16px;
+    border-radius:12px;
+    cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,.45);
+    backdrop-filter:blur(6px);
+    transition:background .3s ease, transform .2s ease;
+  }
+  .vctrl button:hover {
+    background:rgba(255,255,255,.15);
+    transform:translateY(-1px);
+  }
+  .vctrl button:active {
+    transform:translateY(1px);
+    background:rgba(255,255,255,.10);
+  }
+  #btnStart {
+    background:rgba(60,60,80,.8);
+    border-color:rgba(255,255,255,.18);
+  }
+  .vctrl.fadeout {
+    opacity:0;
+    transition:opacity 1.2s ease;
+    pointer-events:none;
+  }
 
   /* 手機直向：兩個按鍵並排貼底 */
   @media (orientation: portrait){
-    .vctrl{flex-direction:row;flex-wrap:nowrap;gap:10px;
-      bottom:calc(6% + env(safe-area-inset-bottom))}
-    .vctrl button{white-space:nowrap;font-size:clamp(14px,3.4vw,16px);padding:10px 14px}
+    .vctrl {
+      flex-direction:row;
+      flex-wrap:nowrap;
+      gap:10px;
+      bottom:calc(6% + env(safe-area-inset-bottom));
+    }
+    .vctrl button {
+      white-space:nowrap;
+      font-size:clamp(14px,3.4vw,16px);
+      padding:10px 14px;
+    }
   }
 
   /* ===== Start layer ===== */
