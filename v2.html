@@ -346,16 +346,12 @@ function gameOver(){
   panelWin.classList.remove('hidden');
 }
 
-/* 🚀 v2 → opening3（A+B） */
+/* 🚀 v2 → opening3（iframe 內導向） */
 function gotoOpening3(){
+  // 補寫進度（保險）
   try { localStorage.setItem('neox_last_level', '2'); } catch(e){}
-  const url = 'https://neoxcoin.github.io/neox-game/opening3.html#fromV2';
-  try {
-    if (window.top && window.top !== window) window.top.location.href = url;
-    else location.replace(url);
-  } catch (e) {
-    location.href = url;
-  }
+  // 只在本視窗跳轉（保留在 iframe）
+  location.href = 'opening3.html#fromV2';
 }
 
 /* ====== Loop ====== */
