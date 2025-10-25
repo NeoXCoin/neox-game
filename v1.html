@@ -29,16 +29,16 @@
       text-align:center; pointer-events:none;
     }
   }
-  /* 🧮 田字型分數牌：置中、下移一點、取消中縫 */
+  /* ⬇ 分數牌：再下降、保持中間無縫、尺寸不變 */
   .scoreboard{
     position:absolute;
-    top:52%;                 /* ← 由 44% 提到 52%，整體更低 */
+    top:56%;                 /* 原 52% → 56%：整體再下降 */
     left:50%;
     transform:translate(-50%,-50%);
     display:grid;
     grid-template-columns: 1fr 1fr;
-    row-gap:6px;             /* 只留上下 6px 的距離 */
-    column-gap:0;            /* ← 左右「中間」完全無縫 */
+    row-gap:4px;             /* 上下只留 4px */
+    column-gap:0;            /* 左右中縫 = 0 */
     justify-items:center;
     z-index:10;
     pointer-events:none;
@@ -48,14 +48,14 @@
   /* 兩行包住的 <div> 變成 grid 的兩行 */
   .scoreboard > div{ display:contents; }
 
-  /* 分數牌外觀（注意把 margin 歸 0，否則會破壞「無縫」） */
+  /* 無縫關鍵：margin 改 0（覆蓋全域 .badge 的 0 6px） */
   .scoreboard .badge{
-    margin:0;                /* ← 關鍵：覆蓋全域 .badge 的 margin: 0 6px */
-    min-width:92px;          /* 稍微收細一點騰空間 */
+    margin:0;
+    min-width:92px;
     padding:6px 10px;
     font-size:14px;
-    text-align:center;
     font-weight:900;
+    text-align:center;
     color:#fff;
     background:rgba(255,255,255,.14);
     backdrop-filter:blur(6px);
@@ -63,9 +63,9 @@
     border-radius:10px;
   }
 
-  /* 手機版佈局時仍然保持置中＋下移 */
+  /* 手機版覆蓋：保持置中＋下移（保險） */
   .topbar .scoreboard{
-    top:52% !important;
+    top:56% !important;
     left:50% !important;
     transform:translate(-50%,-50%) !important;
     position:absolute !important;
