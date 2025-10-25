@@ -161,12 +161,16 @@ btnSound.addEventListener('click', async ()=>{
 });
 updateSoundLabel();
 
-/* 🚀 強制導向 v3.html（避免被父頁/iframe 攔截） */
+/* 🚀 改良版：進入 v3 前寫進度 + 頂層跳轉（A+B） */
 const V3_URL = 'https://neoxcoin.github.io/neox-game/v3.html#fromOpening3';
 function goV3(){
+  // A: 設定進度，代表已通過 L2
+  try { localStorage.setItem('neox_last_level', '2'); } catch(e){}
+
+  // B: 強制頂層跳轉，避免被 iframe 攔截；失敗則退回本層
   try{
     if (window.top && window.top !== window) {
-      window.top.location.href = V3_URL; // 直接頂層跳轉
+      window.top.location.href = V3_URL;
     } else {
       location.replace(V3_URL);
     }
@@ -199,8 +203,8 @@ async function tryPlayWithFallback(){
 
 /* 綁定事件（只有三粒掣） */
 btnStart.addEventListener('click', tryPlayWithFallback);
-btnSkip .addEventListener('click', goV3);
-video.addEventListener('ended', goV3);
+btnSkip .addEventListener('click', goV3);   // Skip → v3（A+B）
+video.addEventListener('ended', goV3);      // 片尾 → v3（A+B）
 
 /* 第一次觸控時確保可以播放（iOS 解鎖） */
 ['pointerdown','touchend','click','keydown'].forEach(evt=>{
