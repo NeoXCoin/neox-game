@@ -163,20 +163,11 @@ updateSoundLabel();
 
 /* 🚀 改良版：進入 v3 前寫進度 + 頂層跳轉（A+B） */
 const V3_URL = 'https://neoxcoin.github.io/neox-game/v3.html#fromOpening3';
+// ✅ 新寫法（只在 iframe 內導向，不跳出）
 function goV3(){
-  // A: 設定進度，代表已通過 L2
-  try { localStorage.setItem('neox_last_level', '2'); } catch(e){}
-
-  // B: 強制頂層跳轉，避免被 iframe 攔截；失敗則退回本層
-  try{
-    if (window.top && window.top !== window) {
-      window.top.location.href = V3_URL;
-    } else {
-      location.replace(V3_URL);
-    }
-  }catch(e){
-    location.href = V3_URL;
-  }
+  try { localStorage.setItem('neox_last_level','2'); } catch(e){}
+  // 保持在同一個 iframe 裏面流轉
+  location.href = 'v3.html#fromOpening3';
 }
 
 /* Start Play：先試播；若 1.2s 內無反應 → 直接開 mp4 */
