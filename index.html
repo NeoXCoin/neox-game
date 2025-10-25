@@ -36,12 +36,12 @@
     animation:spin 1.1s linear infinite;filter:drop-shadow(0 0 8px #2b7cff99)}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* 控制鍵（Play with sound / Skip） */
+  /* 控制鍵（Sound / Start Play / Skip） */
   .vctrl{position:absolute;left:50%;bottom:calc(10% + env(safe-area-inset-bottom));
     transform:translateX(-50%);display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
   .vctrl button{background:#1f2a5a;border:0;color:#fff;font-weight:800;letter-spacing:.02em;
     padding:12px 16px;border-radius:12px;box-shadow:0 6px 18px rgba(43,124,255,.35);cursor:pointer}
-  #btnPlaySound{background:#2563eb}
+  #btnStart{background:#2563eb}
   .vctrl.fadeout{opacity:0;transition:opacity 1.2s ease;pointer-events:none}
 
   /* 手機直向：兩個按鍵並排貼底 */
@@ -90,7 +90,8 @@
   <div id="loading"><div class="sp"></div><span>Loading opening…</span></div>
   <video id="openerVideo" playsinline webkit-playsinline muted autoplay preload="auto"></video>
   <div class="vctrl" id="openerControls" hidden>
-    <button id="btnPlaySound">▶ Play with sound</button>
+    <button id="btnToggleSound">🔇 Sound off</button>
+    <button id="btnStart">▶ Start Play</button>
     <button id="btnSkip">⏭ Skip</button>
   </div>
 </section>
@@ -112,8 +113,9 @@ const opener = document.getElementById('opener');
 const video  = document.getElementById('openerVideo');
 const loading= document.getElementById('loading');
 const ctrls  = document.getElementById('openerControls');
-const btnPlay= document.getElementById('btnPlaySound');
-const btnSkip= document.getElementById('btnSkip');
+const btnToggleSound = document.getElementById('btnToggleSound');
+const btnStart= document.getElementById('btnStart');
+const btnSkip = document.getElementById('btnSkip');
 const start  = document.getElementById('startLayer');
 const startBtn=document.getElementById('startBtn');
 const fx     = document.getElementById('fx');
@@ -148,14 +150,28 @@ function startOpening(){
   video.play().then(()=>{
     loading.style.display='none';
     video.style.opacity='1';
+    updateSoundLabel();
     showControlsAndArmTimer(6000);
   }).catch(()=>{
+    updateSoundLabel();
     showControlsAndArmTimer(6000);
   });
 }
 
-btnPlay.addEventListener('click', async ()=>{
-  try{ if (video.paused) await video.play(); video.muted=false; btnPlay.textContent='🔊 Sound on'; btnPlay.disabled=true; }catch(e){}
+/* --- Buttons like Opening2/3 --- */
+function updateSoundLabel(){
+  btnToggleSound.textContent = video.muted ? '🔇 Sound off' : '🔊 Sound on';
+}
+
+btnToggleSound.addEventListener('click', async ()=>{
+  try{ if (video.paused) await video.play(); }catch(e){}
+  video.muted = !video.muted;
+  updateSoundLabel();
+  scheduleControlsFade(2000);
+});
+
+btnStart.addEventListener('click', async ()=>{
+  try{ await video.play(); }catch(e){}
   fadeControlsSoon(600);
 });
 
@@ -192,7 +208,7 @@ function playFX(){
 /* 一次手勢可同時解鎖聲音（保險） */
 ['pointerdown','touchend','click','keydown'].forEach(evt=>{
   window.addEventListener(evt, async ()=>{
-    if (video.muted) { try{ if (video.paused) await video.play(); }catch(e){} }
+    if (video.paused){ try{ await video.play(); }catch(e){} }
   }, { once:true, passive:true });
 });
 </script>
