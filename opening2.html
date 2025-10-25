@@ -244,19 +244,13 @@ btnStart.addEventListener('click', tryPlayWithFallback);
 
 /* ===== Skip / 影片播完 → 進 v2.html（A+B） ===== */
 const V2_URL = 'https://neoxcoin.github.io/neox-game/v2.html#fromOpening2';
+// ✅ 新寫法（在同一個 iframe 內導向）
 function goV2(){
-  // A: 補寫進度，確保已通過 L1
-  try { localStorage.setItem('neox_last_level', '1'); } catch(e){}
-  // B: 頂層跳轉，避免 iframe 攔截；失敗則退回本層
-  try{
-    if (window.top && window.top !== window) {
-      window.top.location.href = V2_URL;
-    } else {
-      location.replace(V2_URL);
-    }
-  }catch(e){
-    location.href = V2_URL;
-  }
+  // 補寫進度（保險）：表明已完成 L1、看過 Opening2
+  try { localStorage.setItem('neox_last_level','1'); } catch(e){}
+  try { sessionStorage.setItem('seenOpening2','true'); } catch(e){}
+  // 只在本視窗跳轉（留在 iframe）
+  location.href = 'v2.html#fromOpening2';
 }
 btnSkip.addEventListener('click', goV2);
 video.addEventListener('ended', goV2);
