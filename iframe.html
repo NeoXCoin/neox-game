@@ -21,18 +21,37 @@
     touch-action: manipulation;
   }
 
-  iframe {
-    width: min(92vw, 440px);
-    aspect-ratio: 9/16;
+  /* 基本：以寬度為主（手機、窄視窗） */
+  iframe{
+    width: min(96vw, 760px);   /* 先比你原本 440px 大好多，按需要可調 */
+    aspect-ratio: 9 / 16;
+    height: auto;
+
     border: 0;
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(0,0,0,.45);
     background: #000;
-    /* iOS safe-area padding (no harm on desktop) */
+
+    /* iOS safe-area（對桌面無害） */
     padding: constant(safe-area-inset-top) constant(safe-area-inset-right)
              constant(safe-area-inset-bottom) constant(safe-area-inset-left);
     padding: env(safe-area-inset-top) env(safe-area-inset-right)
              env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* 桌面：以高度為主，自動放大（保持 9:16） */
+  @media (min-width: 900px) and (min-height: 700px){
+    iframe{
+      height: min(96vh, 1080px);  /* 最高 1080px，高度 96% 視窗 */
+      width: auto;                /* aspect-ratio 會自動計寬度 */
+    }
+  }
+
+  /* 特闊/特高螢幕再加大少少（可自行調整） */
+  @media (min-width: 1400px) and (min-height: 900px){
+    iframe{
+      height: min(97vh, 1180px);
+    }
   }
 
   /* 🏆 Top 3 Box */
