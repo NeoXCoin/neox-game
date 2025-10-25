@@ -29,27 +29,31 @@
       text-align:center; pointer-events:none;
     }
   }
-  /* 🧱 田字型分數牌：固定畫面正中 */
+  /* 🧮 田字型分數牌：置中、下移一點、取消中縫 */
   .scoreboard{
     position:absolute;
-    top:44%;                    /* 由 50% 下調，視覺更居中 */
+    top:52%;                 /* ← 由 44% 提到 52%，整體更低 */
     left:50%;
     transform:translate(-50%,-50%);
     display:grid;
     grid-template-columns: 1fr 1fr;
-    gap:6px 8px;                /* 緊湊少少 */
+    row-gap:6px;             /* 只留上下 6px 的距離 */
+    column-gap:0;            /* ← 左右「中間」完全無縫 */
     justify-items:center;
     z-index:10;
     pointer-events:none;
-    max-width:320px;            /* 防止 iPad 太闊 */
-  } 
+    max-width:320px;
+  }
+
+  /* 兩行包住的 <div> 變成 grid 的兩行 */
   .scoreboard > div{ display:contents; }
 
-  /* 分數牌細一點 */
+  /* 分數牌外觀（注意把 margin 歸 0，否則會破壞「無縫」） */
   .scoreboard .badge{
-    min-width:95px;             /* 由 110px 降到 95px */
-    font-size:14px;
+    margin:0;                /* ← 關鍵：覆蓋全域 .badge 的 margin: 0 6px */
+    min-width:92px;          /* 稍微收細一點騰空間 */
     padding:6px 10px;
+    font-size:14px;
     text-align:center;
     font-weight:900;
     color:#fff;
@@ -59,12 +63,21 @@
     border-radius:10px;
   }
 
-  /* 覆蓋原本手機佈局對 .center 的定位（確保仍然置中） */
+  /* 手機版佈局時仍然保持置中＋下移 */
   .topbar .scoreboard{
-    top:50% !important;
+    top:52% !important;
     left:50% !important;
     transform:translate(-50%,-50%) !important;
     position:absolute !important;
+  }
+
+  /* 可選：窄螢幕再壓一點尺寸 */
+  @media (max-width: 480px){
+    .scoreboard .badge{
+      min-width:86px;
+      font-size:13px;
+      padding:5px 8px;
+    }
   }
   .topbar{
     display:grid;
