@@ -214,7 +214,8 @@ function refreshHUD(){
   missBadge.textContent =`Miss: ${missCount}/${MAX_MISSES}`;
   finalScore.textContent=`Score: ${Math.floor(score)}`;
   bestScore.textContent =`Best: ${Math.floor(best)}`;
-  // 🛰️ 向父頁傳送即時分數（如被 iframe 包著）
+  
+    // 🛰️ 向 iframe 傳送即時分數
   window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
 
@@ -273,27 +274,11 @@ document.getElementById('btnResume').onclick=()=>{togglePause(false);};
 const btnPause=document.getElementById('btnPause');
 btnPause.onclick=()=>togglePause();
 
-/* 🚀 v1 → opening2（A+B） */
-const OPENING2_URL = 'https://neoxcoin.github.io/neox-game/opening2.html#fromV1';
-function goOpening2(){
-  // A: 設置通關進度（完成 L1）
-  try { localStorage.setItem('neox_last_level', '1'); } catch(e){}
+btnNextLevel.onclick = () => {
   // 帶住分數去下一關（v2 會由 carry 開始）
-  try { localStorage.setItem('nx_carry', String(Math.floor(score))); } catch(e){}
-  // B: 強制頂層跳轉（防 iframe 攔截）
-  try {
-    if (window.top && window.top !== window) {
-      window.top.location.href = OPENING2_URL;
-    } else {
-      location.replace(OPENING2_URL);
-    }
-  } catch (e) {
-    location.href = OPENING2_URL;
-  }
-}
-
-/* ✅ 改：按鈕改用 goOpening2（原本去 v2.html 的已移除） */
-btnNextLevel.onclick = goOpening2;
+  localStorage.setItem('nx_carry', String(Math.floor(score)));
+  window.location.href = 'v2.html#continue';
+};
 
 /* ====== Input ====== */
 const keys=new Set();
@@ -368,7 +353,7 @@ function finishWin(){
   localStorage.setItem('neox_total_score', String(prevTotal+Math.floor(score)));
   localStorage.setItem('neox_last_level','1');
 
-  // 過關先把分數帶去 v2（此處保留，goOpening2 也會再寫一次，屬保險）
+  // 過關先把分數帶去 v2
   localStorage.setItem('nx_carry', String(Math.floor(score)));
 
   winTitle.textContent = "Stage Clear! 🎉";
@@ -416,7 +401,7 @@ function loop(now){
     const edgeBoost = overhangL + overhangR + 4;
     const mouth = { cx: chest.x, cy: chest.y - chest.h * 0.58, rx: baseRx + edgeBoost, ry: baseRy };
 
-    for (let i=coins.length-1; i>=0; i++){
+    for (let i=coins.length-1; i>=0; i--){
       const c = coins[i];
       const ex = (c.x - mouth.cx) / mouth.rx;
       const ey = (c.y - mouth.cy) / mouth.ry;
