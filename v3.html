@@ -27,9 +27,18 @@
     }
   }
 
-  // 防跳關：必須通過 L2（只看 lastLv，不看分數）
+  // ✅ A+B：允許從 Opening3 直入（帶 #fromOpening3），並補寫進度
   const safeNum = k => { try { return Number(localStorage.getItem(k) || 0); } catch { return 0; } };
   const lastLv  = safeNum('neox_last_level');
+  const fromOpening3 = /fromOpening3/i.test(location.hash || '');
+
+  if (fromOpening3) {
+    // 由 Opening3 進來：補寫 last_level=2 然後放行
+    try { localStorage.setItem('neox_last_level', '2'); } catch (e) {}
+    return;
+  }
+
+  // 原本的防跳關：必須通過 L2（只看 lastLv，不看分數）
   if (lastLv < 2) {
     location.replace(L2_URL + '#fromGuard');
     return;
