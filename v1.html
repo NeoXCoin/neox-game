@@ -32,16 +32,16 @@
     }
   }
 
-  /* 田字型分數牌：置中、再下降、取消中縫（現在以 .hud 全高為基準） */
+  /* 田字分數牌：置中基準，智能調整高度 */
   .scoreboard{
     position:absolute;
-    top:58%;                 /* ↓ 如需再低可改 60% */
+    top:46%;                 /* 預設：手機為主（略高） */
     left:50%;
     transform:translate(-50%,-50%);
     display:grid;
     grid-template-columns: 1fr 1fr;
-    column-gap:0;            /* 左右無縫 */
-    row-gap:4px;             /* 上下少量距離 */
+    column-gap:0;
+    row-gap:4px;
     justify-items:center;
     z-index:10;
     pointer-events:none;
@@ -49,7 +49,7 @@
   }
   .scoreboard > div{ display:contents; }
   .scoreboard .badge{
-    margin:0;                /* 覆蓋全域 .badge 的 margin，確保無縫 */
+    margin:0;
     min-width:92px;
     padding:6px 10px;
     font-size:14px;
@@ -62,9 +62,25 @@
     border-radius:10px;
   }
 
-  /* 可選：窄螢幕再微縮 */
-  @media (max-width: 480px){
-    .scoreboard .badge{ min-width:86px; font-size:13px; padding:5px 8px; }
+  /* 📱 小手機（iPhone SE）再升高一啲 */
+  @media (max-width: 380px){
+    .scoreboard{ top:42%; transform:translate(-50%,-50%) scale(.9); }
+  }
+
+  /* 🧾 iPad 直向：放上去畫面上方約 28%，唔會居中 */
+  @media (min-width: 768px) and (orientation:portrait){
+    .scoreboard{
+      top:28%;
+      transform:translate(-50%,-50%) scale(1.02);
+    }
+  }
+
+  /* 💻 iPad 橫向／桌面：再稍高，貼近上邊界一點 */
+  @media (min-width: 1024px){
+    .scoreboard{
+      top:26%;
+      transform:translate(-50%,-50%) scale(1);
+    }
   }
 
   .topbar{
