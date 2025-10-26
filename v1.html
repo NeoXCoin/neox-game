@@ -74,7 +74,7 @@
     <div class="topbar">
       <div class="left">
         <button id="btnHome" class="iconbtn" title="Back to Home">
-          <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home">Home
+          <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home">
         </button>
       </div>
       <div class="center">
@@ -135,7 +135,7 @@
 /* ====== Config ====== */
 const TOTAL_TIME_SEC = 180;
 const EDGE = 2;
-const MAX_MISSES = 60;
+const MAX_MISSES = 50;
 
 /* ====== Assets ====== */
 const BG_URL    = "https://neoxcoin.github.io/neox-game/forest%20background%20.PNG";
@@ -266,7 +266,9 @@ const SFX = {
 document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'visible') resumeAudio(); });
 
 /* ====== Buttons ====== */
-document.getElementById('btnHome').onclick = ()=>{window.location.href='https://neoxcoin.github.io/';};
+document.getElementById('btnHome').onclick = () => {
+  (window.top || window).location.replace('https://neoxcoin.github.io/');
+};
 document.getElementById('btnStart').onclick=()=>{start();};
 document.getElementById('btnRestart2').onclick=()=>{restart();};
 document.getElementById('btnReplay').onclick=()=>{restart();};
