@@ -18,6 +18,7 @@
     touch-action:none;
     position:relative; z-index:1;
   }
+
   /* HUD */
   .hud{position:absolute; inset:0; z-index:5; pointer-events:none; display:grid; grid-template-rows:auto 1fr;}
   @media (max-width: 600px) {
@@ -49,6 +50,7 @@
     pointer-events:auto;
   }
   .iconbtn img{width:22px;height:22px;object-fit:contain;display:block;}
+
   .panel{
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
     pointer-events:auto; z-index:10;
@@ -64,6 +66,37 @@
        box-shadow:0 8px 22px rgba(43,124,255,.35);}
   .btn.alt{background:#1f2648;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
   .hidden{display:none !important;}
+
+  /* === 固定四塊分數牌：置頂置中，不會跳位或被瀏海頂住 === */
+  .scoreboard{
+    position:absolute;
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    left:50%;
+    transform:translateX(-50%);
+    display:grid;
+    grid-template-columns: 152px 152px; /* 固定每欄寬度 */
+    grid-auto-rows: 38px;               /* 固定高度 */
+    gap:8px 12px;                       /* 行/列距 */
+    pointer-events:none;
+    z-index:10;
+  }
+  .scoreboard > div{ display:contents; } /* 讓四個 .badge 直接成為 grid item */
+
+  .scoreboard .badge{
+    width:152px; height:38px; line-height:38px;
+    margin:0;                       /* 移除全域 .badge 的外距，避免中間開縫 */
+    white-space:nowrap;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+  }
+
+  /* 保險：手機版的 .center 佈局不影響上述定位 */
+  .topbar .scoreboard{
+    position:absolute !important;
+    top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+    left:50% !important;
+    transform:translateX(-50%) !important;
+  }
 </style>
 </head>
 <body>
@@ -77,14 +110,17 @@
           <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home">
         </button>
       </div>
+
+      <!-- 四塊分數牌：保持你原本的一個 div 包四個 span -->
       <div class="center scoreboard">
         <div>
-          <span class="badge" id="scoreBadge">Score: 0</span>
+          <span class="badge" id="scoreBadge">Score: 00000</span>
           <span class="badge" id="timeBadge">Time: 03:00</span>
-          <span class="badge" id="bestBadge">Best: 0</span>
-          <span class="badge" id="missBadge">Miss: 0/30</span>
+          <span class="badge" id="bestBadge">Best: 00000</span>
+          <span class="badge" id="missBadge">Miss: 00/30</span>
         </div>
       </div>
+
       <div class="right">
         <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
       </div>
@@ -208,16 +244,27 @@ let best = Number(localStorage.getItem('neox_catch_best_l1') ?? localStorage.get
 let timeLeft = TOTAL_TIME_SEC;
 let missCount = 0;
 
-function fmt(t){ const m=Math.floor(t/60), s=Math.floor(t%60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+/* === 固定位寬的格式化（避免跳位） === */
+const PAD_SCORE = 5;
+const PAD_MISS  = String(MAX_MISSES).length;
+const MAX_MISS_STR = String(MAX_MISSES);
+const zpad = (n, w) => String(Math.floor(n)).padStart(w, '0');
+
+function fmt(t){
+  const m=Math.floor(t/60), s=Math.floor(t%60);
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
 function refreshHUD(){
-  scoreBadge.textContent=`Score: ${Math.floor(score)}`;
-  bestBadge.textContent =`Best: ${Math.floor(best)}`;
-  timeBadge.textContent =`Time: ${fmt(timeLeft)}`;
-  missBadge.textContent =`Miss: ${missCount}/${MAX_MISSES}`;
-  finalScore.textContent=`Score: ${Math.floor(score)}`;
-  bestScore.textContent =`Best: ${Math.floor(best)}`;
-  
-    // 🛰️ 向 iframe 傳送即時分數
+  scoreBadge.textContent = `Score: ${zpad(score, PAD_SCORE)}`;
+  bestBadge.textContent  = `Best: ${zpad(best,  PAD_SCORE)}`;
+  timeBadge.textContent  = `Time: ${fmt(timeLeft)}`;
+  missBadge.textContent  = `Miss: ${zpad(missCount, PAD_MISS)}/${MAX_MISS_STR}`;
+
+  finalScore.textContent = `Score: ${Math.floor(score)}`;
+  bestScore.textContent  = `Best: ${Math.floor(best)}`;
+
+  // 🛰️ 向 iframe 傳送即時分數
   window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
 
@@ -279,7 +326,6 @@ const btnPause=document.getElementById('btnPause');
 btnPause.onclick=()=>togglePause();
 
 btnNextLevel.onclick = () => {
-  // 帶住分數去下一關（v2 會由 carry 開始）
   localStorage.setItem('nx_carry', String(Math.floor(score)));
   window.location.href = 'v2.html#continue';
 };
@@ -321,7 +367,7 @@ function spawnCoins(dt) {
     const SAFE_MARGIN = chest.w * 0.12;
     coins.push({
       x: EDGE + SAFE_MARGIN + Math.random() * (canvas.clientWidth - 2 * (EDGE + SAFE_MARGIN)),
-      y: -20, 
+      y: -20,
       r: 12,
       vy: 2.6 + Math.random() * 2.2,
       spin: Math.random() * Math.PI * 2,
@@ -344,7 +390,6 @@ function togglePause(forcePause){
   else if(state===State.PAUSED){ state=State.PLAYING; panelPause.classList.add('hidden'); btnPause.textContent='⏸ Pause'; }
 }
 function restart(){
-  // v1 由 0 分開始
   panelWin.classList.add('hidden'); panelPause.classList.add('hidden');
   start();
 }
@@ -356,13 +401,10 @@ function finishWin(){
   const prevTotal=Number(localStorage.getItem('neox_total_score')||0);
   localStorage.setItem('neox_total_score', String(prevTotal+Math.floor(score)));
   localStorage.setItem('neox_last_level','1');
-
-  // 過關先把分數帶去 v2
   localStorage.setItem('nx_carry', String(Math.floor(score)));
-
   winTitle.textContent = "Stage Clear! 🎉";
   refreshHUD();
-  btnNextLevel.classList.remove('hidden'); // 允許過關
+  btnNextLevel.classList.remove('hidden');
   panelWin.classList.remove('hidden'); SFX.win();
 }
 function finishOver(){
@@ -371,7 +413,7 @@ function finishOver(){
   localStorage.setItem('neox_catch_best_l1', String(best));
   winTitle.textContent = "Game Over 🤭";
   refreshHUD();
-  btnNextLevel.classList.add('hidden');    // Game Over 不允許過關
+  btnNextLevel.classList.add('hidden');
   panelWin.classList.remove('hidden'); SFX.over();
 }
 
@@ -385,20 +427,16 @@ function loop(now){
   drawBackground();
 
   if(state===State.PLAYING){
-    // 計時
     timeLeft = Math.max(0, timeLeft - dt/60);
     if(timeLeft<=0){ return finishWin(); }
 
-    // 移動（與 spawn 同一 EDGE）
     chest.vx=(keys.has('L')?-chest.speed:0)+(keys.has('R')?chest.speed:0) || chest.vx*0.92;
     chest.x = Math.max(chest.w/2 + EDGE,
               Math.min(canvas.clientWidth - chest.w/2 - EDGE, chest.x + chest.vx));
 
-    // 生成 / 下落
     spawnCoins(dt);
     for(const c of coins){ c.y+=c.vy*dt; c.spin+=c.vspin*dt; }
 
-    // 橢圓口碰撞（貼邊補償）
     const baseRx = chest.w * 0.36, baseRy = chest.h * 0.18;
     const overhangL = Math.max(0, (chest.w/2 + EDGE) - chest.x);
     const overhangR = Math.max(0, (chest.w/2 + EDGE) - (canvas.clientWidth - chest.x));
@@ -426,7 +464,11 @@ requestAnimationFrame(loop);
 /* ====== Render ====== */
 function drawBackground(){
   const w=canvas.clientWidth,h=canvas.clientHeight; ctx.clearRect(0,0,w,h);
-  if(!bgReady){ const g=ctx.createLinearGradient(0,0,0,h); g.addColorStop(0,'#0f1240'); g.addColorStop(1,'#0a0c22'); ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return; }
+  if(!bgReady){
+    const g=ctx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,'#0f1240'); g.addColorStop(1,'#0a0c22');
+    ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return;
+  }
   const iw=bgImg.width, ih=bgImg.height, ir=iw/ih, cr=w/h; let dw,dh,dx,dy;
   if(ir>cr){ dh=h; dw=h*ir; dx=(w-dw)/2; dy=0; } else { dw=w; dh=w/ir; dx=0; dy=(h-dh)/2; }
   ctx.drawImage(bgImg,dx,dy,dw,dh);
@@ -442,10 +484,16 @@ function drawChest(){
 function drawCoins(){
   for(const c of coins){
     let size = c.r * 3;
-    if (window.innerWidth < 600) size *= 0.7; // 📱 手機縮細 25%
+    if (window.innerWidth < 600) size *= 0.7;
     const r = size / 2; ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
-    if(coinReady){ ctx.save(); ctx.shadowColor='rgba(255,223,128,.8)'; ctx.shadowBlur=18; ctx.drawImage(coinImg,-r,-r,size,size); ctx.restore(); }
-    else{ const g=ctx.createRadialGradient(0,0,r*.2,0,0,r); g.addColorStop(0,'#fff6cc'); g.addColorStop(1,'#e3b23c'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); }
+    if(coinReady){
+      ctx.save(); ctx.shadowColor='rgba(255,223,128,.8)'; ctx.shadowBlur=18;
+      ctx.drawImage(coinImg,-r,-r,size,size); ctx.restore();
+    }else{
+      const g=ctx.createRadialGradient(0,0,r*.2,0,0,r);
+      g.addColorStop(0,'#fff6cc'); g.addColorStop(1,'#e3b23c');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
+    }
     ctx.restore();
   }
 }
