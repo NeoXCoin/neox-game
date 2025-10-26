@@ -44,6 +44,7 @@
     background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900;
   }
+  /* icon 按鈕：縮到內容寬，避免殘留長尾；同時放大一丁點 */
   .iconbtn{
     display:inline-flex;
     align-items:center;
@@ -52,20 +53,17 @@
     border:0;
     color:#fff;
     border-radius:14px;
-    padding:12px 16px;              /* ← 原本 10px 14px，整體放大少少 */
-    font-weight:800;
+    padding:10px 12px;      /* 可以再微調 */
+    min-width:0;            /* ← 重點：允許比 min-content 更細 */
+    white-space:nowrap;     /* ← 只佔內容寬，不換行 */
     box-shadow:0 10px 28px rgba(0,0,0,.25),
                inset 0 0 0 1px rgba(255,255,255,.08);
-    cursor:pointer;
     pointer-events:auto;
-    transition:transform .1s ease;
   }
-  .iconbtn:hover{ transform:scale(1.05); } /* 小小互動感覺 */
-  .iconbtn img{
-    width:28px; height:28px;       /* ← 原本 22px，放大到 28px */
-    object-fit:contain;
-    display:block;
-  }
+  .iconbtn img{ width:24px; height:24px; display:block; } /* NeoX 圖示大小 */
+
+  /* 右上個掣細少少 padding，視覺更緊湊 */
+  .topbar .right .iconbtn{ padding:8px 10px; }
 
   .panel{
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
