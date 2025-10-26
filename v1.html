@@ -18,10 +18,8 @@
     touch-action:none;
     position:relative; z-index:1;
   }
-
   /* HUD */
   .hud{position:absolute; inset:0; z-index:5; pointer-events:none; display:grid; grid-template-rows:auto 1fr;}
-
   @media (max-width: 600px) {
     .topbar{ position:relative; display:block; padding:10px 14px; }
     .topbar .left  { position:absolute; left:10px;  top:10px; }
@@ -31,58 +29,6 @@
       text-align:center; pointer-events:none;
     }
   }
-
-  /* 田字分數牌：置中基準，智能調整高度 */
-  .scoreboard{
-    position:absolute;
-    top:46%;                 /* 預設：手機為主（略高） */
-    left:50%;
-    transform:translate(-50%,-50%);
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap:0;
-    row-gap:4px;
-    justify-items:center;
-    z-index:10;
-    pointer-events:none;
-    max-width:320px;
-  }
-  .scoreboard > div{ display:contents; }
-  .scoreboard .badge{
-    margin:0;
-    min-width:92px;
-    padding:6px 10px;
-    font-size:14px;
-    font-weight:900;
-    text-align:center;
-    color:#fff;
-    background:rgba(255,255,255,.14);
-    backdrop-filter:blur(6px);
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
-    border-radius:10px;
-  }
-
-  /* 📱 小手機（iPhone SE）再升高一啲 */
-  @media (max-width: 380px){
-    .scoreboard{ top:42%; transform:translate(-50%,-50%) scale(.9); }
-  }
-
-  /* 🧾 iPad 直向：放上去畫面上方約 28%，唔會居中 */
-  @media (min-width: 768px) and (orientation:portrait){
-    .scoreboard{
-      top:28%;
-      transform:translate(-50%,-50%) scale(1.02);
-    }
-  }
-
-  /* 💻 iPad 橫向／桌面：再稍高，貼近上邊界一點 */
-  @media (min-width: 1024px){
-    .scoreboard{
-      top:26%;
-      transform:translate(-50%,-50%) scale(1);
-    }
-  }
-
   .topbar{
     display:grid;
     grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
@@ -92,21 +38,17 @@
   .left{  justify-self:start; pointer-events:auto; }
   .center{justify-self:center; text-align:center; pointer-events:none; }
   .right{ justify-self:end;   pointer-events:auto; }
-
-  /* 全域 badge（面板、topbar 內用） */
   .badge{
     display:inline-block;padding:8px 12px;border-radius:12px;
     background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900;
   }
-
   .iconbtn{
     display:inline-flex;align-items:center;gap:10px;background:#1b2144;border:0;color:#fff;border-radius:14px;
     padding:10px 14px;font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);cursor:pointer;
     pointer-events:auto;
   }
   .iconbtn img{width:22px;height:22px;object-fit:contain;display:block;}
-
   .panel{
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
     pointer-events:auto; z-index:10;
@@ -135,21 +77,18 @@
           <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home">
         </button>
       </div>
-      <div class="center"></div> <!-- 保留三欄結構（不再把 scoreboard 放入） -->
+      <div class="center scoreboard">
+        <div>
+          <span class="badge" id="scoreBadge">Score: 0</span>
+          <span class="badge" id="timeBadge">Time: 03:00</span>
+        </div>
+        <div>
+          <span class="badge" id="bestBadge">Best: 0</span>
+          <span class="badge" id="missBadge">Miss: 0/30</span>
+        </div>
+      </div>
       <div class="right">
         <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
-      </div>
-    </div>
-
-    <!-- ✅ Scoreboard 由 topbar 搬到 hud 直屬 -->
-    <div class="scoreboard">
-      <div>
-        <span class="badge" id="scoreBadge">Score: 0</span>
-        <span class="badge" id="timeBadge">Time: 03:00</span>
-      </div>
-      <div>
-        <span class="badge" id="bestBadge">Best: 0</span>
-        <span class="badge" id="missBadge">Miss: 0/50</span>
       </div>
     </div>
 
@@ -279,7 +218,8 @@ function refreshHUD(){
   missBadge.textContent =`Miss: ${missCount}/${MAX_MISSES}`;
   finalScore.textContent=`Score: ${Math.floor(score)}`;
   bestScore.textContent =`Best: ${Math.floor(best)}`;
-  // 🛰️ 傳去父頁
+  
+    // 🛰️ 向 iframe 傳送即時分數
   window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
 
@@ -341,6 +281,7 @@ const btnPause=document.getElementById('btnPause');
 btnPause.onclick=()=>togglePause();
 
 btnNextLevel.onclick = () => {
+  // 帶住分數去下一關（v2 會由 carry 開始）
   localStorage.setItem('nx_carry', String(Math.floor(score)));
   window.location.href = 'v2.html#continue';
 };
@@ -405,6 +346,7 @@ function togglePause(forcePause){
   else if(state===State.PAUSED){ state=State.PLAYING; panelPause.classList.add('hidden'); btnPause.textContent='⏸ Pause'; }
 }
 function restart(){
+  // v1 由 0 分開始
   panelWin.classList.add('hidden'); panelPause.classList.add('hidden');
   start();
 }
@@ -416,10 +358,13 @@ function finishWin(){
   const prevTotal=Number(localStorage.getItem('neox_total_score')||0);
   localStorage.setItem('neox_total_score', String(prevTotal+Math.floor(score)));
   localStorage.setItem('neox_last_level','1');
+
+  // 過關先把分數帶去 v2
   localStorage.setItem('nx_carry', String(Math.floor(score)));
+
   winTitle.textContent = "Stage Clear! 🎉";
   refreshHUD();
-  btnNextLevel.classList.remove('hidden');
+  btnNextLevel.classList.remove('hidden'); // 允許過關
   panelWin.classList.remove('hidden'); SFX.win();
 }
 function finishOver(){
@@ -428,7 +373,7 @@ function finishOver(){
   localStorage.setItem('neox_catch_best_l1', String(best));
   winTitle.textContent = "Game Over 🤭";
   refreshHUD();
-  btnNextLevel.classList.add('hidden');
+  btnNextLevel.classList.add('hidden');    // Game Over 不允許過關
   panelWin.classList.remove('hidden'); SFX.over();
 }
 
@@ -442,16 +387,20 @@ function loop(now){
   drawBackground();
 
   if(state===State.PLAYING){
+    // 計時
     timeLeft = Math.max(0, timeLeft - dt/60);
     if(timeLeft<=0){ return finishWin(); }
 
+    // 移動（與 spawn 同一 EDGE）
     chest.vx=(keys.has('L')?-chest.speed:0)+(keys.has('R')?chest.speed:0) || chest.vx*0.92;
     chest.x = Math.max(chest.w/2 + EDGE,
               Math.min(canvas.clientWidth - chest.w/2 - EDGE, chest.x + chest.vx));
 
+    // 生成 / 下落
     spawnCoins(dt);
     for(const c of coins){ c.y+=c.vy*dt; c.spin+=c.vspin*dt; }
 
+    // 橢圓口碰撞（貼邊補償）
     const baseRx = chest.w * 0.36, baseRy = chest.h * 0.18;
     const overhangL = Math.max(0, (chest.w/2 + EDGE) - chest.x);
     const overhangR = Math.max(0, (chest.w/2 + EDGE) - (canvas.clientWidth - chest.x));
@@ -479,11 +428,7 @@ requestAnimationFrame(loop);
 /* ====== Render ====== */
 function drawBackground(){
   const w=canvas.clientWidth,h=canvas.clientHeight; ctx.clearRect(0,0,w,h);
-  if(!bgReady){
-    const g=ctx.createLinearGradient(0,0,0,h);
-    g.addColorStop(0,'#0f1240'); g.addColorStop(1,'#0a0c22');
-    ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return;
-  }
+  if(!bgReady){ const g=ctx.createLinearGradient(0,0,0,h); g.addColorStop(0,'#0f1240'); g.addColorStop(1,'#0a0c22'); ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return; }
   const iw=bgImg.width, ih=bgImg.height, ir=iw/ih, cr=w/h; let dw,dh,dx,dy;
   if(ir>cr){ dh=h; dw=h*ir; dx=(w-dw)/2; dy=0; } else { dw=w; dh=w/ir; dx=0; dy=(h-dh)/2; }
   ctx.drawImage(bgImg,dx,dy,dw,dh);
@@ -499,16 +444,10 @@ function drawChest(){
 function drawCoins(){
   for(const c of coins){
     let size = c.r * 3;
-    if (window.innerWidth < 600) size *= 0.7;
+    if (window.innerWidth < 600) size *= 0.7; // 📱 手機縮細 25%
     const r = size / 2; ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
-    if(coinReady){
-      ctx.save(); ctx.shadowColor='rgba(255,223,128,.8)'; ctx.shadowBlur=18;
-      ctx.drawImage(coinImg,-r,-r,size,size); ctx.restore();
-    }else{
-      const g=ctx.createRadialGradient(0,0,r*.2,0,0,r);
-      g.addColorStop(0,'#fff6cc'); g.addColorStop(1,'#e3b23c');
-      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
-    }
+    if(coinReady){ ctx.save(); ctx.shadowColor='rgba(255,223,128,.8)'; ctx.shadowBlur=18; ctx.drawImage(coinImg,-r,-r,size,size); ctx.restore(); }
+    else{ const g=ctx.createRadialGradient(0,0,r*.2,0,0,r); g.addColorStop(0,'#fff6cc'); g.addColorStop(1,'#e3b23c'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); }
     ctx.restore();
   }
 }
