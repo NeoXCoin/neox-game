@@ -74,17 +74,18 @@
     left:50%;
     transform:translateX(-50%);
     display:grid;
-    grid-template-columns: 152px 152px; /* 固定每欄寬度 */
-    grid-auto-rows: 38px;               /* 固定高度 */
-    gap:8px 12px;                       /* 行/列距 */
+    grid-template-columns: 120px 120px; /* 固定每欄寬度 */
+    grid-auto-rows: 32px;               /* 固定高度 */
+    gap:6px 8px;                       /* 行/列距 */
     pointer-events:none;
     z-index:10;
   }
   .scoreboard > div{ display:contents; } /* 讓四個 .badge 直接成為 grid item */
 
   .scoreboard .badge{
-    width:152px; height:38px; line-height:38px;
-    margin:0;                       /* 移除全域 .badge 的外距，避免中間開縫 */
+    width:120px; height:32px; line-height:32px;
+    margin:0;  
+    font-size:13px;                     /* ← 字體細啲 */
     white-space:nowrap;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1, "lnum" 1;
