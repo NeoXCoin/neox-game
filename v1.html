@@ -74,16 +74,15 @@
     <div class="topbar">
       <div class="left">
         <button id="btnHome" class="iconbtn" title="Back to Home">
-          <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home">
+          <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home">Home
         </button>
       </div>
-      <div class="center scoreboard">
-        <div>
-          <span class="badge" id="scoreBadge">Score: 0</span>
-          <span class="badge" id="timeBadge">Time: 03:00</span>
-          <span class="badge" id="bestBadge">Best: 0</span>
-          <span class="badge" id="missBadge">Miss: 0/30</span>
-        </div>
+      <div class="center">
+        <span class="badge" id="scoreBadge">Score: 0</span>
+        <span class="badge" id="timeBadge">Time: 03:00</span>
+        <span class="badge" id="bestBadge">Best: 0</span>
+        <span class="badge" id="missBadge">Miss: 0/30</span>
+      </div>
       <div class="right">
         <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
       </div>
@@ -136,7 +135,7 @@
 /* ====== Config ====== */
 const TOTAL_TIME_SEC = 180;
 const EDGE = 2;
-const MAX_MISSES = 50;
+const MAX_MISSES = 60;
 
 /* ====== Assets ====== */
 const BG_URL    = "https://neoxcoin.github.io/neox-game/forest%20background%20.PNG";
@@ -267,9 +266,7 @@ const SFX = {
 document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'visible') resumeAudio(); });
 
 /* ====== Buttons ====== */
-document.getElementById('btnHome').onclick = () => {
-  (window.top || window).location.replace('https://neoxcoin.github.io/');
-};
+document.getElementById('btnHome').onclick = ()=>{window.location.href='https://neoxcoin.github.io/';};
 document.getElementById('btnStart').onclick=()=>{start();};
 document.getElementById('btnRestart2').onclick=()=>{restart();};
 document.getElementById('btnReplay').onclick=()=>{restart();};
