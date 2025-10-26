@@ -83,51 +83,53 @@
   .btn.alt{background:#1f2648;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
   .hidden{display:none !important;}
 
-  /* === 固定 2×2 分數牌（不會跳位，也不會被 Safari 地址列頂住） === */
+  /* === 固定四塊分數牌：頂部置中；手機會自動再落少少，避開 Logo/ Pause === */
   .scoreboard{
     position:absolute;
-    /* 頂邊加上 safe-area，避免同「X / Pause」重疊；可以按需要微調 +8→+10/12 */
-    top: calc(env(safe-area-inset-top, 0px) + 10px);
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;                /* 上下行距 */
-    pointer-events: none;
-    z-index: 10;
+    left:50%;
+    transform:translateX(-50%);
+    /* 預設（平板/桌面）：貼近頂但留少少位 */
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    display:grid;
+    grid-template-columns: 120px 120px; /* 固定兩欄寬度，唔會因數字跳位 */
+    grid-auto-rows: 32px;               /* 每格高度 */
+    gap: 8px 8px;                        /* 行/列距 */
+    pointer-events:none;
+    z-index: 5;                          /* 不要蓋過 Pause/Logo（佢哋係 z-index 更高/或原生） */
   }
 
-  /* 每行兩個，置中排列 */
-  .scoreboard .srow{
-    display: flex;
-    gap: 8px;                /* 左右距 */
-    justify-content: center;
-  }
+  /* 四格直接成為 grid item（去除包裹 div 的影響） */
+  .scoreboard > div{ display:contents; }
 
-  /* 統一每個框的尺寸（細啲），禁止換行，數字用等寬表現 */
+  /* 牌面樣式：更透明、固定寬高、等寬數字 */
   .scoreboard .badge{
-    width: 116px;            /* ← 再收窄：框唔會過大 */
-    height: 30px;
-    line-height: 30px;
-    margin: 0;               /* 務必為 0，否則看起來會「靠埋」或重疊 */
-    font-size: 13px;
-    white-space: nowrap;
+    width:120px; height:32px; line-height:32px;
+    margin:0;
+    font-size:13px;
+    white-space:nowrap;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1, "lnum" 1;
-    text-align: center;
-    color: #fff;
-    background: rgba(255,255,255,.08);
-    backdrop-filter: blur(6px);
+    color:#fff;
+    background: rgba(255,255,255,.10);    /* ← 透明度再高少少（.08 ~ .12 自行微調） */
+    backdrop-filter: blur(3px);
     box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
     border-radius: 10px;
   }
 
-  /* 重要：避免手機 breakpoint 對 .center 的定位影響到 scoreboard */
-  .topbar .center{ position: static; transform: none; }
-
-  /* 極窄螢幕（可選）再細少少 */
-  @media (max-width: 280px){
-    .scoreboard .badge{ width: 108px; font-size: 12.5px; }
+  /* 手機：整個 score 區域再落啲，避開左上 NeoX logo 同右上 Pause */
+  @media (max-width: 600px){
+    .scoreboard{
+      top: calc(env(safe-area-inset-top, 0px) + 56px);  /* ← 由上而下放低 */
+      grid-template-columns: 112px 112px;              /* 窄少少，避免觸碰兩側 */
+      grid-auto-rows: 30px;
+      gap: 6px 8px;
+    }
+    .scoreboard .badge{
+      width:112px; height:30px; line-height:30px;
+      font-size:13px;
+      background: rgba(255,255,255,.08);               /* 手機再透明一點 */
+      backdrop-filter: blur(2px);
+    }
   }
 
   /* iPad 直向可再落少少，避開 Pause/X（可選） */
