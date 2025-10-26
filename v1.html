@@ -419,11 +419,11 @@ function start(){
   coins.length=0; spawnTimer=0;
   chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
   state=State.PLAYING; panelStart.classList.add('hidden'); panelPause.classList.add('hidden'); panelWin.classList.add('hidden');
-  refreshHUD(); btnPause.textContent='⏸ Pause';
+  refreshHUD(); btnPause.textContent='⏸';
 }
 function togglePause(forcePause){
   if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; panelPause.classList.remove('hidden'); btnPause.textContent='⏵ Resume'; }
-  else if(state===State.PAUSED){ state=State.PLAYING; panelPause.classList.add('hidden'); btnPause.textContent='⏸ Pause'; }
+  else if(state===State.PAUSED){ state=State.PLAYING; panelPause.classList.add('hidden'); btnPause.textContent='⏸'; }
 }
 function restart(){
   panelWin.classList.add('hidden'); panelPause.classList.add('hidden');
