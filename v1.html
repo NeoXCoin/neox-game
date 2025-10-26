@@ -45,11 +45,27 @@
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900;
   }
   .iconbtn{
-    display:inline-flex;align-items:center;gap:10px;background:#1b2144;border:0;color:#fff;border-radius:14px;
-    padding:10px 14px;font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:#1b2144;
+    border:0;
+    color:#fff;
+    border-radius:14px;
+    padding:12px 16px;              /* ← 原本 10px 14px，整體放大少少 */
+    font-weight:800;
+    box-shadow:0 10px 28px rgba(0,0,0,.25),
+               inset 0 0 0 1px rgba(255,255,255,.08);
+    cursor:pointer;
     pointer-events:auto;
+    transition:transform .1s ease;
   }
-  .iconbtn img{width:22px;height:22px;object-fit:contain;display:block;}
+  .iconbtn:hover{ transform:scale(1.05); } /* 小小互動感覺 */
+  .iconbtn img{
+    width:28px; height:28px;       /* ← 原本 22px，放大到 28px */
+    object-fit:contain;
+    display:block;
+  }
 
   .panel{
     position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
