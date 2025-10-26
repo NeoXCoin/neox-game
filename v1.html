@@ -23,8 +23,8 @@
   .hud{position:absolute; inset:0; z-index:5; pointer-events:none; display:grid; grid-template-rows:auto 1fr;}
   @media (max-width: 600px) {
     .topbar{ position:relative; display:block; padding:10px 14px; }
-    .topbar .left  { position:absolute; left:10px;  top:12px; }
-    .topbar .right { position:absolute; right:10px; top:12px; }
+    .topbar .left  { position:absolute; left:10px;  top:10px; }
+    .topbar .right { position:absolute; right:10px; top:10px; }
     .topbar .center{
       position:absolute; left:50%; top:10px; transform:translateX(-50%);
       text-align:center; pointer-events:none;
@@ -130,7 +130,6 @@
       background: rgba(255,255,255,.08);               /* 手機再透明一點 */
       backdrop-filter: blur(2px);
     }
-  }
 
   /* iPad 直向可再落少少，避開 Pause/X（可選） */
   @media (min-width: 768px) and (orientation: portrait){
