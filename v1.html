@@ -67,37 +67,57 @@
   .btn.alt{background:#1f2648;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
   .hidden{display:none !important;}
 
-  /* === 固定四塊分數牌：置頂置中，不會跳位或被瀏海頂住 === */
+  /* === 固定 2×2 分數牌（不會跳位，也不會被 Safari 地址列頂住） === */
   .scoreboard{
     position:absolute;
-    top: calc(env(safe-area-inset-top, 0px) + 8px);
-    left:50%;
-    transform:translateX(-50%);
-    display:grid;
-    grid-template-columns: 120px 120px; /* 固定每欄寬度 */
-    grid-auto-rows: 32px;               /* 固定高度 */
-    gap:6px 8px;                       /* 行/列距 */
-    pointer-events:none;
-    z-index:10;
+    /* 頂邊加上 safe-area，避免同「X / Pause」重疊；可以按需要微調 +8→+10/12 */
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;                /* 上下行距 */
+    pointer-events: none;
+    z-index: 10;
   }
-  .scoreboard > div{ display:contents; } /* 讓四個 .badge 直接成為 grid item */
 
+  /* 每行兩個，置中排列 */
+  .scoreboard .srow{
+    display: flex;
+    gap: 8px;                /* 左右距 */
+    justify-content: center;
+  }
+
+  /* 統一每個框的尺寸（細啲），禁止換行，數字用等寬表現 */
   .scoreboard .badge{
-    width:120px; height:32px; line-height:32px;
-    margin:0;  
-    font-size:13px;                     /* ← 字體細啲 */
-    white-space:nowrap;
+    width: 116px;            /* ← 再收窄：框唔會過大 */
+    height: 30px;
+    line-height: 30px;
+    margin: 0;               /* 務必為 0，否則看起來會「靠埋」或重疊 */
+    font-size: 13px;
+    white-space: nowrap;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1, "lnum" 1;
+    text-align: center;
+    color: #fff;
+    background: rgba(255,255,255,.14);
+    backdrop-filter: blur(6px);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+    border-radius: 10px;
   }
 
-  /* 保險：手機版的 .center 佈局不影響上述定位 */
-  .topbar .scoreboard{
-    position:absolute !important;
-    top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
-    left:50% !important;
-    transform:translateX(-50%) !important;
+  /* 重要：避免手機 breakpoint 對 .center 的定位影響到 scoreboard */
+  .topbar .center{ position: static; transform: none; }
+
+  /* 極窄螢幕（可選）再細少少 */
+  @media (max-width: 380px){
+    .scoreboard .badge{ width: 108px; font-size: 12.5px; }
   }
+
+  /* iPad 直向可再落少少，避開 Pause/X（可選） */
+  @media (min-width: 768px) and (orientation: portrait){
+    .scoreboard{ top: calc(env(safe-area-inset-top, 0px) + 12px); }
+}
 </style>
 </head>
 <body>
