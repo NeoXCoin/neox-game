@@ -129,13 +129,21 @@ async function submitScore(score){
 }
 
 /* ====== 🎮 Communication with iframe ====== */
-const frame=document.getElementById('game');
-window.addEventListener('message',async e=>{
-  const m=e.data||{};
-  
+const frame = document.getElementById('game');
+
+window.addEventListener('message', async e => {
+  const m = e.data || {};
+
+  // ▶ Opening 入面叫開始遊戲
+  if (m.type === 'NX_START_GAME') {
+    // 只係切換一次就 OK
+    frame.src = 'v1.html';
+    return;
+  }
+
   // 🏁 Game cleared
-  if(m.type==='NX_GAME_CLEARED'){
-    const total=Math.floor(m.total||m.score||0);
+  if (m.type === 'NX_GAME_CLEARED') {
+    const total = Math.floor(m.total || m.score || 0);
     await submitScore(total);   // 上傳分數
     await loadTop3();           // 取榜顯示
   }
