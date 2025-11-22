@@ -325,9 +325,14 @@ startBtn.addEventListener('click', () => {
     startBGM.play().catch(()=>{});
   } catch(e){}
 
-  // 用 postMessage 通知外層跳去 v1，不再在 iframe 內跳
   setTimeout(() => {
-    window.parent?.postMessage({ type: 'NX_START_GAME' }, '*');
+    // ⚡ 如果係 iframe 裏面 → 交俾外層處理
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'NX_START_GAME' }, '*');
+    } else {
+      // ⚡ 如果係直接開 index.html → 自己去 v1.html
+      window.location.href = 'v1.html';
+    }
   }, 800);
 });
 
