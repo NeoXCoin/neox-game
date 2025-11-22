@@ -131,21 +131,27 @@ async function submitScore(score){
 /* ====== 🎮 Communication with iframe ====== */
 const frame = document.getElementById('game');
 
+// ⚠ 避免 iOS 多次觸發造成重播 Opening
+let gameStarted = false;
+
 window.addEventListener('message', async e => {
   const m = e.data || {};
 
   // ▶ Opening 入面叫開始遊戲
   if (m.type === 'NX_START_GAME') {
-    // 只係切換一次就 OK
-    frame.src = 'v1.html';
+
+    if (gameStarted) return; // 防 double trigger
+    gameStarted = true;
+
+    frame.src = 'v1.html';  // 切去 Level 1
     return;
   }
 
   // 🏁 Game cleared
   if (m.type === 'NX_GAME_CLEARED') {
     const total = Math.floor(m.total || m.score || 0);
-    await submitScore(total);   // 上傳分數
-    await loadTop3();           // 取榜顯示
+    await submitScore(total);
+    await loadTop3();
   }
 });
 </script>
