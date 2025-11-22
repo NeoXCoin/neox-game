@@ -313,20 +313,21 @@ function showStart(){
   requestAnimationFrame(()=>start.classList.add('visible'));
 }
 
-startBtn.addEventListener('click', ()=>{
-  // 確保只按一次
+startBtn.addEventListener('click', () => {
+  // 確保按一次
   if (startBtn.disabled) return;
   startBtn.disabled = true;
 
-  try{
+  try {
     startBGM.currentTime = 0;
     startBGM.volume = 1;
     startBGM.muted = false;
     startBGM.play().catch(()=>{});
-  }catch(e){}
+  } catch(e){}
 
-  setTimeout(()=>{
-    window.location.href = 'v1.html';   // ← 開始遊戲頁面
+  // 用 postMessage 通知外層跳去 v1，不再在 iframe 內跳
+  setTimeout(() => {
+    window.parent?.postMessage({ type: 'NX_START_GAME' }, '*');
   }, 800);
 });
 
