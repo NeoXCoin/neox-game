@@ -137,17 +137,34 @@ let gameStarted = false;
 window.addEventListener('message', async e => {
   const m = e.data || {};
 
-  // ▶ Opening 入面叫開始遊戲
+  // ▶ Opening 入面叫開始遊戲（由 index.html 發出）
   if (m.type === 'NX_START_GAME') {
-
-    if (gameStarted) return; // 防 double trigger
+    if (gameStarted) return;          // 防 double trigger
     gameStarted = true;
 
-    frame.src = 'v1.html';  // 切去 Level 1
+    frame.src = 'v1.html';            // 切去 Level 1
     return;
   }
 
-  // 🏁 Game cleared
+  // ▶ v1 / v2 要求轉去下一關（由 v1 / v2 發出）
+  if (m.type === 'NX_GO_LEVEL') {
+    if (m.to === 2) {
+      frame.src = 'v2.html#continue'; // 去 Level 2
+      return;
+    }
+    if (m.to === 3) {
+      frame.src = 'v3.html#continue'; // 去 Level 3
+      return;
+    }
+    if (m.to === 'END') {
+      // 爆機去 endgame.html（分數可加上 query）
+      const qs = typeof m.score === 'number' ? ('?score=' + Math.floor(m.score)) : '';
+      frame.src = 'endgame.html' + qs;
+      return;
+    }
+  }
+
+  // 🏁 Game cleared（例如 v3 清關時通知）
   if (m.type === 'NX_GAME_CLEARED') {
     const total = Math.floor(m.total || m.score || 0);
     await submitScore(total);
