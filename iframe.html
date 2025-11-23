@@ -31,7 +31,6 @@
              constant(safe-area-inset-bottom) constant(safe-area-inset-left);
     padding: env(safe-area-inset-top) env(safe-area-inset-right)
              env(safe-area-inset-bottom) env(safe-area-inset-left);
-    background:#000;
   }
 
   /* 🏆 Top 3 Box */
@@ -48,11 +47,10 @@
     display: none;
     opacity: 0;
     transition: opacity .8s ease;
-    max-width: min(92vw, 440px);
   }
   .top3.show { display: block; opacity: 1; }
   .top3 ol { margin: 6px 0 0; padding-left: 20px; }
-  .top3 small { opacity: .8; font-weight: 600; display:block; margin-top: 6px; }
+  .top3 small { opacity: .8; font-weight: 600; }
 </style>
 
 <!-- 🎮 起始頁：整個遊戲流程 -->
@@ -84,31 +82,31 @@
 
 <script>
 /* ====== 🌐 API Config ====== */
-const API_URL   = 'https://script.google.com/macros/s/AKfycbw44w4f5hpmKiledO1XfIKsGgfMgCksmcU2Qsst56l68CPLvQs4GvIg0PrItIuUqkOT2g/exec';
-const GAME_ORIGIN = 'https://neoxcoin.github.io';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw44w4f5hpmKiledO1XfIKsGgfMgCksmcU2Qsst56l68CPLvQs4GvIg0PrItIuUqkOT2g/exec';
 
-/* ====== 👤 Player Name ====== */
-// 只用嚟記住之前填過嘅名字，不會一開始就 prompt
-function getStoredName(){
-  try { return localStorage.getItem('nx_player_name') || ''; }
-  catch(e){ return ''; }
-}
-function saveName(name){
-  try { localStorage.setItem('nx_player_name', name); } catch(e){}
+/* ====== 👤 Player Name (首次詢問) ====== */
+function getPlayerName(){
+  let name = localStorage.getItem('nx_player_name');
+  if(!name){
+    name = prompt('Enter your player name for the leaderboard:','Player') || 'Player';
+    name = String(name).slice(0,20);
+    localStorage.setItem('nx_player_name', name);
+  }
+  return name;
 }
 
 /* ====== 🏆 Fetch Top 3 from Google Script ====== */
 async function loadTop3(){
-  const box  = document.getElementById('top3Box');
+  const box = document.getElementById('top3Box');
   const list = document.getElementById('top3List');
   const hint = document.getElementById('top3Hint');
   try{
-    const res  = await fetch(API_URL + '?t=' + Date.now(), { cache:'no-cache' });
+    const res = await fetch(API_URL);
     const data = await res.json();
     list.innerHTML = '';
-    (data||[]).slice(0,3).forEach((r,i)=>{
+    (data||[]).slice(0,3).forEach(r=>{
       const li=document.createElement('li');
-      li.textContent = `${i+1}. ${r.name} — ${r.score}`;
+      li.textContent = `${r.name} — ${r.score}`;
       list.appendChild(li);
     });
     if(!list.children.length) list.innerHTML='<li>No scores yet</li>';
@@ -119,50 +117,15 @@ async function loadTop3(){
   }
 }
 
-/* ====== 📨 Upload score with conditional name prompt ====== */
+/* ====== 📨 Upload score to Google Script ====== */
 async function submitScore(score){
-  const s = Math.floor(score || 0);
   try{
-    // 1️⃣ 先取最新 Top3 用來比較
-    let top = [];
-    try{
-      const res  = await fetch(API_URL + '?t=' + Date.now(), { cache:'no-cache' });
-      top = await res.json() || [];
-    }catch(e){}
-
-    // 排序由高到低
-    const sorted = top.slice().sort((a,b)=>Number(b.score)-Number(a.score));
-    let threshold = 0;
-    if (sorted.length >= 3){
-      threshold = Number(sorted[2].score || 0);   // 第三名分數
-    }
-
-    // 判斷今次係咪進入 Top3
-    let isTop3 = false;
-    if (sorted.length < 3) isTop3 = true;
-    else if (s > threshold) isTop3 = true;
-
-    // 2️⃣ 如今次入 Top3，先問名；否則就用現有名字或預設 Player
-    let name = getStoredName();
-    if (isTop3){
-      const placeholder = name || '';
-      const input = prompt('🎉 You reached the NeoX Top 3! Enter your player name:', placeholder) || placeholder;
-      name = String(input).trim().slice(0, 20);
-      if (!name) name = 'Player';
-      saveName(name);
-    }
-    if (!name) name = 'Player';
-
-    // 3️⃣ 上傳分數
     await fetch(API_URL,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ name, score:s })
+      body:JSON.stringify({ name:getPlayerName(), score:Math.floor(score) })
     });
-
-  }catch(e){
-    // 失敗就靜靜地 ignore
-  }
+  }catch(e){}
 }
 
 /* ====== 🎮 Communication with iframe ====== */
@@ -172,21 +135,25 @@ const frame = document.getElementById('game');
 let gameStarted = false;
 
 window.addEventListener('message', async e => {
-  if (e.origin !== GAME_ORIGIN) return;
   const m = e.data || {};
 
   // ▶ Opening 入面叫開始遊戲（由 index.html 發出）
   if (m.type === 'NX_START_GAME') {
     if (gameStarted) return;          // 防 double trigger
     gameStarted = true;
-    frame.src = 'v1.html';
+
+    frame.src = 'v1.html';            // 切去 Level 1
     return;
   }
 
-  // ▶ v1 / v2 要求轉去下一關
+  // ▶ v1 / v2 要求轉去下一關（由 v1 / v2 發出）
   if (m.type === 'NX_GO_LEVEL') {
     if (m.to === 2) {
-      frame.src = 'v2.html#continue';
+      // 之前：直接去 v2.html
+      // frame.src = 'v2.html#continue';
+
+      // 🔁 改成：先入 Opening2，Opening2 再跳 v2
+      frame.src = 'opening2.html#fromV1';
       return;
     }
     if (m.to === 3) {
@@ -200,22 +167,12 @@ window.addEventListener('message', async e => {
     }
   }
 
-  // 🏁 全遊戲完成（由 endgame / v3 通知）
+  // 🏁 Game cleared（例如 v3 清關時通知）
   if (m.type === 'NX_GAME_CLEARED') {
     const total = Math.floor(m.total || m.score || 0);
     await submitScore(total);
-    await loadTop3();     // 更新頂部排行榜
+    await loadTop3();
   }
-});
-
-/* ====== 將已儲存名字傳入子頁（如有需要顯示） ====== */
-function sendPlayerName(){
-  const name = getStoredName() || 'Player';
-  try{ frame.contentWindow?.postMessage({ type:'NX_PLAYER_NAME', name }, GAME_ORIGIN); }catch(e){}
-}
-window.addEventListener('load', () => {
-  sendPlayerName();
-  loadTop3();        // 一開頁就顯示現時 Top3
 });
 </script>
 </html>
