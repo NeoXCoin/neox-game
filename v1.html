@@ -131,11 +131,11 @@
       const parentOrigin = ref ? new URL(ref).origin : '';
 
       if (!ALLOWED.includes(parentOrigin)) {
-      window.top.location.replace('https://neoxcoin.io/neox-game/');
+      window.top.location.replace('https://neoxcoin.io/neox-game');
     }
 
     } catch (e) {
-      window.top.location.replace('https://neoxcoin.io/neox-game/');
+      window.top.location.replace('https://neoxcoin.io/neox-game');
     }
   }
 })();
