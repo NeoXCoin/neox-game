@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -280,23 +281,7 @@ btnPause.onclick=()=>togglePause();
 
 btnNextLevel.onclick = () => {
   const carry = Math.floor(score);
-
-  // 帶住分數俾下一關用（同以前一樣）
-  localStorage.setItem('nx_carry', String(carry));
-
-  // 如果喺 iframe 入面 → 交俾外層 iframe.html 處理跳關
-  if (window.parent && window.parent !== window) {
-    window.parent.postMessage({
-      type: 'NX_GO_LEVEL',
-      from: 1,
-      to: 2,
-      score: carry
-    }, '*');
-  } else {
-    // 直開 v1.html（冇 iframe）就用原本方法
-    window.location.href = 'v2.html#continue';
-  }
-};
+  localStorage.setItem('nx_carry', carry);
 
   // 將切換動作交給外層
   window.parent.postMessage({ 
