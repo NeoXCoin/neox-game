@@ -125,10 +125,10 @@
       const ref = document.referrer || '';
       const parentOrigin = ref ? new URL(ref).origin : '';
       if (parentOrigin !== ALLOWED_PARENT_ORIGIN) {
-        window.top.location.replace('https://neoxcoin.github.io/neox-game/');
+        window.top.location.replace('https://neoxcoin.io/neox-game/');
       }
     } catch (e) {
-      window.top.location.replace('https://neoxcoin.github.io/neox-game/');
+      window.top.location.replace('https://neoxcoin.io/neox-game/');
     }
   }
 })();
