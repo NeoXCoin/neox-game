@@ -11,15 +11,14 @@
   const HOME   = 'https://neoxcoin.io/';
   const ENTRY1 = 'https://neoxcoin.io/neox-game/v1.html';
   const HUB    = 'https://neoxcoin.io/neox-game/';
-  const ALLOWED_PARENT = 'https://neoxcoin.io';
 
-  // ✅ 同時容許 github.io 以及 neoxcoin.io 做 parent
+  // ✅ 允許做 parent 嘅來源：github.io 同 neoxcoin.io
   const ALLOWED_PARENTS = [
     'https://neoxcoin.github.io',
     'https://neoxcoin.io'
   ];
 
-  // 1）防熱鏈：不允許被其他網站 iframe 直接嵌入
+  // 1) 防熱鏈：唔俾其他網站 iframe 你
   if (window.top !== window.self) {
     try {
       const ref    = document.referrer || '';
