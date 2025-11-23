@@ -37,7 +37,7 @@
   }
   .left{  justify-self:start; pointer-events:auto; }
   .center{justify-self:center; text-align:center; pointer-events:none; }
-  .right{ justify-self:end;   pointer-events:auto; }
+  .right{ justify-self=end;   pointer-events:auto; }
   .badge{
     display:inline-block;padding:8px 12px;border-radius:12px;
     background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
@@ -82,7 +82,7 @@
         <span class="badge" id="scoreBadge">Score: 0</span>
         <span class="badge" id="timeBadge">Time: 03:00</span>
         <span class="badge" id="bestBadge">Best: 0</span>
-        <span class="badge" id="missBadge">Miss: 0/30</span>
+        <span class="badge" id="missBadge">Miss: 0/99</span>
       </div>
       <div class="right">
         <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
@@ -117,19 +117,28 @@
 </div>
 
 <script>
-(function(){
-   const ALLOWED_PARENTS = [
-     'https://neoxcoin.io/neox-game/iframe'
-   ];
+/* ====== 防熱鏈：只俾自己個 domain / iframe host 用 ====== */
+(function () {
+  const HUB = 'https://neoxcoin.io/neox-game/';
+
+  // 允許做 parent 嘅來源（只用 origin，就係 https://domain）
+  const ALLOWED_PARENTS = [
+    'https://neoxcoin.github.io',
+    'https://neoxcoin.io'
+  ];
+
   if (window.top !== window.self) {
     try {
-      const ref = document.referrer || '';
-      const parentOrigin = ref ? new URL(ref).origin : '';
-      if (parentOrigin !== ALLOWED_PARENT_ORIGIN) {
-        window.top.location.replace('https://neoxcoin.github.io/neox-game/');
+      const ref    = document.referrer || '';
+      const origin = ref ? new URL(ref).origin : '';
+
+      if (!ALLOWED_PARENTS.includes(origin)) {
+        window.top.location.replace(HUB);
+        return;
       }
     } catch (e) {
-      window.top.location.replace('https://neoxcoin.github.io/neox-game/');
+      window.top.location.replace(HUB);
+      return;
     }
   }
 })();
@@ -137,7 +146,7 @@
 /* ====== Config ====== */
 const TOTAL_TIME_SEC = 180;
 const EDGE = 2;
-const MAX_MISSES = 60;
+const MAX_MISSES = 99;
 
 /* ====== Assets ====== */
 const BG_URL    = "https://neoxcoin.github.io/neox-game/forest%20background%20.PNG";
@@ -217,7 +226,7 @@ function refreshHUD(){
   finalScore.textContent=`Score: ${Math.floor(score)}`;
   bestScore.textContent =`Best: ${Math.floor(best)}`;
   
-    // 🛰️ 向 iframe 傳送即時分數
+  // 🛰 向 iframe host 傳送即時分數（可選）
   window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
 
@@ -269,7 +278,8 @@ document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState
 
 /* ====== Buttons ====== */
 document.getElementById('btnHome').onclick = () => {
-  (window.top || window).location.replace('https://neoxcoin.github.io/');
+  // Home 我哋照用 top，直接返主站
+  (window.top || window).location.replace('https://neoxcoin.io/');
 };
 document.getElementById('btnStart').onclick=()=>{start();};
 document.getElementById('btnRestart2').onclick=()=>{restart();};
@@ -281,10 +291,10 @@ btnPause.onclick=()=>togglePause();
 btnNextLevel.onclick = () => {
   const carry = Math.floor(score);
 
-  // 帶住分數俾下一關用（同以前一樣）
+  // 帶住分數俾下一關用
   localStorage.setItem('nx_carry', String(carry));
 
-  // 如果喺 iframe 入面 → 交俾外層 iframe.html 處理跳關
+  // 如果喺 iframe 入面 → 交俾外層 iframe host 處理跳關
   if (window.parent && window.parent !== window) {
     window.parent.postMessage({
       type: 'NX_GO_LEVEL',
@@ -358,7 +368,6 @@ function togglePause(forcePause){
   else if(state===State.PAUSED){ state=State.PLAYING; panelPause.classList.add('hidden'); btnPause.textContent='⏸ Pause'; }
 }
 function restart(){
-  // v1 由 0 分開始
   panelWin.classList.add('hidden'); panelPause.classList.add('hidden');
   start();
 }
@@ -376,7 +385,7 @@ function finishWin(){
 
   winTitle.textContent = "Stage Clear! 🎉";
   refreshHUD();
-  btnNextLevel.classList.remove('hidden'); // 允許過關
+  btnNextLevel.classList.remove('hidden');
   panelWin.classList.remove('hidden'); SFX.win();
 }
 function finishOver(){
@@ -385,7 +394,7 @@ function finishOver(){
   localStorage.setItem('neox_catch_best_l1', String(best));
   winTitle.textContent = "Game Over 🤭";
   refreshHUD();
-  btnNextLevel.classList.add('hidden');    // Game Over 不允許過關
+  btnNextLevel.classList.add('hidden');
   panelWin.classList.remove('hidden'); SFX.over();
 }
 
@@ -399,20 +408,16 @@ function loop(now){
   drawBackground();
 
   if(state===State.PLAYING){
-    // 計時
     timeLeft = Math.max(0, timeLeft - dt/60);
     if(timeLeft<=0){ return finishWin(); }
 
-    // 移動（與 spawn 同一 EDGE）
     chest.vx=(keys.has('L')?-chest.speed:0)+(keys.has('R')?chest.speed:0) || chest.vx*0.92;
     chest.x = Math.max(chest.w/2 + EDGE,
               Math.min(canvas.clientWidth - chest.w/2 - EDGE, chest.x + chest.vx));
 
-    // 生成 / 下落
     spawnCoins(dt);
     for(const c of coins){ c.y+=c.vy*dt; c.spin+=c.vspin*dt; }
 
-    // 橢圓口碰撞（貼邊補償）
     const baseRx = chest.w * 0.36, baseRy = chest.h * 0.18;
     const overhangL = Math.max(0, (chest.w/2 + EDGE) - chest.x);
     const overhangR = Math.max(0, (chest.w/2 + EDGE) - (canvas.clientWidth - chest.x));
@@ -456,7 +461,7 @@ function drawChest(){
 function drawCoins(){
   for(const c of coins){
     let size = c.r * 3;
-    if (window.innerWidth < 600) size *= 0.7; // 📱 手機縮細 25%
+    if (window.innerWidth < 600) size *= 0.7;
     const r = size / 2; ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
     if(coinReady){ ctx.save(); ctx.shadowColor='rgba(255,223,128,.8)'; ctx.shadowBlur=18; ctx.drawImage(coinImg,-r,-r,size,size); ctx.restore(); }
     else{ const g=ctx.createRadialGradient(0,0,r*.2,0,0,r); g.addColorStop(0,'#fff6cc'); g.addColorStop(1,'#e3b23c'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); }
