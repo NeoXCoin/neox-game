@@ -117,16 +117,17 @@
 </div>
 
 <script>
-/* ====== 防熱鏈：只俾自己個 domain / iframe host 用 ====== */
 (function () {
   const HUB = 'https://neoxcoin.io/neox-game/';
 
-  // 允許做 parent 嘅來源（只用 origin，就係 https://domain）
+  // 同時容許 github.io 以及 neoxcoin.io 做 parent
   const ALLOWED_PARENTS = [
     'https://neoxcoin.github.io',
     'https://neoxcoin.io'
+    'https://neoxcoin.io/neox-game/iframe'
   ];
 
+  // 防熱鏈：如果俾人用 iframe 夾住，就檢查來源
   if (window.top !== window.self) {
     try {
       const ref    = document.referrer || '';
@@ -142,6 +143,7 @@
     }
   }
 })();
+</script>
 
 /* ====== Config ====== */
 const TOTAL_TIME_SEC = 180;
