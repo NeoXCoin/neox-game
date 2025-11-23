@@ -149,15 +149,18 @@ window.addEventListener('message', async e => {
   // ▶ v1 / v2 要求轉去下一關（由 v1 / v2 發出）
   if (m.type === 'NX_GO_LEVEL') {
     if (m.to === 2) {
-      frame.src = 'v2.html#continue'; // 去 Level 2
+      // 之前：直接去 v2.html
+      // frame.src = 'v2.html#continue';
+
+      // 🔁 改成：先入 Opening2，Opening2 再跳 v2
+      frame.src = 'opening2.html#fromV1';
       return;
     }
     if (m.to === 3) {
-      frame.src = 'v3.html#continue'; // 去 Level 3
+      frame.src = 'v3.html#continue';
       return;
     }
     if (m.to === 'END') {
-      // 爆機去 endgame.html（分數可加上 query）
       const qs = typeof m.score === 'number' ? ('?score=' + Math.floor(m.score)) : '';
       frame.src = 'endgame.html' + qs;
       return;
