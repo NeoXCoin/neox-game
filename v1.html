@@ -119,7 +119,10 @@
 
 <script>
 (function(){
-  const ALLOWED = ['https://neoxcoin.io'];
+  const ALLOWED = [
+    'https://neoxcoin.github.io',
+    'https://neoxcoin.io'
+  ];
 
   if (window.top !== window.self) {
     try {
@@ -127,8 +130,8 @@
       const parentOrigin = ref ? new URL(ref).origin : '';
 
       if (!ALLOWED.includes(parentOrigin)) {
-        window.top.location.replace('https://neoxcoin.io/neox-game/');
-      }
+      window.top.location.replace('https://neoxcoin.io/neox-game/');
+    }
 
     } catch (e) {
       window.top.location.replace('https://neoxcoin.io/neox-game/');
@@ -139,7 +142,7 @@
 /* ====== Config ====== */
 const TOTAL_TIME_SEC = 180;
 const EDGE = 2;
-const MAX_MISSES = 60;
+const MAX_MISSES = 99;
 
 /* ====== Assets ====== */
 const BG_URL    = "https://neoxcoin.github.io/neox-game/forest%20background%20.PNG";
