@@ -5,19 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>NeoX Catch — Opening 2</title>
 
-<!-- ✅ 守門（A+B）：允許 #fromV1 放行並補寫進度；否則要求 last_level ≥ 1 -->
+<!-- ✅ 守門：允許由 v1 進入，並支援 neoxcoin.io + github.io -->
 <script>
 (function(){
-  const HUB          = 'https://neoxcoin.github.io/neox-game/';
-  const ORIGIN_ALLOW = 'https://neoxcoin.github.io';
-  const L1_URL       = HUB + 'v1.html';
+  // 官方 Hub（用 .io 作主）
+  const HUB = 'https://neoxcoin.io/neox-game/';
+  const L1_URL = HUB + 'v1.html';
 
-  // 防熱鏈：如被外站 iframe 載入，回 Hub
+  // 容許做 parent 嘅 origin
+  const ALLOWED_PARENTS = [
+    'https://neoxcoin.io',
+    'https://neoxcoin.github.io'
+    'https://neoxcoin.io/neox-game/iframe'
+  ];
+
+  // 防熱鏈：如果被第三方網站 iframe 載入，就送返 Hub
   if (window.top !== window.self) {
     try {
-      const ref = document.referrer || '';
+      const ref    = document.referrer || '';
       const origin = ref ? new URL(ref).origin : '';
-      if (origin !== ORIGIN_ALLOW) {
+      if (!ALLOWED_PARENTS.includes(origin)) {
         window.top.location.replace(HUB);
         return;
       }
@@ -27,16 +34,18 @@
     }
   }
 
-  // 放行條件
+  // 放行條件：
   const safeNum = k => { try { return Number(localStorage.getItem(k) || 0); } catch { return 0; } };
   const lastLv  = safeNum('neox_last_level');
   const fromV1  = /fromV1/i.test(location.hash || '');
 
+  // 由 v1 直接帶 #fromV1 過來
   if (fromV1) {
     try { localStorage.setItem('neox_last_level', '1'); } catch(e){}
     return; // 直入
   }
 
+  // 冇玩過 v1 → 送返 v1
   if (lastLv < 1) {
     location.replace(L1_URL + '#fromGuard');
     return;
@@ -178,7 +187,7 @@ video.addEventListener('loadeddata', reveal);
 video.addEventListener('loadedmetadata', reveal);
 video.play().catch(()=>{}); // 嘗試靜音自動播放
 
-/* ===== 自動收起控制層（與 Opening3 一樣） ===== */
+/* ===== 自動收起控制層 ===== */
 let hideTimer = null;
 function scheduleHide(){
   clearTimeout(hideTimer);
@@ -188,7 +197,7 @@ function showControls(){
   overlay.classList.remove('hide');
   scheduleHide();
 }
-scheduleHide(); // 初始 5 秒倒數
+scheduleHide();
 ['mousemove','pointermove','pointerdown','touchstart','keydown'].forEach(evt=>{
   window.addEventListener(evt, showControls, { passive: true });
 });
@@ -200,7 +209,7 @@ scheduleHide(); // 初始 5 秒倒數
   }, { once:true, passive:true });
 });
 
-/* ===== 聲音開/關（切換文案） ===== */
+/* ===== 聲音開/關 ===== */
 let audioCtx = null;
 function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
 function updateSoundLabel(){
@@ -217,7 +226,7 @@ btnSound.addEventListener('click', async ()=>{
 });
 updateSoundLabel();
 
-/* ===== Start：先嘗試播放；若 1.2s 內無反應 → 直接開 MP4 ===== */
+/* ===== Start：先嘗試喺頁面內播；唔得再開 MP4 ===== */
 async function tryPlayWithFallback(){
   try{ ensureAudio(); await audioCtx?.resume?.(); }catch(e){}
   let started = false;
@@ -230,26 +239,25 @@ async function tryPlayWithFallback(){
   video.addEventListener('playing', onPlaying, { once:true });
   video.addEventListener('timeupdate', onTime);
 
-  try{ await video.play(); }catch(e){ /* ignore */ }
+  try{ await video.play(); }catch(e){}
 
   setTimeout(()=>{
     if(!started){
       cleanup();
-      // 用絕對路徑打開原始 mp4（系統播放器）
       location.href = 'https://neoxcoin.github.io/neox-game/CatchCoinL2.mp4';
     }
   }, 1200);
 }
 btnStart.addEventListener('click', tryPlayWithFallback);
 
-/* ===== Skip / 影片播完 → 進 v2.html（A+B） ===== */
-const V2_URL = 'https://neoxcoin.github.io/neox-game/v2.html#fromOpening2';
-// ✅ 新寫法（在同一個 iframe 內導向）
+/* ===== Skip / 影片播完 → 入 v2.html（留喺同一個 iframe） ===== */
 function goV2(){
-  // 補寫進度（保險）：表明已完成 L1、看過 Opening2
-  try { localStorage.setItem('neox_last_level','1'); } catch(e){}
-  try { sessionStorage.setItem('seenOpening2','true'); } catch(e){}
-  // 只在本視窗跳轉（留在 iframe）
+  try {
+    localStorage.setItem('neox_last_level','1');
+    sessionStorage.setItem('seenOpening2','true');
+  } catch(e){}
+
+  // 相對路徑，喺 neoxcoin.io/neox-game/ 或 github.io/neox-game/ 內都得
   location.href = 'v2.html#fromOpening2';
 }
 btnSkip.addEventListener('click', goV2);
