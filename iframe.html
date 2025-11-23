@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>NeoX Game (iframe host)</title>
+<title>NeoX Game (iframe clean)</title>
+
 <style>
   :root { --vh: 1vh; }
 
@@ -21,44 +21,16 @@
     touch-action: manipulation;
   }
 
-  /* 🎮 遊戲 iframe */
-  iframe{
-    width: min(96vw, 760px);
-    aspect-ratio: 9 / 16;
-    height: auto;
+  iframe {
+    width: min(92vw, 440px);
+    aspect-ratio: 9/16;
     border: 0;
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(0,0,0,.45);
-    background: #000;
-
     padding: constant(safe-area-inset-top) constant(safe-area-inset-right)
              constant(safe-area-inset-bottom) constant(safe-area-inset-left);
     padding: env(safe-area-inset-top) env(safe-area-inset-right)
              env(safe-area-inset-bottom) env(safe-area-inset-left);
-  }
-
-  @media (min-width: 900px) and (min-height: 700px){
-    iframe{
-      height: min(96vh, 1080px);
-      width: auto;
-    }
-  }
-
-  @media (min-width: 1400px) and (min-height: 900px){
-    iframe{
-      height: min(97vh, 1180px);
-    }
-  }
-
-  @media (orientation: portrait) and (min-width: 768px){
-    iframe{
-      height: min(88svh,
-                  calc(var(--vh, 1vh) * 88),
-                  calc(100dvh - 32px - env(safe-area-inset-bottom)));
-      width: auto;
-      aspect-ratio: 9 / 16;
-      max-width: 92vw;
-    }
   }
 
   /* 🏆 Top 3 Box */
@@ -74,25 +46,15 @@
     backdrop-filter: blur(6px);
     display: none;
     opacity: 0;
-    transition: opacity .6s ease;
-    max-width: min(92vw, 440px);
+    transition: opacity .8s ease;
   }
   .top3.show { display: block; opacity: 1; }
   .top3 ol { margin: 6px 0 0; padding-left: 20px; }
-  .top3 small { opacity: .8; font-weight: 600; display:block; margin-top: 6px; }
+  .top3 small { opacity: .8; font-weight: 600; }
 </style>
-</head>
-<body>
 
 <!-- 🎮 起始頁：整個遊戲流程 -->
-<iframe
-  id="game"
-  title="NeoX Catch"
-  src="https://neoxcoin.github.io/neox-game/index.html#embed=1"
-  allow="autoplay *; fullscreen *; gamepad *; clipboard-write"
-  referrerpolicy="no-referrer-when-downgrade"
-  loading="eager">
-</iframe>
+<iframe id="game" src="index.html?v=3" allow="gamepad *"></iframe>
 
 <!-- 🏆 全球排行榜 -->
 <div class="top3" id="top3Box">
@@ -101,7 +63,7 @@
   <small id="top3Hint"></small>
 </div>
 
-<!-- 🔧 固定可視高度 -->
+<!-- 🔧 固定可視高度（防止 iOS 地址列導致 iframe 高度跳動） -->
 <script>
   (function setVh(){
     function update(){
@@ -119,11 +81,8 @@
 </script>
 
 <script>
-/* ====== 🌐 API Config / 基本常數 ====== */
-const API_URL     = 'https://script.google.com/macros/s/AKfycbw44w4f5hpmKiledO1XfIKsGgfMgCksmcU2Qsst56l68CPLvQs4GvIg0PrItIuUqkOT2g/exec';
-const GAME_ORIGIN = 'https://neoxcoin.github.io';
-const GAME_BASE   = 'https://neoxcoin.github.io/neox-game/';
-const frame       = document.getElementById('game');
+/* ====== 🌐 API Config ====== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbw44w4f5hpmKiledO1XfIKsGgfMgCksmcU2Qsst56l68CPLvQs4GvIg0PrItIuUqkOT2g/exec';
 
 /* ====== 👤 Player Name (首次詢問) ====== */
 function getPlayerName(){
@@ -136,13 +95,13 @@ function getPlayerName(){
   return name;
 }
 
-/* ====== 🏆 Fetch Top 3 ====== */
+/* ====== 🏆 Fetch Top 3 from Google Script ====== */
 async function loadTop3(){
-  const box  = document.getElementById('top3Box');
+  const box = document.getElementById('top3Box');
   const list = document.getElementById('top3List');
   const hint = document.getElementById('top3Hint');
   try{
-    const res  = await fetch(API_URL, { cache:'no-cache' });
+    const res = await fetch(API_URL);
     const data = await res.json();
     list.innerHTML = '';
     (data||[]).slice(0,3).forEach(r=>{
@@ -158,57 +117,42 @@ async function loadTop3(){
   }
 }
 
-/* ====== 📨 Upload score ====== */
+/* ====== 📨 Upload score to Google Script ====== */
 async function submitScore(score){
   try{
     await fetch(API_URL,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ name:getPlayerName(), score:Math.floor(score||0) })
+      body:JSON.stringify({ name:getPlayerName(), score:Math.floor(score) })
     });
   }catch(e){}
 }
 
-/* ====== 🎮 接收遊戲 page 的 postMessage ====== */
-let gameStarted = false;   // 防止 iOS 亂觸發多次
+/* ====== 🎮 Communication with iframe ====== */
+const frame = document.getElementById('game');
 
-window.addEventListener('message', async (event)=>{
-  // 只接受來自 neoxcoin.github.io（遊戲所在網域）
-  if (event.origin !== GAME_ORIGIN) return;
+// ⚠ 避免 iOS 多次觸發造成重播 Opening
+let gameStarted = false;
 
-  const m = event.data || {};
+window.addEventListener('message', async e => {
+  const m = e.data || {};
 
-  /* ▶ 1. Opening 入面按「START GAME」 */
+  // ▶ Opening 入面叫開始遊戲
   if (m.type === 'NX_START_GAME') {
-    if (gameStarted) return;
+
+    if (gameStarted) return; // 防 double trigger
     gameStarted = true;
 
-    // 直接切去 Level 1（仍然留喺 iframe 入面）
-    frame.src = GAME_BASE + 'v1.html#level=1';
+    frame.src = 'v1.html';  // 切去 Level 1
     return;
   }
 
-  /* 💾 2. 即時分數（可選，用嚟改 title） */
-  if (m.type === 'NX_CARRY' && typeof m.score === 'number') {
-    document.title = `NeoX Game — Score ${m.score}`;
-  }
-
-  /* 🏁 3. 完成（例如 v3 清關） */
+  // 🏁 Game cleared
   if (m.type === 'NX_GAME_CLEARED') {
-    const total = Math.floor(m.total ?? m.score ?? 0);
+    const total = Math.floor(m.total || m.score || 0);
     await submitScore(total);
     await loadTop3();
   }
 });
-
-/* ====== 📤 對子頁傳玩家名（可選） ====== */
-function sendPlayerName(){
-  const name = getPlayerName();
-  try{
-    frame.contentWindow?.postMessage({ type:'NX_PLAYER_NAME', name }, GAME_ORIGIN);
-  }catch(e){}
-}
-window.addEventListener('load', sendPlayerName);
 </script>
-</body>
 </html>
