@@ -5,19 +5,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>NeoX Catch — Level 3</title>
 
-<!-- ✅ 只做守門，完全不再導去 opening3 -->
+<!-- ✅ 僅守門：允許 neoxcoin.io / neoxcoin.github.io，並檢查有無通過 Level 2 -->
 <script>
 (function(){
-  const HUB          = 'https://neoxcoin.github.io/neox-game/';
-  const ORIGIN_ALLOW = 'https://neoxcoin.github.io';
-  const L2_URL       = HUB + 'v2.html';
+  const HUB    = 'https://neoxcoin.io/neox-game/';
+  const L2_URL = HUB + 'v2.html';
 
-  // 防熱鏈：如果被外站 iframe 載入，回 Hub
+  // 允許做 parent 嘅來源（只睇 origin）
+  const ALLOWED_PARENTS = [
+    'https://neoxcoin.github.io',
+    'https://neoxcoin.io'
+  ];
+
+  // 🔐 防熱鏈：如果被其他網站 iframe 載入 → 送返去 HUB
   if (window.top !== window.self) {
     try {
-      const ref = document.referrer || '';
+      const ref    = document.referrer || '';
       const origin = ref ? new URL(ref).origin : '';
-      if (origin !== ORIGIN_ALLOW) {
+      if (!ALLOWED_PARENTS.includes(origin)) {
         window.top.location.replace(HUB);
         return;
       }
@@ -27,20 +32,20 @@
     }
   }
 
-  // ✅ A+B：允許從 Opening3 直入（帶 #fromOpening3），並補寫進度
+  // ✅ 防跳關：預期先過 L2（neox_last_level >= 2）
   const safeNum = k => { try { return Number(localStorage.getItem(k) || 0); } catch { return 0; } };
   const lastLv  = safeNum('neox_last_level');
   const fromOpening3 = /fromOpening3/i.test(location.hash || '');
 
-  if (fromOpening3) {
-    // 由 Opening3 進來：補寫 last_level=2 然後放行
+  // 若真係由 Opening3 直入，可以幫手補寫進度
+  if (fromOpening3 && lastLv < 2) {
     try { localStorage.setItem('neox_last_level', '2'); } catch (e) {}
     return;
   }
 
-  // 原本的防跳關：必須通過 L2（只看 lastLv，不看分數）
-  if (lastLv < 2) {
-    location.replace(L2_URL + '#fromGuard');
+  if (!fromOpening3 && lastLv < 2) {
+    // 未過 L2 → 拉返去 L2
+    location.replace(L2_URL + '#fromGuard3');
     return;
   }
 })();
@@ -120,7 +125,7 @@
           <span class="badge" id="scoreBadge">Score: 0</span>
           <span class="badge" id="timeBadge">Time: 03:00</span>
           <span class="badge" id="bestBadge">Best: 0</span>
-          <span class="badge" id="missBadge">Miss: 0/90</span>
+          <span class="badge" id="missBadge">Miss: 0/99</span>
         </div>
         <div class="right">
           <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
@@ -249,7 +254,8 @@ addEventListener('pointermove',e=>{
 
 /* ===== Buttons ===== */
 document.getElementById('btnHome').onclick = () => {
-  (window.top || window).location.replace('https://neoxcoin.github.io/');
+  // 回主站，用 top
+  (window.top || window).location.replace('https://neoxcoin.io/');
 };
 btnPause.onclick  = ()=>togglePause();
 btnReplay.onclick = ()=>restart();
@@ -300,13 +306,15 @@ function togglePause(forcePause){
   else if(state===State.PAUSED){ state=State.PLAYING; btnPause.textContent='⏸ Pause'; }
 }
 function restart(){
-  // 回到 v2 傳入嘅分數（carry），唔會用上局累積分
-  score = Number(localStorage.getItem('nx_carry') || 0);
-  timeLeft = TOTAL_TIME_SEC;
-  missCount = 0; caughtCount = 0;
+  // 回到 v2 傳入嘅分數（carry）
+  score     = Number(localStorage.getItem('nx_carry') || 0);
+  timeLeft  = TOTAL_TIME_SEC;
+  missCount = 0;
+  caughtCount = 0;
   items.length=0; spawnTimer=0; chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
   state=State.PLAYING; hidePanel(); btnPause.textContent='⏸ Pause'; refreshHUD();
 }
+
 function gotoEnd(){
   const s = Math.floor(score);
   best = Math.max(best, s);
@@ -314,8 +322,28 @@ function gotoEnd(){
   localStorage.setItem('nx_carry',          String(s));
   localStorage.setItem('nx_last_score',     String(s));
   localStorage.setItem('nx_best_all',       String(best));
+  try { localStorage.setItem('neox_last_level','3'); } catch(e){}
   try { sessionStorage.setItem('cameFromL3', '1'); } catch(e){}
-  location.href = `endgame.html?score=${s}&best=${best}`;
+
+  // ✅ 如果喺 iframe 入面 → 交俾 parent 做排行榜 + 去 endgame.html
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({
+      type: 'NX_GAME_CLEARED',
+      total: s,
+      score: s,
+      level: 3
+    }, '*');
+
+    window.parent.postMessage({
+      type: 'NX_GO_LEVEL',
+      from: 3,
+      to: 'END',
+      score: s
+    }, '*');
+  } else {
+    // 直接開（冇 iframe）
+    location.href = `endgame.html?score=${s}&best=${best}`;
+  }
 }
 
 /* 結算面板顯示/隱藏 */
@@ -326,10 +354,8 @@ function showPanel(title, showEnd=false){
   statInfo.textContent   = `Caught: ${caughtCount} · Missed: ${missCount}`;
   btnEndgame.classList.toggle('hidden', !showEnd);
   panelWin.classList.remove('hidden');
-  requestAnimationFrame(()=>panelWin.classList.add('show'));
 }
 function hidePanel(){
-  panelWin.classList.remove('show');
   panelWin.classList.add('hidden');
 }
 
@@ -340,7 +366,7 @@ function refreshHUD(){
   bestBadge.textContent  = `Best: ${Math.floor(best)}`;
   timeBadge.textContent  = `Time: ${fmt(timeLeft)}`;
   missBadge.textContent  = `Miss: ${missCount}/${MAX_MISSES}`;
-  // 🛰️ 向父頁傳分數（如被 iframe 包著）
+  // 🛰️ 向父頁傳分數（如被 iframe 包住）
   window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
 
