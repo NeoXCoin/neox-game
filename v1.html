@@ -119,14 +119,20 @@
 
 <script>
 (function(){
-  const ALLOWED_PARENT_ORIGIN = 'https://neoxcoin.github.io';
+  const ALLOWED = [
+    'https://neoxcoin.github.io',
+    'https://neoxcoin.io'
+  ];
+
   if (window.top !== window.self) {
     try {
       const ref = document.referrer || '';
       const parentOrigin = ref ? new URL(ref).origin : '';
-      if (parentOrigin !== ALLOWED_PARENT_ORIGIN) {
+
+      if (!ALLOWED.includes(parentOrigin)) {
         window.top.location.replace('https://neoxcoin.io/neox-game/');
       }
+
     } catch (e) {
       window.top.location.replace('https://neoxcoin.io/neox-game/');
     }
