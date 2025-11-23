@@ -8,15 +8,22 @@
 <!-- 🔒 EndGame 守門：防直接改 URL、限制來源網域／頁面 -->
 <script>
 (function(){
-  const HUB    = 'https://neoxcoin.github.io/neox-game/';   // 官方遊戲入口
-  const L3     = 'https://neoxcoin.github.io/neox-game/v3.html';
-  const PARENT = 'https://neoxcoin.github.io';
+  // 用 neoxcoin.io 作官方入口
+  const HUB = 'https://neoxcoin.io/neox-game/';
+  const L3  = HUB + 'v3.html';
+
+  // 允許做 parent 嘅 origin（.github.io + .io 都 OK）
+  const ALLOWED_PARENTS = [
+    'https://neoxcoin.github.io',
+    'https://neoxcoin.io'
+  ];
 
   // 1) 若被第三方網站 iframe 嵌入 → 一律回 HUB（只容許自家域名）
   if (window.top !== window.self) {
     try {
-      const origin = (document.referrer ? new URL(document.referrer).origin : '');
-      if (origin !== PARENT) {
+      const ref    = document.referrer || '';
+      const origin = ref ? new URL(ref).origin : '';
+      if (!ALLOWED_PARENTS.includes(origin)) {
         window.top.location.replace(HUB);
         return;
       }
@@ -27,19 +34,19 @@
   }
 
   // 2) 必須由 L3 進來：
-  //    條件任一成立才放行：a) referrer 係 v3.html；b) URL 有 score 參數（由 L3 帶來）；
-  //    c) sessionStorage 有 cameFromL3（可於 L3 導入前 set）。
-  const url = new URL(location.href);
-  const hasScoreParam = url.searchParams.has('score');
-  const cameFromRef   = (document.referrer || '').startsWith(L3);
-  const cameFlag      = sessionStorage.getItem('cameFromL3') === '1';
+  //    a) referrer 係 v3.html；b) URL 有 score 參數；c) sessionStorage 有 cameFromL3 其中一項
+  const url          = new URL(location.href);
+  const hasScoreParam= url.searchParams.has('score');
+  const cameFromRef  = (document.referrer || '').startsWith(L3);
+  const cameFlag     = (function(){
+    try { return sessionStorage.getItem('cameFromL3') === '1'; }
+    catch(e){ return false; }
+  })();
 
-  // （補一重）上次通關紀錄
   const lastLv    = Number(localStorage.getItem('neox_last_level') || 0);
-  const lastScore = Number(localStorage.getItem('nx_last_score') || 0);
+  const lastScore = Number(localStorage.getItem('nx_last_score')   || 0);
 
   if (!(cameFromRef || hasScoreParam || cameFlag)) {
-    // 未符合 → 根據情況送回 L3 或 HUB
     if (lastLv >= 3 || lastScore > 0) {
       location.replace(L3 + '#guard');
     } else {
@@ -49,7 +56,7 @@
   }
 
   // 用過就清掉旗標（可選）
-  sessionStorage.removeItem('cameFromL3');
+  try { sessionStorage.removeItem('cameFromL3'); } catch(e){}
 })();
 </script>
 
@@ -194,18 +201,19 @@ const url = new URL(location.href);
 const score = Number(url.searchParams.get('score') ?? localStorage.getItem('nx_last_score') ?? 0);
 const best  = Number(url.searchParams.get('best')  ?? localStorage.getItem('nx_best_all')   ?? 0);
 localStorage.setItem('nx_last_score', String(score));
-localStorage.setItem('nx_best_all', String(best));
+localStorage.setItem('nx_best_all',   String(best));
 
-const vid = document.getElementById('vid');
-const ovr = document.getElementById('ovr');
-const panel = document.getElementById('panel');
+const vid       = document.getElementById('vid');
+const ovr       = document.getElementById('ovr');
+const panel     = document.getElementById('panel');
 const scoreText = document.getElementById('scoreText');
 const finalText = document.getElementById('finalText');
-const btnPlay = document.getElementById('btnPlay');
-const btnSound = document.getElementById('btnSound');
-const btnSkip = document.getElementById('btnSkip');
-const btnHome = document.getElementById('btnHome');
+const btnPlay   = document.getElementById('btnPlay');
+const btnSound  = document.getElementById('btnSound');
+const btnSkip   = document.getElementById('btnSkip');
+const btnHome   = document.getElementById('btnHome');
 const btnReplay = document.getElementById('btnReplay');
+
 scoreText.textContent = `Score: ${score} · Best: ${best}`;
 finalText.textContent = `Score: ${score} · Best: ${best}`;
 
@@ -215,15 +223,19 @@ bgm.volume = 0.7;
 
 function showVideo(){ vid.style.opacity='1'; }
 async function tryPlay(){
-  try{ await vid.play(); showVideo(); bgm.play(); }catch(e){}
+  try{
+    await vid.play();
+    showVideo();
+    bgm.play();
+  }catch(e){}
 }
 addEventListener('DOMContentLoaded', tryPlay, {once:true});
 ['touchstart','click','keydown'].forEach(e=>window.addEventListener(e,tryPlay,{once:true,passive:true}));
 
 /* 控制鍵 */
-btnPlay.onclick = tryPlay;
+btnPlay.onclick  = tryPlay;
 btnSound.onclick = ()=>{bgm.play();bgm.muted=false;btnSound.textContent='🔊 Sound on';btnSound.disabled=true;};
-btnSkip.onclick = ()=>endFlow();
+btnSkip.onclick  = ()=>endFlow();
 
 /* 5 秒後淡出 Victory 區塊 */
 setTimeout(()=>ovr.classList.add('fade-out'),5000);
@@ -233,20 +245,26 @@ vid.addEventListener('ended', endFlow);
 function endFlow(){
   ovr.style.display = 'none';
   panel.style.display = 'block';
-  requestAnimationFrame(()=> panel.classList.add('show')); // ← 淡入面板
+  requestAnimationFrame(()=> panel.classList.add('show'));
 }
 
-/* 面板按鈕（用 window.top，避免被 iframe 鎖住） */
-btnHome.onclick   = ()=>window.top.location.href='https://neoxcoin.github.io/';
-btnReplay.onclick = ()=>window.location.href='v3.html#replay';
+/* 面板按鈕 */
+btnHome.onclick = ()=>{
+  // 想離開遊戲 → 直接去主頁
+  (window.top || window).location.href='https://neoxcoin.io/';
+};
+btnReplay.onclick = ()=>{
+  // 只在當前 frame 重玩 L3
+  window.location.href='v3.html#replay';
+};
 
-/* 若在 iframe 中，回報最終分數 */
+/* 若在 iframe 中，回報最終分數比 parent（更新排行榜用） */
 if (window.top !== window.self) {
   const total =
-    Number(localStorage.getItem('nx_carry') || 0) ||
+    Number(localStorage.getItem('nx_carry')      || 0) ||
     Number(localStorage.getItem('nx_last_score') || 0) || 0;
 
-  window.parent.postMessage({ type:'NX_GAME_CLEARED', total, next:'' }, '*');
+  window.parent.postMessage({ type:'NX_GAME_CLEARED', total, score: total, level:'END' }, '*');
 }
 </script>
 </body>
