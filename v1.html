@@ -279,9 +279,14 @@ const btnPause=document.getElementById('btnPause');
 btnPause.onclick=()=>togglePause();
 
 btnNextLevel.onclick = () => {
-  // 帶住分數去下一關（v2 會由 carry 開始）
-  localStorage.setItem('nx_carry', String(Math.floor(score)));
-  window.location.href = 'v2.html#continue';
+  const carry = Math.floor(score);
+  localStorage.setItem('nx_carry', carry);
+
+  // 將切換動作交給外層
+  window.parent.postMessage({ 
+    type: 'NX_NEXT_LEVEL',
+    level: 2 
+  }, '*');
 };
 
 /* ====== Input ====== */
