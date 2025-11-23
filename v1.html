@@ -118,17 +118,23 @@
 </div>
 
 <script>
-(function(){
-  const ALLOWED = [
+(function () {
+  const HOME   = 'https://neoxcoin.io/';
+  const ENTRY1 = 'https://neoxcoin.io/neox-game/v1.html';
+  const HUB    = 'https://neoxcoin.io/neox-game/';
+
+  // ✅ 允許做 parent 嘅來源：github.io 同 neoxcoin.io
+  const ALLOWED_PARENTS = [
     'https://neoxcoin.github.io',
     'https://neoxcoin.io'
     'https://neoxcoin.io/neox-game/iframe'
   ];
 
+  // 1) 防熱鏈：唔俾其他網站 iframe 你
   if (window.top !== window.self) {
     try {
-      const ref = document.referrer || '';
-      const parentOrigin = ref ? new URL(ref).origin : '';
+      const ref    = document.referrer || '';
+      const origin = ref ? new URL(ref).origin : '';
 
       if (!ALLOWED_PARENTS.includes(origin)) {
         window.top.location.replace(HUB);
