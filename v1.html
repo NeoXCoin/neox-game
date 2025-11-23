@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,7 +83,7 @@
         <span class="badge" id="scoreBadge">Score: 0</span>
         <span class="badge" id="timeBadge">Time: 03:00</span>
         <span class="badge" id="bestBadge">Best: 0</span>
-        <span class="badge" id="missBadge">Miss: 0/99</span>
+        <span class="badge" id="missBadge">Miss: 0/30</span>
       </div>
       <div class="right">
         <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
@@ -117,31 +118,17 @@
 </div>
 
 <script>
-(function () {
-  const HOME   = 'https://neoxcoin.io/';
-  const ENTRY1 = 'https://neoxcoin.io/neox-game/v1.html';
-  const HUB    = 'https://neoxcoin.io/neox-game/';
-
-  // ✅ 允許做 parent 嘅來源：github.io 同 neoxcoin.io
-  const ALLOWED_PARENTS = [
-    'https://neoxcoin.github.io',
-    'https://neoxcoin.io'
-    'https://neoxcoin.io/neox-game/iframe'
-  ];
-
-  // 1) 防熱鏈：唔俾其他網站 iframe 你
+(function(){
+  const ALLOWED_PARENT_ORIGIN = 'https://neoxcoin.github.io';
   if (window.top !== window.self) {
     try {
-      const ref    = document.referrer || '';
-      const origin = ref ? new URL(ref).origin : '';
-
-      if (!ALLOWED_PARENTS.includes(origin)) {
-        window.top.location.replace(HUB);
-        return;
+      const ref = document.referrer || '';
+      const parentOrigin = ref ? new URL(ref).origin : '';
+      if (parentOrigin !== ALLOWED_PARENT_ORIGIN) {
+        window.top.location.replace('https://neoxcoin.github.io/neox-game/');
       }
     } catch (e) {
-      window.top.location.replace(HUB);
-      return;
+      window.top.location.replace('https://neoxcoin.github.io/neox-game/');
     }
   }
 })();
@@ -149,7 +136,7 @@
 /* ====== Config ====== */
 const TOTAL_TIME_SEC = 180;
 const EDGE = 2;
-const MAX_MISSES = 99;
+const MAX_MISSES = 60;
 
 /* ====== Assets ====== */
 const BG_URL    = "https://neoxcoin.github.io/neox-game/forest%20background%20.PNG";
