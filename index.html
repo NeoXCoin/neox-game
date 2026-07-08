@@ -20,22 +20,26 @@
   }
   @keyframes bannerIn{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
 
-  .brandline{display:inline-flex;align-items:center;gap:12px;justify-content:center}
-  .coin{
-    width:clamp(32px,7vw,60px);
-    filter:drop-shadow(0 0 10px rgba(255,210,90,.35));
-    opacity:0;transform:translateY(8px) scale(.96);
-    animation:coinIn .9s ease .15s forwards;
+  .brandline {display: flex;align-items: center;gap: 12px;justify-content: center;width: 100%;}
+  .coin {
+    width: clamp(32px, 7vw, 60px);
+    height: auto;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 10px rgba(255,210,90,.35));
+    opacity: 0;
+    transform: translateY(8px) scale(.96);
+    animation: coinIn .9s ease .15s forwards;
   }
   @keyframes coinIn{to{opacity:1;transform:translateY(0) scale(1)}}
 
-  h1{
-    margin:.2em 0 .3em;
-    font-size:clamp(28px,6vw,48px);
-    letter-spacing:.06em;
-    text-shadow:0 0 18px #41b0ff66,0 0 40px #41b0ff33;
-    opacity:0;transform:translateY(8px);
-    animation:fadeIn .9s ease .3s forwards;
+  h1 {
+    margin: 0; 
+    font-size: clamp(28px, 6vw, 48px);
+    letter-spacing: .06em;
+    text-shadow: 0 0 18px #41b0ff66,0 0 40px #41b0ff33;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fadeIn .9s ease .3s forwards;
   }
   .tag{
     max-width:min(900px,90vw);margin:0 auto;
