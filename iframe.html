@@ -1,178 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>NeoX Game (iframe clean)</title>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>NeoX Game (iframe clean)</title>
+    <style>
+        :root {
+            --vh: 1vh;
+        }
+        html, body {
+            margin: 0;
+            background: #0a0b1f;
+            color: #fff;
+            height: calc(var(--vh, 1vh) * 100);
+            display: grid;
+            place-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans", Arial, sans-serif;
+            overflow: hidden;
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: auto;
+            touch-action: manipulation;
+        }
 
-<style>
-  :root { --vh: 1vh; }
+        /* 📱 核心修改：優化手機與平板的 iframe 尺寸適配 */
+        iframe {
+            /* 在手機小螢幕時寬度佔 95vw，在平板/桌面大螢幕最大放大到 520px（原本 440px 太小了） */
+            width: clamp(320px, 95vw, 520px);
+            
+            /* 保持遊戲傳統 9:16 的黃金比例 */
+            aspect-ratio: 9 / 16; 
+            
+            /* 如果在極端高度矮的動態螢幕下，確保不會超出高度（扣掉上下安全邊距） */
+            max-height: calc(calc(var(--vh, 1vh) * 100) - 40px);
+            
+            border: 0;
+            border-radius: 20px; /* 稍微加圓潤一點，在大螢幕上更有質感 */
+            box-shadow: 0 25px 55px rgba(0,0,0,.6);
+            
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            transition: width 0.2s ease, max-height 0.2s ease;
+        }
 
-  html, body {
-    margin: 0;
-    background: #0a0b1f;
-    color: #fff;
-    height: calc(var(--vh, 1vh) * 100);
-    display: grid;
-    place-items: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Noto Sans", Arial, sans-serif;
-    overflow: hidden;
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: auto;
-    touch-action: manipulation;
-  }
+        /* 🏆 Top 3 Box */
+        .top3 {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, .08);
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-weight: 800;
+            font-size: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,.3);
+            backdrop-filter: blur(6px);
+            display: none;
+            opacity: 0;
+            transition: opacity .8s ease;
+            z-index: 99;
+        }
+        .top3.show {
+            display: block;
+            opacity: 1;
+        }
+        .top3 ol {
+            margin: 6px 0 0;
+            padding-left: 20px;
+        }
+        .top3 small {
+            opacity: .8;
+            font-weight: 600;
+        }
 
-  iframe {
-    width: min(92vw, 440px);
-    aspect-ratio: 9/16;
-    border: 0;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,.45);
-    padding: constant(safe-area-inset-top) constant(safe-area-inset-right)
-             constant(safe-area-inset-bottom) constant(safe-area-inset-left);
-    padding: env(safe-area-inset-top) env(safe-area-inset-right)
-             env(safe-area-inset-bottom) env(safe-area-inset-left);
-  }
-
-  /* 🏆 Top 3 Box */
-  .top3 {
-    position: fixed;
-    top: 16px; left: 50%; transform: translateX(-50%);
-    background: rgba(255,255,255,.08);
-    border-radius: 12px;
-    padding: 10px 16px;
-    font-weight: 800;
-    font-size: 15px;
-    box-shadow: 0 6px 20px rgba(0,0,0,.3);
-    backdrop-filter: blur(6px);
-    display: none;
-    opacity: 0;
-    transition: opacity .8s ease;
-  }
-  .top3.show { display: block; opacity: 1; }
-  .top3 ol { margin: 6px 0 0; padding-left: 20px; }
-  .top3 small { opacity: .8; font-weight: 600; }
-</style>
+        /* 針對平板/橫向大螢幕的優化：如果排行榜擋到遊戲，可以在大螢幕把它移到左上角 */
+        @media (min-width: 900px) {
+            .top3 {
+                left: 24px;
+                transform: none;
+                top: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
 
 <!-- 🎮 起始頁：整個遊戲流程 -->
 <iframe id="game" src="index.html?v=3" allow="gamepad *"></iframe>
 
 <!-- 🏆 全球排行榜 -->
 <div class="top3" id="top3Box">
-  <div>🏆 NeoX Top 3 Players</div>
-  <ol id="top3List"><li>Loading...</li></ol>
-  <small id="top3Hint"></small>
+    <div>🏆 NeoX Top 3 Players</div>
+    <ol id="top3List"><li>Loading...</li></ol>
+    <small id="top3Hint"></small>
 </div>
 
 <!-- 🔧 固定可視高度（防止 iOS 地址列導致 iframe 高度跳動） -->
 <script>
-  (function setVh(){
-    function update(){
-      var h = (window.visualViewport ? visualViewport.height : window.innerHeight);
-      document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
-    }
-    update();
-    window.addEventListener('resize', update, {passive:true});
-    window.addEventListener('orientationchange', update, {passive:true});
-    if (window.visualViewport) {
-      visualViewport.addEventListener('resize', update, {passive:true});
-      visualViewport.addEventListener('scroll', update, {passive:true});
-    }
-  })();
+    (function setVh() {
+        function update() {
+            var h = (window.visualViewport ? visualViewport.height : window.innerHeight);
+            document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+        }
+        update();
+        window.addEventListener('resize', update, {passive:true});
+        window.addEventListener('orientationchange', update, {passive:true});
+        if (window.visualViewport) {
+            visualViewport.addEventListener('resize', update, {passive:true});
+            visualViewport.addEventListener('scroll', update, {passive:true});
+        }
+    })();
 </script>
 
 <script>
-/* ====== 🌐 API Config ====== */
-const API_URL = 'https://script.google.com/macros/s/AKfycbw44w4f5hpmKiledO1XfIKsGgfMgCksmcU2Qsst56l68CPLvQs4GvIg0PrItIuUqkOT2g/exec';
+    /* ====== 🌐 API Config ====== */
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw44w4f5hpmKiledO1XfIKsGgfMgCksmcU2Qsst56l68CPLvQs4GvIg0PrItIuUqkOT2g/exec';
 
-/* ====== 👤 Player Name (首次詢問) ====== */
-function getPlayerName(){
-  let name = localStorage.getItem('nx_player_name');
-  if(!name){
-    name = prompt('Enter your player name for the leaderboard:','Player') || 'Player';
-    name = String(name).slice(0,20);
-    localStorage.setItem('nx_player_name', name);
-  }
-  return name;
-}
+    /* ====== 👤 Player Name (首次詢問) ====== */
+    function getPlayerName() {
+        let name = localStorage.getItem('nx_player_name');
+        if(!name){
+            name = prompt('Enter your player name for the leaderboard:','Player') || 'Player';
+            name = String(name).slice(0,20);
+            localStorage.setItem('nx_player_name', name);
+        }
+        return name;
+    }
 
-/* ====== 🏆 Fetch Top 3 from Google Script ====== */
-async function loadTop3(){
-  const box = document.getElementById('top3Box');
-  const list = document.getElementById('top3List');
-  const hint = document.getElementById('top3Hint');
-  try{
-    const res = await fetch(API_URL);
-    const data = await res.json();
-    list.innerHTML = '';
-    (data||[]).slice(0,3).forEach(r=>{
-      const li=document.createElement('li');
-      li.textContent = `${r.name} — ${r.score}`;
-      list.appendChild(li);
+    /* ====== 🏆 Fetch Top 3 from Google Script ====== */
+    async function loadTop3() {
+        const box = document.getElementById('top3Box');
+        const list = document.getElementById('top3List');
+        const hint = document.getElementById('top3Hint');
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            list.innerHTML = '';
+            (data||[]).slice(0,3).forEach(r=>{
+                const li = document.createElement('li');
+                li.textContent = `${r.name} — ${r.score}`;
+                list.appendChild(li);
+            });
+            if(!list.children.length) list.innerHTML='<li>No scores yet</li>';
+            hint.textContent='Updated: '+new Date().toLocaleTimeString();
+            box.classList.add('show');
+        } catch (e) {
+            list.innerHTML='<li>Network error</li>';
+        }
+    }
+
+    /* ====== 📨 Upload score to Google Script ====== */
+    async function submitScore(score) {
+        try {
+            await fetch(API_URL,{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({
+                    name:getPlayerName(),
+                    score:Math.floor(score)
+                })
+            });
+        } catch (e) {}
+    }
+
+    /* ====== 🎮 Communication with iframe ====== */
+    const frame = document.getElementById('game');
+    let gameStarted = false;
+
+    window.addEventListener('message', async e => {
+        const m = e.data || {};
+        if (m.type === 'NX_START_GAME') {
+            if (gameStarted) return;
+            gameStarted = true;
+            frame.src = 'v1.html';
+            return;
+        }
+        if (m.type === 'NX_GO_LEVEL') {
+            if (m.to === 2) {
+                frame.src = 'opening2.html#fromV1';
+                return;
+            }
+            if (m.to === 3) {
+                frame.src = 'v3.html#continue';
+                return;
+            }
+            if (m.to === 'END') {
+                const qs = typeof m.score === 'number' ? ('?score=' + Math.floor(m.score)) : '';
+                frame.src = 'endgame.html' + qs;
+                return;
+            }
+        }
+        if (m.type === 'NX_GAME_CLEARED') {
+            const total = Math.floor(m.total || m.score || 0);
+            await submitScore(total);
+            await loadTop3();
+        }
     });
-    if(!list.children.length) list.innerHTML='<li>No scores yet</li>';
-    hint.textContent='Updated: '+new Date().toLocaleTimeString();
-    box.classList.add('show');
-  }catch(e){
-    list.innerHTML='<li>Network error</li>';
-  }
-}
-
-/* ====== 📨 Upload score to Google Script ====== */
-async function submitScore(score){
-  try{
-    await fetch(API_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ name:getPlayerName(), score:Math.floor(score) })
-    });
-  }catch(e){}
-}
-
-/* ====== 🎮 Communication with iframe ====== */
-const frame = document.getElementById('game');
-
-// ⚠ 避免 iOS 多次觸發造成重播 Opening
-let gameStarted = false;
-
-window.addEventListener('message', async e => {
-  const m = e.data || {};
-
-  // ▶ Opening 入面叫開始遊戲（由 index.html 發出）
-  if (m.type === 'NX_START_GAME') {
-    if (gameStarted) return;          // 防 double trigger
-    gameStarted = true;
-
-    frame.src = 'v1.html';            // 切去 Level 1
-    return;
-  }
-
-  // ▶ v1 / v2 要求轉去下一關（由 v1 / v2 發出）
-  if (m.type === 'NX_GO_LEVEL') {
-    if (m.to === 2) {
-      // 之前：直接去 v2.html
-      // frame.src = 'v2.html#continue';
-
-      // 🔁 改成：先入 Opening2，Opening2 再跳 v2
-      frame.src = 'opening2.html#fromV1';
-      return;
-    }
-    if (m.to === 3) {
-      frame.src = 'v3.html#continue';
-      return;
-    }
-    if (m.to === 'END') {
-      const qs = typeof m.score === 'number' ? ('?score=' + Math.floor(m.score)) : '';
-      frame.src = 'endgame.html' + qs;
-      return;
-    }
-  }
-
-  // 🏁 Game cleared（例如 v3 清關時通知）
-  if (m.type === 'NX_GAME_CLEARED') {
-    const total = Math.floor(m.total || m.score || 0);
-    await submitScore(total);
-    await loadTop3();
-  }
-});
 </script>
+</body>
 </html>
