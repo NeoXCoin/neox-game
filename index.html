@@ -15,7 +15,7 @@
   #banner{
     position:fixed;inset:0;display:grid;place-items:center;text-align:center;z-index:10;
     background:linear-gradient(rgba(5,8,26,.55),rgba(5,8,26,.90)),
-               url('https://neoxcoin.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat;
+               url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat;
     animation:bannerIn 1s ease forwards;
   }
   @keyframes bannerIn{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
@@ -170,7 +170,7 @@
 <!-- Banner -->
 <section id="banner">
   <div class="brandline">
-    <img class="coin" src="https://neoxcoin.io/neox-game/NeoXCoin.Front.png" alt="NeoX Coin" />
+    <img class="coin" src="https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png" alt="NeoX Coin" />
     <h1>NeoX Catch Game</h1>
   </div>
   <p class="tag">Your adventure begins — Catch the NeoX Coins and unlock the treasure!</p>
@@ -202,7 +202,7 @@
 
 <!-- Short transition BGM -->
 <audio id="startBGM" preload="auto"
-  src="https://neoxcoin.io/neox-game/NeoX_OpeningTheme_Cartoon.m4a" style="display:none"></audio>
+  src="https://neoxcoin.github.io/neox-game/NeoX_OpeningTheme_Cartoon.m4a" style="display:none"></audio>
 
 <script>
 /* Elements */
@@ -258,7 +258,7 @@ function showControlsAndArmTimer(ms=6000){
 
 function startOpening(){
   opener.style.display = 'flex';
-  video.src = 'https://neoxcoin.io/neox-game/NeoXcatchgameOpening_H264.mp4'; // 開場影片
+  video.src = 'https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4'; // 開場影片
   video.muted = true;
   video.play().then(()=>{
     loading.style.display='none';
