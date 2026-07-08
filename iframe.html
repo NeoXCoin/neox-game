@@ -27,15 +27,25 @@
       user-select: none;
     }
     
+    /* 1. 預設：手機網頁模式（直接用盡 100% 畫面，拿走圓角同陰影，等畫面最大化） */
     iframe {
-      width: min(94vw, 460px);
-      height: min(calc(var(--vh, 1vh) * 92), 820px);
-      aspect-ratio: 9/16;
+      width: 100%;
+      height: calc(var(--vh, 1vh) * 100);
       border: 0;
-      border-radius: 20px; /* 圓角加大少少，喺手機望落精緻啲 */
-      box-shadow: 0 12px 45px rgba(0,0,0,.5);
-      background: #000; /* 載入前黑屏過渡 */
+      background: #000;
+      display: block;
       -webkit-overflow-scrolling: touch;
+    }
+
+    /* 2. 電腦 / 平板 / 大螢幕模式：當畫面夠大時，才縮小變成精緻的「手機外框」擺中間 */
+    @media (min-width: 480px) and (min-height: 650px) {
+      iframe {
+        width: min(94vw, 460px);
+        height: min(calc(var(--vh, 1vh) * 90), 820px);
+        aspect-ratio: 9/16;
+        border-radius: 20px;
+        box-shadow: 0 12px 45px rgba(0,0,0,.5);
+      }
     }
 
     /* 🏆 Top 3 Box */
