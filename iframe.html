@@ -97,8 +97,24 @@
         visualViewport.addEventListener('scroll', update, {passive:true});
       }
     })();
-    
-    // ... 下方原本的 API 及 PostMessage 程式碼 ...
+
+    // ==========================================
+    // ✨ 新增這段：接應 index.html 傳過來的開始遊戲訊號
+    // ==========================================
+    window.addEventListener('message', (event) => {
+      // 檢查收唔收到訊號
+      if (event.data && event.data.type === 'NX_START_GAME') {
+        console.log("收到 index 的開始遊戲訊號，準備轉去 v1.html");
+      
+        // 獲取網頁上的 iframe 元素 (透過你在第 79 行設定的 id="game")
+        const gameIframe = document.getElementById('game'); 
+      
+        if (gameIframe) {
+          // 🔒 只改 iframe 內部嘅 src，玩家依然留在 iframe.html 控制嘅外殼裏面
+          gameIframe.src = 'v1.html';
+        }
+      }
+    });
   </script>
 </body>
 </html>
