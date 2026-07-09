@@ -13,19 +13,22 @@
 
   /* ===== Banner ===== */
   #banner {
-    position: fixed;
-    inset: 0;
-    display: flex;             /* 改用 flex 方便排版 */
-    flex-direction: column;    /* 讓 Logo/標題 同下方的標語直排 */
-    justify-content: flex-start; /* 靠頂部對齊 */
-    align-items: flex-start;   /* 靠左手邊對齊 */
-    padding: 40px 5%;          /* 頂部留 40px，左邊留 5% 彈性邊距，等畫面睇落平衡 */
-    box-sizing: border-box;
-    text-align: left;          /* 文字改為靠左對齊 */
-    z-index: 10;
-    background: linear-gradient(rgba(5,8,26,.55),rgba(5,8,26,.90)), 
-                url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat;
-    animation: bannerIn 1s ease forwards;
+      position: fixed; 
+      inset: 0; 
+      display: flex;             
+      flex-direction: column;    
+      justify-content: space-between; 
+      align-items: center;            
+    
+      /* 💡 將原本嘅 8% 改為 18% 或者 20%！ */
+      /* 頂部留 60px，左右留 5%，底部留 18% 就可以將個掣由最底推返上中間偏下嘅位置 */
+      padding: 60px 5% 18% 5%;         
+    
+      box-sizing: border-box; 
+      text-align: center;             
+      z-index: 10; 
+      background: linear-gradient(rgba(5,8,26,.55),rgba(5,8,26,.90)), url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat; 
+      animation: bannerIn 1s ease forwards; 
   }
 
   @keyframes bannerIn{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
