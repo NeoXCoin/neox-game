@@ -129,65 +129,55 @@
   .vctrl {
     position: absolute;
     left: 50%;
-    bottom: calc(10% + env(safe-area-inset-bottom));
+    bottom: calc(8% + env(safe-area-inset-bottom));
     transform: translateX(-50%);
     display: flex;
-    gap: 16px;                     /* 稍微拉開少少距離，更好撳 */
-    flex-wrap: wrap;
+    gap: 16px;
     justify-content: center;
   }
 
   .vctrl button {
-    background: rgba(10, 16, 46, 0.75); /* 改用深色科技藍底色，更顯光效 */
-    border: 1px solid #41b0ff88;         /* 線條改成 NeoX 主題的霓虹藍 */
-    color: #c9d8ff;
-    font-weight: 700;
-    letter-spacing: .06em;
-    padding: 12px 24px;                  /* 加寬按鈕，更有大作遊戲感 */
-    border-radius: 8px;                  /* 稍微銳利一點的科技感方角 */
+    background: rgba(10, 16, 46, 0.65); /* 提高透明度，更隱形 */
+    border: 1px solid rgba(65, 176, 255, 0.4); /* 弱化原本的藍色邊框 */
+    color: rgba(201, 216, 255, 0.7); /* 圖案顏色變淡 */
+    width: 44px;  /* 變成細小的圓形按鈕 */
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 0 12px rgba(65, 176, 255, 0.2), 0 6px 14px rgba(0,0,0,0.4); /* 霓虹微光 + 陰影 */
-    backdrop-filter: blur(6px);
-    transition: all .3s ease;            /* 全屬性過渡，動畫更流暢 */
-    text-transform: uppercase;           /* 文字全大寫，提升遊戲 UI 質感 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .25s ease;
   }
 
-  /* 當滑鼠指過去（Hover）時的充能發光效果 */
+  /* Hover 時才稍微亮起，不阻礙影片觀賞 */
   .vctrl button:hover {
-    background: rgba(65, 176, 255, 0.25);
+    background: rgba(65, 176, 255, 0.15);
     border-color: #41b0ff;
     color: #fff;
-    transform: translateY(-2px);         /* 微微浮起 */
-    box-shadow: 0 0 20px rgba(65, 176, 255, 0.6), 0 8px 18px rgba(0,0,0,0.5); /* 強烈霓虹發光 */
+    box-shadow: 0 0 12px rgba(65, 176, 255, 0.4);
   }
 
-  /* 撳落去（Active）時的反饋 */
   .vctrl button:active {
-    transform: translateY(1px);
-    background: rgba(65, 176, 255, 0.15);
-    box-shadow: 0 0 10px rgba(65, 176, 255, 0.4);
+    transform: scale(0.95);
   }
 
   .vctrl.fadeout {
     opacity: 0;
-    transition: opacity 1.2s ease;
+    transition: opacity 1s ease;
     pointer-events: none;
   }
 
-  /* 手機直向：保持並排，調整字體大小 */
+  /* 手機版保持大小 */
   @media (orientation: portrait) {
     .vctrl {
-      flex-direction: row;
-      flex-wrap: nowrap;
-      gap: 12px;
       bottom: calc(6% + env(safe-area-inset-bottom));
+      gap: 12px;
+    }
   }
-    .vctrl button {
-      white-space: nowrap;
-      font-size: clamp(13px, 3.2vw, 15px);
-      padding: 10px 18px;
-  }
-}
 
   /* ===== Start layer ===== */
   #startLayer{
@@ -252,10 +242,24 @@
     <span>Loading opening…</span>
   </div>
   <video id="openerVideo" playsinline webkit-playsinline muted autoplay preload="auto"></video>
-  <div class="vctrl" id="openerControls" hidden>
-    <button id="btnToggleSound">🔇 Sound off</button>
-    <button id="btnSkip">⏭ Skip</button>
-  </div>
+ <div class="vctrl" id="openerControls" hidden>
+  <!-- 聲音掣（預設靜音狀態） -->
+  <button id="btnToggleSound" aria-label="Toggle Sound">
+    <svg id="soundIcon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <line class="mute-line" x1="22" y1="9" x2="16" y2="15"></line>
+      <line class="mute-line" x1="16" y1="9" x2="22" y2="15"></line>
+    </svg>
+  </button>
+  
+  <!-- Skip 掣 -->
+  <button id="btnSkip" aria-label="Skip Opening">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon>
+      <line x1="19" y1="5" x2="19" y2="19"></line>
+    </svg>
+  </button>
+</div>
 </section>
 
 <!-- Start -->
@@ -342,15 +346,27 @@ function startOpening(){
 }
 
 function updateSoundLabel() {
+  const icon = document.getElementById('soundIcon');
   if (video.muted) {
-    btnToggleSound.innerHTML = '🔇 <span style="opacity: 0.7;">Sound off</span>';
-    btnToggleSound.style.borderColor = '#41b0ff88'; // 靜音時回復主題藍色
-    btnToggleSound.style.boxShadow = '0 0 12px rgba(65, 176, 255, 0.2)';
+    // 🔇 靜音狀態：顯示喇叭 + 交叉（X）
+    icon.innerHTML = `
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <line x1="22" y1="9" x2="16" y2="15"></line>
+      <line x1="16" y1="9" x2="22" y2="15"></line>
+    `;
+    btnToggleSound.style.color = 'rgba(201, 216, 255, 0.7)';
+    btnToggleSound.style.borderColor = 'rgba(65, 176, 255, 0.4)';
+    btnToggleSound.style.boxShadow = 'none';
   } else {
-    // 🔊 有聲時：文字變成金黃色，外框同發光都變為金黃色（配返 NeoX 金幣）
-    btnToggleSound.innerHTML = '🔊 <span style="color: #ffd25a;">Sound on</span>';
-    btnToggleSound.style.borderColor = '#ffd25a';
-    btnToggleSound.style.boxShadow = '0 0 15px rgba(255, 210, 90, 0.5)';
+    // 🔊 有聲狀態：顯示喇叭 + 聲波線，並變成柔和的金黃色
+    icon.innerHTML = `
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+    `;
+    btnToggleSound.style.color = '#ffd25a';
+    btnToggleSound.style.borderColor = '#ffd25a88';
+    btnToggleSound.style.boxShadow = '0 0 8px rgba(255, 210, 90, 0.3)';
   }
 }
 
