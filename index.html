@@ -12,12 +12,66 @@
   }
 
   /* ===== Banner ===== */
-  #banner{
-    position:fixed;inset:0;display:grid;place-items:center;text-align:center;z-index:10;
-    background:linear-gradient(rgba(5,8,26,.55),rgba(5,8,26,.90)),
-               url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat;
-    animation:bannerIn 1s ease forwards;
+  #banner {
+    position: fixed;
+    inset: 0;
+    display: flex;             /* 改用 flex 方便排版 */
+    flex-direction: column;    /* 讓 Logo/標題 同下方的標語直排 */
+    justify-content: flex-start; /* 靠頂部對齊 */
+    align-items: flex-start;   /* 靠左手邊對齊 */
+    padding: 40px 5%;          /* 頂部留 40px，左邊留 5% 彈性邊距，等畫面睇落平衡 */
+    box-sizing: border-box;
+    text-align: left;          /* 文字改為靠左對齊 */
+    z-index: 10;
+    background: linear-gradient(rgba(5,8,26,.55),rgba(5,8,26,.90)), 
+                url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat;
+    animation: bannerIn 1s ease forwards;
   }
+
+  @keyframes bannerIn{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
+
+  .brandline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-start; /* 確保 Logo 同標題喺左邊對齊 */
+    width: 100%;
+  }
+
+  .coin {
+    width: clamp(32px, 7vw, 60px); 
+    height: auto; 
+    flex-shrink: 0; 
+    filter: drop-shadow(0 0 10px rgba(255,210,90,.35)); 
+    opacity: 0; 
+    transform: translateY(8px) scale(.96); 
+    animation: coinIn .9s ease .15s forwards; 
+  }
+
+  @keyframes coinIn{to{opacity:1;transform:translateY(0) scale(1)}}
+
+  h1 {
+    margin: 0; 
+    font-size: clamp(28px, 6vw, 48px); 
+    letter-spacing: .06em; 
+    text-shadow: 0 0 18px #41b0ff66,0 0 40px #41b0ff33; 
+    opacity: 0; 
+    transform: translateY(8px); 
+    animation: fadeIn .9s ease .3s forwards; 
+  }
+
+  .tag {
+    max-width: min(900px, 90vw);
+    margin: 12px 0 0 0;        /* 移除左右 margin auto，改為同左邊對齊，並同上面留少少位 */
+    line-height: 1.7;
+    font-size: clamp(15px, 3.4vw, 20px); 
+    color: #c9d8ff; 
+    opacity: 0;
+    transform: translateY(8px); 
+    animation: fadeIn 1s ease .5s forwards; 
+  }
+
+  @keyframes fadeIn{to{opacity:1;transform:none}}
   @keyframes bannerIn{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
 
   .brandline {display: flex;align-items: center;gap: 12px;justify-content: center;width: 100%;}
