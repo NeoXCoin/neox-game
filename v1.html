@@ -32,7 +32,7 @@
     flex-direction: column; 
     gap: 12px;             
     z-index: 999;          /* 提到最高層 */
-    pointer-events: auto;  /* 🌟 重點：讓整個頂欄容器變透明，唔阻擋任何點擊 */
+    pointer-events: auto;  /* 讓整個頂欄容器變透明，唔阻擋任何點擊 */
   }
 
   /* ==================== 第一行：按鈕列 ==================== */
@@ -41,7 +41,7 @@
     position: absolute !important;
     top: 10px;
     z-index: 1001;
-    pointer-events: auto; /* 🌟 重點：強制讓按鈕恢復可以被點擊 */
+    pointer-events: auto; /* 強制讓按鈕可以被點擊 */
   }
 
   /* Home 掣貼最左 */
@@ -64,7 +64,7 @@
     gap: 6px;        
     width: 100%;
     z-index: 1000;
-    pointer-events: none; /* 分數牌本身不阻擋點擊，銀幣可以穿過去 */
+    pointer-events: none; /* 分數牌本身不阻擋點擊 */
   }
 
   /* 分數牌樣式微調 */
@@ -76,8 +76,29 @@
     font-size: 13px;
     white-space: nowrap; 
     margin: 0 !important;
-    pointer-events: auto; /* 如果牌仔第時要加 hover 效果可以用，不影響遊戲 */
   }
+
+  /* 微調按鈕，變做正方形 icon 掣 */
+  .iconbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #1b2144;
+    border: 0;
+    color: #fff;
+    box-shadow: 0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);
+    cursor: pointer;
+    width: 42px;   
+    height: 42px;
+    border-radius: 12px;
+  }  
+  .iconbtn img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    display: block;
+  }
+
   /* ==================== 手機版特別優化 ==================== */
   @media (max-width: 600px) {
     .topbar {
@@ -88,14 +109,13 @@
     .topbar .right { right: 10px; top: 8px; }
   
     .topbar .center {
-      margin-top: 42px; /* 手機版頂部空間再收緊少少 */
+      margin-top: 42px; 
       gap: 4px;         /* 縮窄牌仔距離，防止最左/最右出界 */
     }
-  
-  .badge{
-    display:inline-block;padding:8px 12px;border-radius:12px;
-    background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
-    box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900;
+    .badge {
+      padding: 5px 8px;
+      font-size: 12px;
+    }
   }
   .iconbtn {
     display: inline-flex;
