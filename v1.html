@@ -93,16 +93,7 @@
       margin-top: 42px; /* 手機版頂部空間再收緊少少 */
       gap: 4px;         /* 縮窄牌仔距離，防止最左/最右出界 */
     }
-  }
-  .topbar{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
-    align-items:start; gap:10px; padding:10px 14px; font-weight:800;
-    justify-items:center;
-  }
-  .left{  justify-self:start; pointer-events:auto; }
-  .center{justify-self:center; text-align:center; pointer-events:none; }
-  .right{ justify-self=end;   pointer-events:auto; }
+  
   .badge{
     display:inline-block;padding:8px 12px;border-radius:12px;
     background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
@@ -430,11 +421,11 @@ function start(){
   coins.length=0; spawnTimer=0;
   chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
   state=State.PLAYING; panelStart.classList.add('hidden'); panelPause.classList.add('hidden'); panelWin.classList.add('hidden');
-  refreshHUD(); btnPause.textContent='⏸ Pause';
+  refreshHUD(); btnPause.textContent='⏸';
 }
 function togglePause(forcePause){
-  if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; panelPause.classList.remove('hidden'); btnPause.textContent='⏵ Resume'; }
-  else if(state===State.PAUSED){ state=State.PLAYING; panelPause.classList.add('hidden'); btnPause.textContent='⏸ Pause'; }
+  if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; panelPause.classList.remove('hidden'); btnPause.textContent='⏵'; }
+  else if(state===State.PAUSED){ state=State.PLAYING; panelPause.classList.add('hidden'); btnPause.textContent='⏸'; }
 }
 function restart(){
   panelWin.classList.add('hidden'); panelPause.classList.add('hidden');
