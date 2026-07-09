@@ -20,15 +20,16 @@
   }
   /* HUD */
   .hud{position:absolute; inset:0; z-index:5; pointer-events:none; display:grid; grid-template-rows:auto 1fr;}
-  /* 手機版 RWD 微調 */
-  @media (max-width: 600px) {
-    .topbar {
+  /* ==================== 統一頂部 HUD 排版 ==================== */
+  .topbar {
     display: grid;
     /* 定義兩行：第一行放掣，第二行放分數牌 */
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto;
-    gap: 8px;
-    padding: 10px 14px;
+    gap: 12px;
+    padding: 14px 18px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   /* 第一行：Home 靠左，Pause 靠右 */
@@ -56,26 +57,28 @@
   
     display: flex;
     justify-content: center;
-    gap: 6px; /* 牌仔之間的間距 */
+    gap: 8px; /* 牌仔之間的間距 */
     width: 100%;
   }
 
-  /* 移除原本絕對定位的干擾（確保手機同電腦版都套用新排版） */
-  .topbar .left, .topbar .center, .topbar .right {
+  /* 確保不論電腦定手機，都攞走舊有絕對定位嘅干擾 */
+  .topbar .left, 
+  .topbar .center, 
+  .topbar .right {
     position: static !important;
   }
 
-  /* 手機版微調 */
+  /* 手機版（小螢幕）微調：防止牌仔擠迫 */
   @media (max-width: 600px) {
     .topbar {
-      padding: 6px 10px;
-      gap: 4px;
+      padding: 8px 12px;
+      gap: 8px;
     }
     .topbar .center {
-      gap: 4px; /* 手機版再逼少少，防止超出版面 */
+      gap: 5px; /* 手機版再收窄少少間距 */
     }
     .badge {
-      padding: 6px 8px;
+      padding: 6px 10px;
       margin: 0;
       font-size: 13px;
     }
