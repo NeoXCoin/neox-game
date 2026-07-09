@@ -20,13 +20,22 @@
   }
   /* HUD */
   .hud{position:absolute; inset:0; z-index:5; pointer-events:none; display:grid; grid-template-rows:auto 1fr;}
+  /* 手機版 RWD 微調 */
   @media (max-width: 600px) {
-    .topbar{ position:relative; display:block; padding:10px 14px; }
-    .topbar .left  { position:absolute; left:10px;  top:10px; }
-    .topbar .right { position:absolute; right:10px; top:10px; }
-    .topbar .center{
-      position:absolute; left:50%; top:10px; transform:translateX(-50%);
-      text-align:center; pointer-events:none;
+    .topbar {
+      padding: 8px 10px;
+    }
+    .topbar .left { left: 8px; top: 8px; }
+    .topbar .right { right: 8px; top: 8px; }
+    .topbar .center {
+      top: 8px;
+      display: flex;
+      gap: 4px; /* 縮窄牌仔之間嘅距離 */
+    }
+    .badge {
+      padding: 6px 8px; /* 手機版再精細少少 */
+      margin: 0;
+      font-size: 13px;
     }
   }
   .topbar{
@@ -43,10 +52,14 @@
     background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900;
   }
-  .iconbtn{
-    display:inline-flex;align-items:center;gap:10px;background:#1b2144;border:0;color:#fff;border-radius:14px;
-    padding:10px 14px;font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);cursor:pointer;
-    pointer-events:auto;
+  .iconbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px; /* 攞走左右多餘 padding */
+    width: 42px;   /* 固定寬高 */
+    height: 42px;
+    border-radius: 12px;
   }
   .iconbtn img{width:22px;height:22px;object-fit:contain;display:block;}
   .panel{
@@ -74,18 +87,17 @@
     <div class="topbar">
       <div class="left">
         <button id="btnHome" class="iconbtn" title="Back to Home">
-          <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home">
-          <span>Home</span>
+          <img src="https://neoxcoin.io/neox-game/XNXC.png" alt="Home">
         </button>
       </div>
       <div class="center">
-        <span class="badge" id="scoreBadge">Score: 0</span>
-        <span class="badge" id="timeBadge">Time: 03:00</span>
-        <span class="badge" id="bestBadge">Best: 0</span>
-        <span class="badge" id="missBadge">Miss: 0/60</span>
+        <span class="badge" id="scoreBadge"></span>
+        <span class="badge" id="timeBadge"></span>
+        <span class="badge" id="bestBadge"></span>
+        <span class="badge" id="missBadge"></span>
       </div>
       <div class="right">
-        <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
+        <button id="btnPause" class="iconbtn" title=" ⏸ / ⏵ (P)">⏸</button>
       </div>
     </div>
 
@@ -220,14 +232,14 @@ let missCount = 0;
 
 function fmt(t){ const m=Math.floor(t/60), s=Math.floor(t%60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
 function refreshHUD(){
-  scoreBadge.textContent=`Score: ${Math.floor(score)}`;
-  bestBadge.textContent =`Best: ${Math.floor(best)}`;
-  timeBadge.textContent =`Time: ${fmt(timeLeft)}`;
-  missBadge.textContent =`Miss: ${missCount}/${MAX_MISSES}`;
-  finalScore.textContent=`Score: ${Math.floor(score)}`;
-  bestScore.textContent =`Best: ${Math.floor(best)}`;
+  scoreBadge.textContent = `🪙 ${Math.floor(score)}`;
+  timeBadge.textContent  = `⏱️ ${fmt(timeLeft)}`;
+  bestBadge.textContent  = `🏆 ${Math.floor(best)}`;
+  missBadge.textContent  = `❌ ${missCount}/${MAX_MISSES}`;
   
-  // 🛰 向 iframe host 傳送即時分數（可選）
+  // 下面原本彈出視窗同 postMessage 嘅邏輯保留不變
+  finalScore.textContent = `Score: ${Math.floor(score)}`;
+  bestScore.textContent  = `Best: ${Math.floor(best)}`;
   window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
 
