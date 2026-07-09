@@ -209,7 +209,7 @@
           <span class="badge" id="missBadge"></span>
         </div>
         <div class="right">
-          <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸</button>
+          <button id="btnPause" class="iconbtn" title=">⏸</button>
         </div>
       </div>
 
@@ -383,8 +383,8 @@ function spawn(dt){
 /* ===== Flow ===== */
 function start(){ state=State.PLAYING; hidePanel(); btnPause.textContent='⏸ Pause'; refreshHUD(); }
 function togglePause(forcePause){
-  if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; btnPause.textContent='⏵ Resume'; }
-  else if(state===State.PAUSED){ state=State.PLAYING; btnPause.textContent='⏸ Pause'; }
+  if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; btnPause.textContent='⏵'; }
+  else if(state===State.PAUSED){ state=State.PLAYING; btnPause.textContent='⏸'; }
 }
 function restart(){
   // 回到 v2 傳入嘅分數（carry）
@@ -393,7 +393,7 @@ function restart(){
   missCount = 0;
   caughtCount = 0;
   items.length=0; spawnTimer=0; chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
-  state=State.PLAYING; hidePanel(); btnPause.textContent='⏸ Pause'; refreshHUD();
+  state=State.PLAYING; hidePanel(); btnPause.textContent='⏸'; refreshHUD();
 }
 
 function gotoEnd(){
