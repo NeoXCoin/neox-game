@@ -187,18 +187,41 @@
   }
   #startLayer.visible{opacity:1}
 
-  #startBtn{
-    background:#2563eb;color:#fff;font-weight:900;letter-spacing:.05em;
-    padding:18px 34px;border-radius:14px;cursor:pointer;user-select:none;
-    font-size:clamp(20px,6vw,36px);
-    box-shadow:0 0 25px rgba(37,99,235,.6);
-    border:none;
-    animation:pop .9s ease forwards;
+  #startBtn {
+  position: relative;
+  overflow: hidden; /* 確保光線唔會流出按鈕外 */
+  /* 你原本的其他設定保持不變... */
+}
+
+  /* 建立一條高亮度的掃光線 */
+  #startBtn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transform: skewX(-25deg);
+    animation: startShine 3.5s infinite ease-in-out;
   }
-  #startBtn:disabled{
-    opacity:.6;cursor:default;box-shadow:none;
+
+  .btn-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
   }
-  @keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+
+  /* 當滑鼠指住舊掣，個播放箭頭會向右跳動，暗示「往前進、進入遊戲」 */
+  #startBtn:hover .btn-arrow {
+    transform: translateX(4px) scale(1.1);
+    color: #ffd25a;
+  }
+
+  @keyframes startShine {
+    0% { left: -150%; }
+    15% { left: 150%; }  /* 快速由左邊掃去右邊 */
+    100% { left: 150%; } /* 冷卻停頓期，每 3.5 秒循環一次 */
+  }
 
   /* FX（白閃 + NeoX Coin 爆光） */
   #fx{
@@ -264,7 +287,7 @@
 
 <!-- Start -->
 <section id="startLayer">
-  <button id="startBtn">▶ START GAME</button>
+ <button id="startBtn"><span class="btn-arrow">▶</span> START GAME</button>
 </section>
 
 <!-- Transition FX -->
