@@ -358,15 +358,20 @@ function showControlsAndArmTimer(ms=6000){
 
 function startOpening(){
   opener.style.display = 'flex';
-  video.src = 'https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4'; // 開場影片
+  video.src = 'https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4';
   video.muted = true;
+  
   video.play().then(()=>{
     loading.style.display='none';
     video.style.opacity='1';
     updateSoundLabel();
     showControlsAndArmTimer(6000);
-  }).catch(()=>{
-    // 自動播放失敗時仍然顯示控制鍵
+  }).catch((err)=>{
+    console.log("Auto-play blocked:", err);
+    // 💡 修正：即使被攔截，也要隱藏 Loading 並顯示影片區塊，讓用戶可以看到並點擊播放
+    loading.style.display='none';
+    video.style.opacity='1'; 
+    
     updateSoundLabel();
     showControlsAndArmTimer(6000);
   });
