@@ -126,57 +126,68 @@
   @keyframes spin{to{transform:rotate(360deg)}}
 
   /* 控制鍵（Sound / Skip） */
-  .vctrl{
-    position:absolute;
-    left:50%;
-    bottom:calc(10% + env(safe-area-inset-bottom));
-    transform:translateX(-50%);
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    justify-content:center;
-  }
-  .vctrl button{
-    background:rgba(40,40,55,.75);
-    border:1px solid rgba(255,255,255,.15);
-    color:#fff;
-    font-weight:700;
-    letter-spacing:.02em;
-    padding:12px 16px;
-    border-radius:12px;
-    cursor:pointer;
-    box-shadow:0 6px 14px rgba(0,0,0,.45);
-    backdrop-filter:blur(6px);
-    transition:background .3s ease, transform .2s ease, opacity .3s ease;
-  }
-  .vctrl button:hover{
-    background:rgba(255,255,255,.15);
-    transform:translateY(-1px);
-  }
-  .vctrl button:active{
-    transform:translateY(1px);
-    background:rgba(255,255,255,.10);
-  }
-  .vctrl.fadeout{
-    opacity:0;
-    transition:opacity 1.2s ease;
-    pointer-events:none;
+  .vctrl {
+    position: absolute;
+    left: 50%;
+    bottom: calc(10% + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    display: flex;
+    gap: 16px;                     /* 稍微拉開少少距離，更好撳 */
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
-  /* 手機直向：兩個按鍵並排貼底 */
-  @media (orientation: portrait){
-    .vctrl{
-      flex-direction:row;
-      flex-wrap:nowrap;
-      gap:10px;
-      bottom:calc(6% + env(safe-area-inset-bottom));
-    }
-    .vctrl button{
-      white-space:nowrap;
-      font-size:clamp(14px,3.4vw,16px);
-      padding:10px 14px;
-    }
+  .vctrl button {
+    background: rgba(10, 16, 46, 0.75); /* 改用深色科技藍底色，更顯光效 */
+    border: 1px solid #41b0ff88;         /* 線條改成 NeoX 主題的霓虹藍 */
+    color: #c9d8ff;
+    font-weight: 700;
+    letter-spacing: .06em;
+    padding: 12px 24px;                  /* 加寬按鈕，更有大作遊戲感 */
+    border-radius: 8px;                  /* 稍微銳利一點的科技感方角 */
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(65, 176, 255, 0.2), 0 6px 14px rgba(0,0,0,0.4); /* 霓虹微光 + 陰影 */
+    backdrop-filter: blur(6px);
+    transition: all .3s ease;            /* 全屬性過渡，動畫更流暢 */
+    text-transform: uppercase;           /* 文字全大寫，提升遊戲 UI 質感 */
   }
+
+  /* 當滑鼠指過去（Hover）時的充能發光效果 */
+  .vctrl button:hover {
+    background: rgba(65, 176, 255, 0.25);
+    border-color: #41b0ff;
+    color: #fff;
+    transform: translateY(-2px);         /* 微微浮起 */
+    box-shadow: 0 0 20px rgba(65, 176, 255, 0.6), 0 8px 18px rgba(0,0,0,0.5); /* 強烈霓虹發光 */
+  }
+
+  /* 撳落去（Active）時的反饋 */
+  .vctrl button:active {
+    transform: translateY(1px);
+    background: rgba(65, 176, 255, 0.15);
+    box-shadow: 0 0 10px rgba(65, 176, 255, 0.4);
+  }
+
+  .vctrl.fadeout {
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    pointer-events: none;
+  }
+
+  /* 手機直向：保持並排，調整字體大小 */
+  @media (orientation: portrait) {
+    .vctrl {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: 12px;
+      bottom: calc(6% + env(safe-area-inset-bottom));
+  }
+    .vctrl button {
+      white-space: nowrap;
+      font-size: clamp(13px, 3.2vw, 15px);
+      padding: 10px 18px;
+  }
+}
 
   /* ===== Start layer ===== */
   #startLayer{
