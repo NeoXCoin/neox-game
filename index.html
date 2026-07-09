@@ -341,8 +341,17 @@ function startOpening(){
   });
 }
 
-function updateSoundLabel(){
-  btnToggleSound.textContent = video.muted ? '🔇 Sound off' : '🔊 Sound on';
+function updateSoundLabel() {
+  if (video.muted) {
+    btnToggleSound.innerHTML = '🔇 <span style="opacity: 0.7;">Sound off</span>';
+    btnToggleSound.style.borderColor = '#41b0ff88'; // 靜音時回復主題藍色
+    btnToggleSound.style.boxShadow = '0 0 12px rgba(65, 176, 255, 0.2)';
+  } else {
+    // 🔊 有聲時：文字變成金黃色，外框同發光都變為金黃色（配返 NeoX 金幣）
+    btnToggleSound.innerHTML = '🔊 <span style="color: #ffd25a;">Sound on</span>';
+    btnToggleSound.style.borderColor = '#ffd25a';
+    btnToggleSound.style.boxShadow = '0 0 15px rgba(255, 210, 90, 0.5)';
+  }
 }
 
 btnToggleSound.addEventListener('click', async ()=>{
