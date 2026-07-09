@@ -29,23 +29,19 @@
     box-sizing: border-box;
     padding: 10px 14px;
     display: flex;
-    flex-direction: column; /* 強制分上下兩行 */
-    gap: 12px;             /* 上下兩行之間嘅距離 */
-    z-index: 10;           /* 確保喺最頂層 */
+    flex-direction: column; 
+    gap: 12px;             
+    z-index: 999;          /* 提到最高層 */
+    pointer-events: none;  /* 🌟 重點：讓整個頂欄容器變透明，唔阻擋任何點擊 */
   }
 
   /* ==================== 第一行：按鈕列 ==================== */
-  /* 建立一個獨立的行，讓左、右按鈕完美分開 */
-  .topbar::before {
-    content: "";
-    display: none; /* 唔使理呢個，用下面結構更新 */
-  }
-
-  /* 由於你 HTML 本身有 .left 同 .right，我哋用 flex 分配第一行 */
   .topbar .left, 
   .topbar .right {
     position: absolute !important;
     top: 10px;
+    z-index: 1001;
+    pointer-events: auto; /* 🌟 重點：強制讓按鈕恢復可以被點擊 */
   }
 
   /* Home 掣貼最左 */
@@ -53,7 +49,7 @@
     left: 14px;
   }
 
-  /* Pause 掣貼最右 (解決你目前在中間的問題) */
+  /* Pause 掣貼最右 */
   .topbar .right {
     right: 14px;
   }
@@ -61,25 +57,27 @@
   /* ==================== 第二行：分數牌列 (居中) ==================== */
   .topbar .center {
     position: relative !important;
-    margin-top: 45px; /* 推開少少，費事撞到上面兩個掣 */
+    margin-top: 45px; 
     display: flex;
-    justify-content: center; /* 確保所有分數牌百分百靠中間 */
+    justify-content: center; 
     align-items: center;
-    gap: 6px;        /* 牌仔之間嘅緊湊間距 */
+    gap: 6px;        
     width: 100%;
+    z-index: 1000;
+    pointer-events: none; /* 分數牌本身不阻擋點擊，銀幣可以穿過去 */
   }
 
-  /* 分數牌樣式微調（包緊內容） */
+  /* 分數牌樣式微調 */
   .badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 6px 10px;
     font-size: 13px;
-    white-space: nowrap; /* 防止數字太長自斷行 */
+    white-space: nowrap; 
     margin: 0 !important;
+    pointer-events: auto; /* 如果牌仔第時要加 hover 效果可以用，不影響遊戲 */
   }
-
   /* ==================== 手機版特別優化 ==================== */
   @media (max-width: 600px) {
     .topbar {
