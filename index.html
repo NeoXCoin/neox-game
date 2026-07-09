@@ -188,39 +188,46 @@
   #startLayer.visible{opacity:1}
 
   #startBtn {
-  position: relative;
-  overflow: hidden; /* 確保光線唔會流出按鈕外 */
-  /* 你原本的其他設定保持不變... */
-}
-
-  /* 建立一條高亮度的掃光線 */
-  #startBtn::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -150%;
-    width: 60%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transform: skewX(-25deg);
-    animation: startShine 3.5s infinite ease-in-out;
+    background: linear-gradient(135deg, #1e40af, #2563eb); /* 漸層科技藍 */
+    border: 2px solid #ffd25a88;                 /* 帶有淡金色的邊框 */
+    color: #fff;
+    font-weight: 900;
+    letter-spacing: .08em;
+    padding: 18px 38px;
+    border-radius: 14px;
+    cursor: pointer;
+    user-select: none;
+    font-size: clamp(20px, 6vw, 32px);
+    box-shadow: 0 0 20px rgba(37, 99, 235, 0.4), 0 0 40px rgba(255, 210, 90, 0.1);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 彈性過渡效果 */
+    animation: pop .9s ease forwards, btnPulse 2s infinite ease-in-out; /* 加上呼吸燈效果 */
   }
 
-  .btn-arrow {
-    display: inline-block;
-    transition: transform 0.3s ease;
+  /* Hover 時釋放金幣寶藏能量 */
+  #startBtn:hover {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    border-color: #ffd25a;                       /* 邊框變純金黃色 */
+    color: #ffd25a;                              /* 文字變金色 */
+    transform: scale(1.05);                      /* 微微放大 */
+    box-shadow: 0 0 30px rgba(37, 99, 235, 0.6), 0 0 25px rgba(255, 210, 90, 0.6); /* 藍金雙色爆光 */
   }
 
-  /* 當滑鼠指住舊掣，個播放箭頭會向右跳動，暗示「往前進、進入遊戲」 */
-  #startBtn:hover .btn-arrow {
-    transform: translateX(4px) scale(1.1);
-    color: #ffd25a;
+  /* 撳落去一瞬間縮小反饋 */
+  #startBtn:active {
+    transform: scale(0.98);
   }
 
-  @keyframes startShine {
-    0% { left: -150%; }
-    15% { left: 150%; }  /* 快速由左邊掃去右邊 */
-    100% { left: 150%; } /* 冷卻停頓期，每 3.5 秒循環一次 */
+  #startBtn:disabled {
+    opacity: .5;
+    cursor: default;
+    box-shadow: none;
+    border-color: transparent;
+  }
+
+  /* 預設的按鈕呼吸燈動畫（未 Hover 時淡淡地閃爍） */
+  @keyframes btnPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.4); }
+    50% { box-shadow: 0 0 30px rgba(37, 99, 235, 0.7), 0 0 15px rgba(255, 210, 90, 0.3); }
   }
 
   /* FX（白閃 + NeoX Coin 爆光） */
