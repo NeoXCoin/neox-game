@@ -35,12 +35,6 @@
     }
   }
 
-  if (sessionStorage.getItem('entered_from_v1') !== 'true') {
-        // 如果無標記，代表係直接入，踢去 v1
-        location.replace('https://neoxcoin.github.io/neox-game/v1.html#start');
-        return;
-    }
-
   // 2) 防跳關（A+B）
   // - 允許 #fromOpening2 直入並補寫 last_level=1
   // - 否則要求 last_level >= 1（注意 0 分都合法，不用 !carry）
