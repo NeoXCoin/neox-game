@@ -255,11 +255,16 @@
 
 <!-- Banner -->
 <section id="banner">
-  <div class="brandline">
-    <img class="coin" src="https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png" alt="NeoX Coin" />
-    <h1>NeoX Catch Game</h1>
-  </div>
-  <p class="tag">Your adventure begins — Catch the NeoX Coins and unlock the treasure!</p>
+    <div class="brandline">
+        <img class="coin" src="https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png" alt="NeoX Coin" />
+        <h1>NeoX Catch Game</h1>
+    </div>
+    <p class="tag">Your adventure begins — Catch the NeoX Coins and unlock the treasure!</p>
+    
+    <!-- 💡 新增：引導玩家點擊的按鈕 -->
+    <button id="btnEnterGame" style="margin-top: 24px; padding: 12px 28px; background: #2563eb; color: #fff; border: 1px solid #ffd25a; border-radius: 8px; font-weight: bold; cursor: pointer;">
+        ENTER GAME
+    </button>
 </section>
 
 <!-- Opener -->
@@ -307,6 +312,7 @@
 <script>
 /* Elements */
 const banner   = document.getElementById('banner');
+const btnEnterGame = document.getElementById('btnEnterGame'); // 💡 新增
 const opener   = document.getElementById('opener');
 const video    = document.getElementById('openerVideo');
 const loading  = document.getElementById('loading');
@@ -323,12 +329,14 @@ let openingDone = false;
 
 /* ---------- Banner → Opener ---------- */
 setTimeout(()=>{
-  banner.style.transition = 'opacity .9s ease';
-  banner.style.opacity = '0';
-  setTimeout(()=>{
-    banner.style.display = 'none';
-    startOpening();
-  }, 900);
+  btnEnterGame.addEventListener('click', () => {
+    // 玩家一撳呢個掣，成個網頁嘅聲音權限就會被解鎖！
+    banner.style.transition = 'opacity .6s ease';
+    banner.style.opacity = '0';
+  setTimeout(() => {
+        banner.style.display = 'none';
+        startOpening(); // 轉去 Opening 畫面
+    }, 600);
 }, 1800);
 
 /* ---------- Responsive fit ---------- */
@@ -356,25 +364,28 @@ function showControlsAndArmTimer(ms=6000){
   scheduleControlsFade(ms);
 }
 
+/* ---------- 修改 startOpening 函數 ---------- */
 function startOpening(){
-  opener.style.display = 'flex';
-  video.src = 'https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4';
-  video.muted = true;
-  
-  video.play().then(()=>{
-    loading.style.display='none';
-    video.style.opacity='1';
-    updateSoundLabel();
-    showControlsAndArmTimer(6000);
-  }).catch((err)=>{
-    console.log("Auto-play blocked:", err);
-    // 💡 修正：即使被攔截，也要隱藏 Loading 並顯示影片區塊，讓用戶可以看到並點擊播放
-    loading.style.display='none';
-    video.style.opacity='1'; 
+    opener.style.display = 'flex';
+    video.src = 'https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4';
     
-    updateSoundLabel();
-    showControlsAndArmTimer(6000);
-  });
+    video.muted = false; // 💡 關鍵：因為前面撳咗掣，呢度可以直接設為 false 帶聲播放！
+    
+    video.play().then(() => {
+        loading.style.display = 'none';
+        video.style.opacity = '1';
+        updateSoundLabel();           // 喇叭掣會自動顯示為「有聲/亮起」狀態
+        showControlsAndArmTimer(6000);
+    }).catch((err) => {
+        console.log("Auto-play blocked:", err);
+        // 保險後備方案
+        video.muted = true; 
+        video.play();
+        loading.style.display = 'none';
+        video.style.opacity = '1';
+        updateSoundLabel();
+        showControlsAndArmTimer(6000);
+    });
 }
 
 function updateSoundLabel() {
