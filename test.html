@@ -3,512 +3,552 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>NeoX Catch Game — Opening</title>
+<title>NeoX Catch – Level 1</title>
 <style>
   html,body{
-    margin:0;height:100%;background:#05081A;color:#fff;
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",Arial,sans-serif;
+    height:100%;margin:0;background:#0a0b1f;color:#fff;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
     overflow:hidden;
   }
-
-  /* ===== Banner ===== */
-  #banner {
-      position: fixed; 
-      inset: 0; 
-      display: flex;             
-      flex-direction: column;    
-      justify-content: space-between; 
-      align-items: center;            
-    
-      /* 💡 將原本嘅 8% 改為 18% 或者 20%！ */
-      /* 頂部留 60px，左右留 5%，底部留 18% 就可以將個掣由最底推返上中間偏下嘅位置 */
-      padding: 60px 5% 18% 5%;         
-    
-      box-sizing: border-box; 
-      text-align: center;             
-      z-index: 10; 
-      background: linear-gradient(rgba(5,8,26,.55),rgba(5,8,26,.90)), url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat; 
-      animation: bannerIn 1s ease forwards; 
+  #wrap{position:relative;height:100%;display:grid;place-items:center;}
+  canvas{
+    display:block;width:min(92vw,700px);aspect-ratio:9/16;height:auto;
+    border-radius:16px;background:#000;
+    box-shadow:0 20px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
+    touch-action:none;
+    position:relative; z-index:1;
   }
-
-  @keyframes bannerIn{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
-
-  .brandline {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    justify-content: flex-start; /* 確保 Logo 同標題喺左邊對齊 */
-    width: 100%;
-  }
-
-  .coin {
-    width: clamp(32px, 7vw, 60px); 
-    height: auto; 
-    flex-shrink: 0; 
-    filter: drop-shadow(0 0 10px rgba(255,210,90,.35)); 
-    opacity: 0; 
-    transform: translateY(8px) scale(.96); 
-    animation: coinIn .9s ease .15s forwards; 
-  }
-
-  h1 {
-    margin: 0; 
-    font-size: clamp(28px, 6vw, 48px); 
-    letter-spacing: .06em; 
-    text-shadow: 0 0 18px #41b0ff66,0 0 40px #41b0ff33; 
-    opacity: 0; 
-    transform: translateY(8px); 
-    animation: fadeIn .9s ease .3s forwards; 
-  }
-
-  .tag {
-    max-width: min(900px, 90vw);
-    margin: 12px 0 0 0;        /* 移除左右 margin auto，改為同左邊對齊，並同上面留少少位 */
-    line-height: 1.7;
-    font-size: clamp(15px, 3.4vw, 20px); 
-    color: #c9d8ff; 
-    opacity: 0;
-    transform: translateY(8px); 
-    animation: fadeIn 1s ease .5s forwards; 
-  }
-
-  @keyframes fadeIn{to{opacity:1;transform:none}}
-
-  .brandline {display: flex;align-items: center;gap: 12px;justify-content: center;width: 100%;}
-  .coin {
-    width: clamp(32px, 7vw, 60px);
-    height: auto;
-    flex-shrink: 0;
-    filter: drop-shadow(0 0 10px rgba(255,210,90,.35));
-    opacity: 0;
-    transform: translateY(8px) scale(.96);
-    animation: coinIn .9s ease .15s forwards;
-  }
-  @keyframes coinIn{to{opacity:1;transform:translateY(0) scale(1)}}
-
-  h1 {
-    margin: 0; 
-    font-size: clamp(28px, 6vw, 48px);
-    letter-spacing: .06em;
-    text-shadow: 0 0 18px #41b0ff66,0 0 40px #41b0ff33;
-    opacity: 0;
-    transform: translateY(8px);
-    animation: fadeIn .9s ease .3s forwards;
-  }
-  .tag{
-    max-width:min(900px,90vw);margin:0 auto;
-    line-height:1.7;font-size:clamp(15px,3.4vw,20px);
-    color:#c9d8ff;
-    opacity:0;transform:translateY(8px);
-    animation:fadeIn 1s ease .5s forwards;
-  }
-  @keyframes fadeIn{to{opacity:1;transform:none}}
-
-  /* ===== Opener video layer ===== */
-  #opener{
-    position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:11;
-    background:linear-gradient(rgba(3,6,23,.60),rgba(5,10,31,.90)),
-               url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat;
-  }
-  #openerVideo{
-    width:100%;height:100%;object-fit:contain;background:#000;opacity:0;
-    transition:opacity .6s ease, filter .8s ease;filter:brightness(1);
-  }
-  #loading{
-    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    gap:12px;color:#bcd4ff;
-  }
-  .sp{
-    width:46px;height:46px;border:4px solid #ffffff24;border-top-color:#2b7cff;border-radius:50%;
-    animation:spin 1.1s linear infinite;
-    filter:drop-shadow(0 0 8px #2b7cff99);
-  }
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  /* 控制鍵（Sound / Skip） */
-  .vctrl {
+  /* HUD */
+  .hud{position:absolute; inset:0; z-index:5; pointer-events:none; display:grid; grid-template-rows:auto 1fr;}
+  /* ==================== 頂部整個容器 ==================== */
+  .topbar {
     position: absolute;
-    left: 50%;
-    bottom: calc(8% + env(safe-area-inset-bottom));
-    transform: translateX(-50%);
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
     display: flex;
-    gap: 16px;
-    justify-content: center;
+    flex-direction: column; 
+    gap: 12px;             
+    z-index: 999;          /* 提到最高層 */
+    pointer-events: auto;  /* 讓整個頂欄容器變透明，唔阻擋任何點擊 */
   }
 
-  .vctrl button {
-    background: rgba(10, 16, 46, 0.65); /* 提高透明度，更隱形 */
-    border: 1px solid rgba(65, 176, 255, 0.4); /* 弱化原本的藍色邊框 */
-    color: rgba(201, 216, 255, 0.7); /* 圖案顏色變淡 */
-    width: 44px;  /* 變成細小的圓形按鈕 */
-    height: 44px;
-    padding: 0;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    backdrop-filter: blur(4px);
+  /* ==================== 第一行：按鈕列 ==================== */
+  .topbar .left, 
+  .topbar .right {
+    position: absolute !important;
+    top: 10px;
+    z-index: 1001;
+    pointer-events: auto; /* 強制讓按鈕可以被點擊 */
+  }
+
+  /* Home 掣貼最左 */
+  .topbar .left {
+    left: 14px;
+  }
+
+  /* Pause 掣貼最右 */
+  .topbar .right {
+    right: 14px;
+  }
+
+  /* ==================== 第二行：分數牌列 (居中) ==================== */
+  .topbar .center {
+    position: relative !important;
+    margin-top: 45px; 
     display: flex;
+    justify-content: center; 
+    align-items: center;
+    gap: 6px;        
+    width: 100%;
+    z-index: 1000;
+    pointer-events: none; /* 分數牌本身不阻擋點擊 */
+  }
+
+  /* 分數牌樣式微調 */
+  .badge {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all .25s ease;
+    padding: 6px 10px;
+    font-size: 13px;
+    white-space: nowrap; 
+    margin: 0 !important;
   }
 
-  /* Hover 時才稍微亮起，不阻礙影片觀賞 */
-  .vctrl button:hover {
-    background: rgba(65, 176, 255, 0.15);
-    border-color: #41b0ff;
+  /* 微調按鈕，變做正方形 icon 掣 */
+  .iconbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #1b2144;
+    border: 0;
     color: #fff;
-    box-shadow: 0 0 12px rgba(65, 176, 255, 0.4);
+    box-shadow: 0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.08);
+    cursor: pointer;
+    width: 42px;   
+    height: 42px;
+    border-radius: 12px;
+  }  
+  .iconbtn img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    display: block;
   }
 
-  .vctrl button:active {
-    transform: scale(0.95);
-  }
-
-  .vctrl.fadeout {
-    opacity: 0;
-    transition: opacity 1s ease;
-    pointer-events: none;
-  }
-
-  /* 手機版保持大小 */
-  @media (orientation: portrait) {
-    .vctrl {
-      bottom: calc(6% + env(safe-area-inset-bottom));
-      gap: 12px;
+  /* ==================== 手機版特別優化 ==================== */
+  @media (max-width: 600px) {
+    .topbar {
+      padding: 8px 10px;
+      gap: 8px;
+    }
+    .topbar .left { left: 10px; top: 8px; }
+    .topbar .right { right: 10px; top: 8px; }
+  
+    .topbar .center {
+      margin-top: 42px; 
+      gap: 4px;         /* 縮窄牌仔距離，防止最左/最右出界 */
+    }
+    .badge {
+      padding: 5px 8px;
+      font-size: 12px;
     }
   }
-
-  /* ===== Start layer ===== */
-  #startLayer {
-      position: fixed;
-      inset: 0;
-      display: none; /* 暫時隱藏 */
-      place-items: center; /* 呢度控制緊佢嘅位置 */
-      background: rgba(5,8,20,.85);
-      z-index: 13;
-      opacity: 0;
-      transition: opacity .9s ease;
+  .iconbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px; /* 攞走左右多餘 padding */
+    width: 42px;   /* 固定寬高 */
+    height: 42px;
+    border-radius: 12px;
   }
-  #startLayer.visible{opacity:1}
-
-  #startBtn {
-    background: linear-gradient(135deg, #1e40af, #2563eb); /* 漸層科技藍 */
-    border: 2px solid #ffd25a88;                 /* 帶有淡金色的邊框 */
-    color: #fff;
-    font-weight: 900;
-    letter-spacing: .08em;
-    padding: 18px 38px;
-    border-radius: 14px;
-    cursor: pointer;
-    user-select: none;
-    font-size: clamp(20px, 6vw, 32px);
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.4), 0 0 40px rgba(255, 210, 90, 0.1);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 彈性過渡效果 */
-    animation: pop .9s ease forwards, btnPulse 2s infinite ease-in-out; /* 加上呼吸燈效果 */
+  .iconbtn img{width:22px;height:22px;object-fit:contain;display:block;}
+  .panel{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    pointer-events:auto; z-index:10;
+    min-width:clamp(240px,80%,520px); text-align:center;
+    padding:18px 16px 20px;border-radius:16px;background:rgba(10,12,34,.88);
+    box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08);
+    backdrop-filter:blur(4px);
   }
-
-  /* Hover 時釋放金幣寶藏能量 */
-  #startBtn:hover {
-    background: linear-gradient(135deg, #2563eb, #3b82f6);
-    border-color: #ffd25a;                       /* 邊框變純金黃色 */
-    color: #ffd25a;                              /* 文字變金色 */
-    transform: scale(1.05);                      /* 微微放大 */
-    box-shadow: 0 0 30px rgba(37, 99, 235, 0.6), 0 0 25px rgba(255, 210, 90, 0.6); /* 藍金雙色爆光 */
-  }
-
-  /* 撳落去一瞬間縮小反饋 */
-  #startBtn:active {
-    transform: scale(0.98);
-  }
-
-  #startBtn:disabled {
-    opacity: .5;
-    cursor: default;
-    box-shadow: none;
-    border-color: transparent;
-  }
-
-  /* 預設的按鈕呼吸燈動畫（未 Hover 時淡淡地閃爍） */
-  @keyframes btnPulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.4); }
-    50% { box-shadow: 0 0 30px rgba(37, 99, 235, 0.7), 0 0 15px rgba(255, 210, 90, 0.3); }
-  }
-
-  /* FX（白閃 + NeoX Coin 爆光） */
-  #fx{
-    position:fixed;inset:0;display:none;place-items:center;pointer-events:none;z-index:12;
-  }
-  #fx .flash{
-    position:absolute;inset:0;background:#fff;opacity:0;
-  }
-  #fx .pulse{
-    position:absolute;left:50%;top:50%;width:130px;height:130px;
-    transform:translate(-50%,-50%) scale(.3);
-    background:url('https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png') center/contain no-repeat;
-    filter:drop-shadow(0 0 20px rgba(80,150,255,.8)) drop-shadow(0 0 40px rgba(43,124,255,.4));
-    opacity:.95;
-  }
-  .run .flash{animation:fx-flash .52s ease-out forwards}
-  .run .pulse{animation:fx-burst .9s ease-out forwards}
-  @keyframes fx-flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
-  @keyframes fx-burst{
-    0%  {transform:translate(-50%,-50%) scale(.3);opacity:1}
-    60% {transform:translate(-50%,-50%) scale(6);opacity:.45}
-    100%{transform:translate(-50%,-50%) scale(8);opacity:0}
-  }
+  .panel h1{margin:8px 0 10px;font-size:clamp(22px,5.2vw,30px);}
+  .panel p{margin:0 0 14px;color:#c8d2ff;font-size:14px;line-height:1.55;}
+  .row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+  .btn{border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer;color:#fff;background:#2b7cff;
+       box-shadow:0 8px 22px rgba(43,124,255,.35);}
+  .btn.alt{background:#1f2648;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
+  .hidden{display:none !important;}
 </style>
 </head>
 <body>
+<div id="wrap">
+  <canvas id="game" width="450" height="800" aria-label="NeoX Catch Level 1"></canvas>
 
-<!-- Banner -->
-<section id="banner">
-    <div class="brandline">
-        <img class="coin" src="https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png" alt="NeoX Coin" />
-        <h1>NeoX Catch Game</h1>
+  <div class="hud" aria-live="polite">
+    <div class="topbar">
+      <div class="left">
+        <button id="btnHome" class="iconbtn" title="Back to Home">
+          <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home">
+        </button>
+      </div>
+      <div class="center">
+        <span class="badge" id="scoreBadge"></span>
+        <span class="badge" id="timeBadge"></span>
+        <span class="badge" id="bestBadge"></span>
+        <span class="badge" id="missBadge"></span>
+      </div>
+      <div class="right">
+        <button id="btnPause" class="iconbtn" title=" ⏸ / ⏵ (P)">⏸</button>
+      </div>
     </div>
-    <p class="tag">Your adventure begins — Catch the NeoX Coins and unlock the treasure!</p>
-    
-    <!-- 💡 新增：引導玩家點擊的按鈕 -->
-    <button id="btnEnterGame" style="margin-top: 24px; padding: 12px 28px; background: #2563eb; color: #fff; border: 1px solid #ffd25a; border-radius: 8px; font-weight: bold; cursor: pointer;">
-        ENTER GAME
-    </button>
-</section>
 
-<!-- Opener -->
-<section id="opener" aria-label="Opening">
-  <div id="loading">
-    <div class="sp"></div>
-    <span>Loading opening…</span>
+    <!-- Panels -->
+    <div id="panelStart" class="panel">
+      <h1>NeoX Catch — Level 1</h1>
+      <p>Move the <b>Treasure Box</b> to catch falling <b>NeoX Coins</b>.<br>
+         Keyboard <b>← →</b> or drag left & right.</p>
+      <div class="row"><button id="btnStart" class="btn">▶ Start</button></div>
+    </div>
+
+    <div id="panelPause" class="panel hidden">
+      <h1>Paused</h1>
+      <div class="row">
+        <button id="btnResume" class="btn">⏵</button>
+        <button id="btnRestart2" class="btn alt">🔄</button>
+      </div>
+    </div>
+
+    <div id="panelWin" class="panel hidden">
+      <h1 id="winTitle">Time’s up ⏱️</h1>
+      <p><span id="finalScore">Score: 0</span> · <span id="bestScore">Best: 0</span></p>
+      <div class="row">
+        <button id="btnNextLevel" class="btn">Go to Level 2 ▶</button>
+        <button id="btnReplay" class="btn alt">Replay</button>
+      </div>
+    </div>
   </div>
-  <video id="openerVideo" playsinline webkit-playsinline muted autoplay preload="auto"></video>
- <div class="vctrl" id="openerControls" hidden>
-  <!-- 聲音掣（預設靜音狀態） -->
-  <button id="btnToggleSound" aria-label="Toggle Sound">
-    <svg id="soundIcon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-      <line class="mute-line" x1="22" y1="9" x2="16" y2="15"></line>
-      <line class="mute-line" x1="16" y1="9" x2="22" y2="15"></line>
-    </svg>
-  </button>
-  
-  <!-- Skip 掣 -->
-  <button id="btnSkip" aria-label="Skip Opening">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon>
-      <line x1="19" y1="5" x2="19" y2="19"></line>
-    </svg>
-  </button>
 </div>
-</section>
-
-<!-- Start -->
-<section id="startLayer">
- <button id="startBtn"><span class="btn-arrow">▶</span> START GAME</button>
-</section>
-
-<!-- Transition FX -->
-<div id="fx">
-  <div class="flash"></div>
-  <div class="pulse"></div>
-</div>
-
-<!-- Short transition BGM -->
-<audio id="startBGM" preload="auto"
-  src="https://neoxcoin.github.io/neox-game/NeoX_OpeningTheme_Cartoon.m4a" style="display:none"></audio>
 
 <script>
-/* Elements */
-const banner   = document.getElementById('banner');
-const btnEnterGame = document.getElementById('btnEnterGame'); // 💡 新增// ... 其他原本的 elements 定義不變 ...
-const opener   = document.getElementById('opener');
-const video    = document.getElementById('openerVideo');
-const loading  = document.getElementById('loading');
-const ctrls    = document.getElementById('openerControls');
-const btnToggleSound = document.getElementById('btnToggleSound');
-const btnSkip  = document.getElementById('btnSkip');
-const start    = document.getElementById('startLayer');
-const startBtn = document.getElementById('startBtn');
-const fx       = document.getElementById('fx');
-const startBGM = document.getElementById('startBGM');
+/* ====== 防熱鏈：只俾自己個 domain / iframe host 用 ====== */
+(function () {
+  const HOME   = 'https://neoxcoin.io/';
+  const HUB = 'https://neoxcoin.github.io/neox-game/';
 
-/* ---------- 💡 核心修改：由點擊事件觸發 Opening ---------- */
-btnEnterGame.addEventListener('click', () => {
-    // 玩家一撳呢個掣，成個網頁嘅聲音權限就會被解鎖！
-    banner.style.transition = 'opacity .6s ease';
-    banner.style.opacity = '0';
-    
-    setTimeout(() => {
-        banner.style.display = 'none';
-        startOpening(); // 轉去 Opening 畫面
-    }, 600);
+  // 允許做 parent 嘅來源（只用 origin，就係 https://domain）
+  const ALLOWED_PARENTS = [
+    'https://neoxcoin.github.io',
+    'https://neoxcoin.io'
+  ];
+
+  if (window.top !== window.self) {
+    try {
+      const ref    = document.referrer || '';
+      const origin = ref ? new URL(ref).origin : '';
+
+      if (!ALLOWED_PARENTS.includes(origin)) {
+        window.top.location.replace(HUB);
+        return;
+      }
+    } catch (e) {
+      window.top.location.replace(HUB);
+      return;
+    }
+  }
+})();
+
+/* ====== Config ====== */
+const TOTAL_TIME_SEC = 180;
+const EDGE = 2;
+const MAX_MISSES = 60;
+
+/* ====== Assets ====== */
+const BG_URL    = "https://neoxcoin.github.io/neox-game/forest%20background%20.PNG";
+const CHEST_URL = "https://neoxcoin.github.io/neox-game/treasure-box.png";
+const COIN_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png";
+
+/* ====== Canvas (HiDPI) ====== */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+function fitHiDPI(){
+  const cssW = canvas.clientWidth, cssH = canvas.clientHeight;
+  const dpr = Math.max(1, Math.min(devicePixelRatio||1, 2));
+  if (canvas.width !== Math.round(cssW*dpr)) {
+    canvas.width = Math.round(cssW*dpr); canvas.height = Math.round(cssH*dpr);
+  }
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+fitHiDPI(); addEventListener('resize', fitHiDPI);
+
+/* ====== State ====== */
+const State={READY:0,PLAYING:1,PAUSED:2,WIN:3,OVER:4};
+let state=State.READY;
+
+/* ====== HUD refs ====== */
+const scoreBadge   = document.getElementById('scoreBadge');
+const bestBadge    = document.getElementById('bestBadge');
+const timeBadge    = document.getElementById('timeBadge');
+const missBadge    = document.getElementById('missBadge');
+const panelStart   = document.getElementById('panelStart');
+const panelPause   = document.getElementById('panelPause');
+const panelWin     = document.getElementById('panelWin');
+const finalScore   = document.getElementById('finalScore');
+const bestScore    = document.getElementById('bestScore');
+const winTitle     = document.getElementById('winTitle');
+const btnNextLevel = document.getElementById('btnNextLevel');
+const btnReplay    = document.getElementById('btnReplay');
+
+/* ====== Images ====== */
+const bgImg=new Image(); bgImg.src=BG_URL; let bgReady=false; bgImg.onload=()=>bgReady=true;
+const chestImg=new Image(); chestImg.src=CHEST_URL; let chestReady=false; chestImg.onload=()=>chestReady=true;
+const coinImg=new Image(); coinImg.src=COIN_URL; let coinReady=false; coinImg.onload=()=>coinReady=true;
+
+/* ====== Player (Chest) ====== */
+const chest={x:225,y:0,w:220,h:160,speed:6.2,vx:0};
+function isMobile(){return /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);}
+function visibleCanvasHeight(){
+  const rect=canvas.getBoundingClientRect(); const vp=window.visualViewport;
+  if(vp){ const vb=(vp.offsetTop||0)+vp.height; return Math.max(0, Math.min(rect.bottom,vb)-rect.top); }
+  return rect.height;
+}
+function placeChest(){
+  const H=visibleCanvasHeight();
+  const land=matchMedia('(orientation: landscape)').matches;
+  const bottomMargin = isMobile()? 18 : (land ? Math.max(24, H*0.05) : Math.max(24, H*0.035));
+  const targetW = Math.min(canvas.clientWidth*(isMobile()?0.30:0.28), 280);
+  chest.w = targetW; chest.h = Math.round(targetW*0.72);
+  chest.y = Math.max(chest.h, H - bottomMargin);
+  const cx = (chest.x || canvas.clientWidth/2);
+  chest.x = Math.max(chest.w/2 + EDGE, Math.min(cx, canvas.clientWidth - chest.w/2 - EDGE));
+}
+placeChest();
+addEventListener('resize', placeChest);
+addEventListener('orientationchange', placeChest);
+
+/* ====== Score/Timer/Miss ====== */
+let score=0;
+let best = Number(localStorage.getItem('neox_catch_best_l1') ?? localStorage.getItem('neox_catch_best') ?? 0);
+let timeLeft = TOTAL_TIME_SEC;
+let missCount = 0;
+let combo = 0;      // 當前連擊數
+let maxCombo = 0;   // 本局最高連擊
+
+function fmt(t){ const m=Math.floor(t/60), s=Math.floor(t%60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
+function refreshHUD(){
+  scoreBadge.textContent = `🪙 ${Math.floor(score)}`;
+  timeBadge.textContent  = `⏱️ ${fmt(timeLeft)}`;
+  bestBadge.textContent  = `🏆 ${Math.floor(best)}`;
+  missBadge.textContent  = `❌ ${missCount}/${MAX_MISSES}`;
+  scoreBadge.textContent = `🪙 ${Math.floor(score)} ${combo > 1 ? `(x${Math.floor(combo / 5) + 1} Combo!)` : ''}`;
+  
+  // 下面原本彈出視窗同 postMessage 嘅邏輯保留不變
+  finalScore.textContent = `Score: ${Math.floor(score)}`;
+  bestScore.textContent  = `Best: ${Math.floor(best)}`;
+  window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
+}
+
+/* ====== Audio (mobile-safe) ====== */
+let audioCtx = null, masterGain = null;
+function ensureAudio(){
+  if (audioCtx) return;
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new Ctx();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.8;
+  masterGain.connect(audioCtx.destination);
+}
+function unlockAudioOnce(){
+  ensureAudio();
+  if (!audioCtx) return;
+  const buf = audioCtx.createBuffer(1, 1, 22050);
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.connect(masterGain);
+  try { src.start(0); } catch(e){}
+}
+async function resumeAudio(){
+  ensureAudio();
+  try{
+    unlockAudioOnce();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+  }catch(e){}
+}
+function beep(f=440,d=0.12,v=0.2,type='sine'){
+  ensureAudio();
+  if (!audioCtx || audioCtx.state!=='running') return;
+  const n=audioCtx.currentTime, o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,n); g.gain.setValueAtTime(v,n);
+  g.gain.exponentialRampToValueAtTime(0.0001, n + d*0.9);
+  o.connect(g).connect(masterGain); o.start(n); o.stop(n+d);
+}
+const SFX = {
+  click(){ beep(700,.07,.12,'triangle'); },
+  star(){  beep(880,.08,.18); setTimeout(()=>beep(1320,.10,.12),40); },
+  win(){   [660,880,990,1320].forEach((f,i)=>setTimeout(()=>beep(f,.14,.16),90*i)); },
+  miss(){  beep(260,.12,.18); },
+  over(){  [300,260,220].forEach((f,i)=>setTimeout(()=>beep(f,.18,.22),120*i)); }
+};
+['pointerdown','touchend','mousedown','keydown','click'].forEach(evt=>{
+  window.addEventListener(evt, resumeAudio, {once:true, passive:true});
 });
+document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'visible') resumeAudio(); });
 
-/* ---------- Responsive fit ---------- */
-function fitVideo(){
-  const r=(video.videoWidth||16)/(video.videoHeight||9);
-  const s=innerWidth/innerHeight;
-  video.style.objectFit = Math.abs(r-s) < 0.18 ? 'cover' : 'contain';
-}
-video.addEventListener('loadedmetadata', fitVideo);
-addEventListener('resize', fitVideo, {passive:true});
+/* ====== Buttons ====== */
+document.getElementById('btnHome').onclick = () => {
+  // Home 我哋照用 top，直接返主站
+  (window.top || window).location.replace('https://neoxcoin.io/');
+};
+document.getElementById('btnStart').onclick=()=>{start();};
+document.getElementById('btnRestart2').onclick=()=>{restart();};
+document.getElementById('btnReplay').onclick=()=>{restart();};
+document.getElementById('btnResume').onclick=()=>{togglePause(false);};
+const btnPause=document.getElementById('btnPause');
+btnPause.onclick=()=>togglePause();
 
-/* ---------- Opener flow ---------- */
-let ctrlFadeTimer;
-function scheduleControlsFade(ms=6000){
-  clearTimeout(ctrlFadeTimer);
-  ctrlFadeTimer = setTimeout(()=>ctrls.classList.add('fadeout'), ms);
-}
-function fadeControlsSoon(delay=600){
-  clearTimeout(ctrlFadeTimer);
-  setTimeout(()=>ctrls.classList.add('fadeout'), delay);
-}
-function showControlsAndArmTimer(ms=6000){
-  ctrls.hidden = false;
-  ctrls.classList.remove('fadeout');
-  scheduleControlsFade(ms);
-}
+btnNextLevel.onclick = () => {
+  const carry = Math.floor(score);
 
-function startOpening(){
-    opener.style.display = 'flex';
-    video.src = 'https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4';
-    
-    video.muted = false; // 💡 關鍵：因為前面撳咗掣，呢度可以直接設為 false 帶聲播放！
+  // 帶住分數俾下一關用
+  localStorage.setItem('nx_carry', String(carry));
 
-    video.onended = () => {
-        showStart(); // 影片播完自動呼叫顯示按鈕
-    };
-    
-    video.play().then(() => {
-        loading.style.display = 'none';
-        video.style.opacity = '1';
-        updateSoundLabel();           // 喇叭掣會自動顯示為「有聲/亮起」狀態
-        showControlsAndArmTimer(6000);
-    }).catch((err) => {
-        console.log("Auto-play blocked:", err);
-        // 保險後備方案
-        video.muted = true; 
-        video.play();
-        loading.style.display = 'none';
-        video.style.opacity = '1';
-        updateSoundLabel();
-        showControlsAndArmTimer(6000);
-    });
-}
-
-function updateSoundLabel() {
-  const icon = document.getElementById('soundIcon');
-  if (video.muted) {
-    // 🔇 靜音狀態：顯示喇叭 + 交叉（X）
-    icon.innerHTML = `
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-      <line x1="22" y1="9" x2="16" y2="15"></line>
-      <line x1="16" y1="9" x2="22" y2="15"></line>
-    `;
-    btnToggleSound.style.color = 'rgba(201, 216, 255, 0.7)';
-    btnToggleSound.style.borderColor = 'rgba(65, 176, 255, 0.4)';
-    btnToggleSound.style.boxShadow = 'none';
+  // 如果喺 iframe 入面 → 交俾外層 iframe host 處理跳關
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({
+      type: 'NX_GO_LEVEL',
+      from: 1,
+      to: 2,
+      score: carry
+    }, '*');
   } else {
-    // 🔊 有聲狀態：顯示喇叭 + 聲波線，並變成柔和的金黃色
-    icon.innerHTML = `
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-    `;
-    btnToggleSound.style.color = '#ffd25a';
-    btnToggleSound.style.borderColor = '#ffd25a88';
-    btnToggleSound.style.boxShadow = '0 0 8px rgba(255, 210, 90, 0.3)';
+    // 直開 v1.html（冇 iframe）就用原本方法
+    window.location.href = 'v2.html#continue';
+  }
+};
+
+/* ====== Input ====== */
+const keys=new Set();
+addEventListener('keydown',e=>{
+  if(e.repeat) return;
+  if(e.key==='ArrowLeft') keys.add('L');
+  if(e.key==='ArrowRight') keys.add('R');
+  if(e.key.toLowerCase()==='p') togglePause();
+  if(e.key.toLowerCase()==='r') restart();
+  if(state===State.READY && (e.key===' '||e.key==='Enter')) start();
+});
+addEventListener('keyup',e=>{ if(e.key==='ArrowLeft') keys.delete('L'); if(e.key==='ArrowRight') keys.delete('R'); });
+
+let pointerId=null;
+canvas.addEventListener('pointerdown',e=>{
+  const p=(e.changedTouches&&e.changedTouches[0])||e; pointerId=p.identifier??'mouse';
+  if(state===State.READY) start();
+  e.preventDefault();
+},{passive:false});
+addEventListener('pointermove',e=>{
+  const p=(e.changedTouches && ([...e.changedTouches].find(t => (t.identifier ?? 'mouse')===pointerId)))||e; if(!p) return;
+  const rect=canvas.getBoundingClientRect(); const cx=(p.clientX-rect.left)/rect.width*canvas.clientWidth;
+  const diff=cx-chest.x; chest.vx=Math.max(-chest.speed, Math.min(chest.speed, diff*0.25)); e.preventDefault();
+},{passive:false});
+addEventListener('pointerup',()=>{pointerId=null; chest.vx=0;},{passive:false});
+addEventListener('pointercancel',()=>{pointerId=null; chest.vx=0;},{passive:false});
+addEventListener('blur',()=>{ if(state===State.PLAYING) togglePause(true); });
+
+/* ====== Coins ====== */
+const coins = [];
+let spawnTimer = 0;
+function spawnCoins(dt) {
+  spawnTimer -= dt;
+  const maxOnScreen = 5;
+  if (spawnTimer <= 0 && coins.length < maxOnScreen) {
+    const SAFE_MARGIN = chest.w * 0.12;
+    coins.push({
+      x: EDGE + SAFE_MARGIN + Math.random() * (canvas.clientWidth - 2 * (EDGE + SAFE_MARGIN)),
+      y: -20, 
+      r: 12,
+      vy: 2.6 + Math.random() * 2.2,
+      spin: Math.random() * Math.PI * 2,
+      vspin: -0.12 + Math.random() * 0.24
+    });
+    spawnTimer = 0.55 + Math.random() * 0.55;
   }
 }
 
-btnToggleSound.addEventListener('click', async ()=>{
-  try{
-    if (video.paused) await video.play();
-  }catch(e){}
-  video.muted = !video.muted;
-  updateSoundLabel();
-  scheduleControlsFade(2000);
-});
+/* ====== Flow ====== */
+function start(){
+  score=0; timeLeft=TOTAL_TIME_SEC; missCount=0;
+  coins.length=0; spawnTimer=0;
+  chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
+  state=State.PLAYING; panelStart.classList.add('hidden'); panelPause.classList.add('hidden'); panelWin.classList.add('hidden');
+  refreshHUD(); btnPause.textContent='⏸';
+}
+function togglePause(forcePause){
+  if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; panelPause.classList.remove('hidden'); btnPause.textContent='⏵'; }
+  else if(state===State.PAUSED){ state=State.PLAYING; panelPause.classList.add('hidden'); btnPause.textContent='⏸'; }
+}
+function restart(){
+  panelWin.classList.add('hidden'); panelPause.classList.add('hidden');
+  start();
+}
+function finishWin(){
+  state=State.WIN;
+  best=Math.max(best,Math.floor(score));
+  localStorage.setItem('neox_catch_best_l1', String(best));
+  localStorage.setItem('neox_last_score', String(Math.floor(score)));
+  const prevTotal=Number(localStorage.getItem('neox_total_score')||0);
+  localStorage.setItem('neox_total_score', String(prevTotal+Math.floor(score)));
+  localStorage.setItem('neox_last_level','1');
 
-/* 👉 Skip 或影片播完：只會執行一次 Opening → Start Game 畫面 */
-function goToStartFromOpening(){
-  if (openingDone) return;       // 保證只跑一次
-  openingDone = true;
+  // 過關先把分數帶去 v2
+  localStorage.setItem('nx_carry', String(Math.floor(score)));
 
-  fadeControlsSoon(0);
-  try{ video.pause(); }catch(e){}
-  playFX();
-  setTimeout(showStart, 900);
+  winTitle.textContent = "Stage Clear! 🎉";
+  refreshHUD();
+  btnNextLevel.classList.remove('hidden');
+  panelWin.classList.remove('hidden'); SFX.win();
+}
+function finishOver(){
+  state=State.OVER;
+  best=Math.max(best,Math.floor(score));
+  localStorage.setItem('neox_catch_best_l1', String(best));
+  winTitle.textContent = "Game Over 🤭";
+  refreshHUD();
+  btnNextLevel.classList.add('hidden');
+  panelWin.classList.remove('hidden'); SFX.over();
 }
 
-// 確保 btnSkip 的監聽器有正確呼叫顯示邏輯
-btnSkip.addEventListener('click', () => {
-    // 1. 暫停並隱藏影片
-    video.pause();
-    opener.style.display = 'none'; 
-    
-    // 2. 顯示 Start Layer
-    start.style.display = 'grid'; 
-    
-    // 3. 觸發顯示動畫
-    requestAnimationFrame(() => {
-        start.classList.add('visible');
-    });
-    
-    // 4. (選填) 如果你有聲音，記得一併停止
-    if(startBGM) startBGM.pause();
-});
+/* ====== Loop ====== */
+let last=performance.now();
+function loop(now){
+  requestAnimationFrame(loop);
+  fitHiDPI();
+  const dt=Math.min(50, now-last)/16.6667; last=now;
 
-video.addEventListener('ended', goToStartFromOpening);
+  drawBackground();
 
-/* ---------- Start Layer ---------- */
-function showStart(){
-  opener.style.display='none';
-  start.style.display='grid';
-  requestAnimationFrame(() => {
-        start.classList.add('visible');
-    });
-}
+  if(state===State.PLAYING){
+    timeLeft = Math.max(0, timeLeft - dt/60);
+    if(timeLeft<=0){ return finishWin(); }
 
-startBtn.addEventListener('click', () => {
-  // 確保按一次
-  if (startBtn.disabled) return;
-  startBtn.disabled = true;
+    chest.vx=(keys.has('L')?-chest.speed:0)+(keys.has('R')?chest.speed:0) || chest.vx*0.92;
+    chest.x = Math.max(chest.w/2 + EDGE,
+              Math.min(canvas.clientWidth - chest.w/2 - EDGE, chest.x + chest.vx));
 
-  try {
-    startBGM.currentTime = 0;
-    startBGM.volume = 1;
-    startBGM.muted = false;
-    startBGM.play().catch(()=>{});
-  } catch(e){}
+    spawnCoins(dt);
+    for(const c of coins){ c.y+=c.vy*dt; c.spin+=c.vspin*dt; }
 
-  setTimeout(() => {
-    // ⚡ 如果係 iframe 裏面 → 交俾外層處理
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: 'NX_START_GAME' }, '*');
-    } else {
-      // ⚡ 如果係直接開 index.html → 自己去 v1.html
-      window.location.href = 'v1.html';
+    const baseRx = chest.w * 0.36, baseRy = chest.h * 0.18;
+    const overhangL = Math.max(0, (chest.w/2 + EDGE) - chest.x);
+    const overhangR = Math.max(0, (chest.w/2 + EDGE) - (canvas.clientWidth - chest.x));
+    const edgeBoost = overhangL + overhangR + 4;
+    const mouth = { cx: chest.x, cy: chest.y - chest.h * 0.58, rx: baseRx + edgeBoost, ry: baseRy };
+
+    for (let i=coins.length-1; i>=0; i--){
+      const c = coins[i];
+      const ex = (c.x - mouth.cx) / mouth.rx;
+      const ey = (c.y - mouth.cy) / mouth.ry;
+      if (ex*ex + ey*ey <= 1){
+        combo++; let multiplier = Math.floor(combo / 5) + 1;score += (10 * multiplier); coins.splice(i,1); SFX.star(); refreshHUD();
+      } else if (c.y > canvas.clientHeight + 30){
+        coins.splice(i,1);
+        missCount++;combo = 0; SFX.miss(); refreshHUD();
+        if(missCount>=MAX_MISSES){ return finishOver(); }
+      }
     }
-  }, 800);
-});
+  }
 
-/* ---------- FX ---------- */
-function playFX(){
-  fx.style.display='grid';
-  fx.classList.remove('run');
-  requestAnimationFrame(()=>fx.classList.add('run'));
-  setTimeout(()=>{ fx.style.display='none'; }, 950);
+  drawChest(); drawCoins();
 }
+requestAnimationFrame(loop);
 
-/* 一次手勢可同時解鎖聲音（保險） */
-['pointerdown','touchend','click','keydown'].forEach(evt=>{
-  window.addEventListener(evt, async ()=>{
-    if (video.paused){
-      try{ await video.play(); }catch(e){}
-    }
-  }, { once:true, passive:true });
-});
+/* ====== Render ====== */
+function drawBackground(){
+  const w=canvas.clientWidth,h=canvas.clientHeight; ctx.clearRect(0,0,w,h);
+  if(!bgReady){ const g=ctx.createLinearGradient(0,0,0,h); g.addColorStop(0,'#0f1240'); g.addColorStop(1,'#0a0c22'); ctx.fillStyle=g; ctx.fillRect(0,0,w,h); return; }
+  const iw=bgImg.width, ih=bgImg.height, ir=iw/ih, cr=w/h; let dw,dh,dx,dy;
+  if(ir>cr){ dh=h; dw=h*ir; dx=(w-dw)/2; dy=0; } else { dw=w; dh=w/ir; dx=0; dy=(h-dh)/2; }
+  ctx.drawImage(bgImg,dx,dy,dw,dh);
+}
+function drawChest(){
+  const {x,y,w,h}=chest;
+  const glow=ctx.createRadialGradient(x,y-24,6,x,y-24,120);
+  glow.addColorStop(0,'rgba(43,124,255,0.30)'); glow.addColorStop(1,'rgba(43,124,255,0)');
+  ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(x, y-24, 90, 0, Math.PI*2); ctx.fill();
+  if(chestReady){ ctx.save(); ctx.shadowColor='rgba(0,0,0,.35)'; ctx.shadowBlur=18; ctx.drawImage(chestImg, x-w/2, y-h, w, h); ctx.restore(); }
+  else{ ctx.fillStyle='#1c274f'; ctx.fillRect(x-w/2, y-h, w, h); }
+}
+function drawCoins(){
+  for(const c of coins){
+    let size = c.r * 3;
+    if (window.innerWidth < 600) size *= 0.7;
+    const r = size / 2; ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
+    if(coinReady){ ctx.save(); ctx.shadowColor='rgba(255,223,128,.8)'; ctx.shadowBlur=18; ctx.drawImage(coinImg,-r,-r,size,size); ctx.restore(); }
+    else{ const g=ctx.createRadialGradient(0,0,r*.2,0,0,r); g.addColorStop(0,'#fff6cc'); g.addColorStop(1,'#e3b23c'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); }
+    ctx.restore();
+  }
+}
 </script>
 </body>
 </html>
