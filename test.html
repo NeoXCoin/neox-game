@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>NeoX Catch Game — Opening</title>
+<style>
+  html,body{
+    margin:0;height:100%;background:#05081A;color:#fff;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans",Arial,sans-serif;
+    overflow:hidden;
+  }
+
+  /* ===== Banner ===== */
+  #banner {
+      position: fixed; 
+      inset: 0; 
+      display: flex;             
+      flex-direction: column;    
+      justify-content: space-between; 
+      align-items: center;            
+    
+      /* 💡 將原本嘅 8% 改為 18% 或者 20%！ */
+      /* 頂部留 60px，左右留 5%，底部留 18% 就可以將個掣由最底推返上中間偏下嘅位置 */
+      padding: 60px 5% 18% 5%;         
+    
+      box-sizing: border-box; 
+      text-align: center;             
+      z-index: 10; 
+      background: linear-gradient(rgba(5,8,26,.55),rgba(5,8,26,.90)), url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat; 
+      animation: bannerIn 1s ease forwards; 
+  }
+
+  @keyframes bannerIn{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
+
+  .brandline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-start; /* 確保 Logo 同標題喺左邊對齊 */
+    width: 100%;
+  }
+
+  .coin {
+    width: clamp(32px, 7vw, 60px); 
+    height: auto; 
+    flex-shrink: 0; 
+    filter: drop-shadow(0 0 10px rgba(255,210,90,.35)); 
+    opacity: 0; 
+    transform: translateY(8px) scale(.96); 
+    animation: coinIn .9s ease .15s forwards; 
+  }
+
+  h1 {
+    margin: 0; 
+    font-size: clamp(28px, 6vw, 48px); 
+    letter-spacing: .06em; 
+    text-shadow: 0 0 18px #41b0ff66,0 0 40px #41b0ff33; 
+    opacity: 0; 
+    transform: translateY(8px); 
+    animation: fadeIn .9s ease .3s forwards; 
+  }
+
+  .tag {
+    max-width: min(900px, 90vw);
+    margin: 12px 0 0 0;        /* 移除左右 margin auto，改為同左邊對齊，並同上面留少少位 */
+    line-height: 1.7;
+    font-size: clamp(15px, 3.4vw, 20px); 
+    color: #c9d8ff; 
+    opacity: 0;
+    transform: translateY(8px); 
+    animation: fadeIn 1s ease .5s forwards; 
+  }
+
+  @keyframes fadeIn{to{opacity:1;transform:none}}
+
+  .brandline {display: flex;align-items: center;gap: 12px;justify-content: center;width: 100%;}
+  .coin {
+    width: clamp(32px, 7vw, 60px);
+    height: auto;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 10px rgba(255,210,90,.35));
+    opacity: 0;
+    transform: translateY(8px) scale(.96);
+    animation: coinIn .9s ease .15s forwards;
+  }
+  @keyframes coinIn{to{opacity:1;transform:translateY(0) scale(1)}}
+
+  h1 {
+    margin: 0; 
+    font-size: clamp(28px, 6vw, 48px);
+    letter-spacing: .06em;
+    text-shadow: 0 0 18px #41b0ff66,0 0 40px #41b0ff33;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fadeIn .9s ease .3s forwards;
+  }
+  .tag{
+    max-width:min(900px,90vw);margin:0 auto;
+    line-height:1.7;font-size:clamp(15px,3.4vw,20px);
+    color:#c9d8ff;
+    opacity:0;transform:translateY(8px);
+    animation:fadeIn 1s ease .5s forwards;
+  }
+  @keyframes fadeIn{to{opacity:1;transform:none}}
+
+  /* ===== Opener video layer ===== */
+  #opener{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:11;
+    background:linear-gradient(rgba(3,6,23,.60),rgba(5,10,31,.90)),
+               url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat;
+  }
+  #openerVideo{
+    width:100%;height:100%;object-fit:contain;background:#000;opacity:0;
+    transition:opacity .6s ease, filter .8s ease;filter:brightness(1);
+  }
+  #loading{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    gap:12px;color:#bcd4ff;
+  }
+  .sp{
+    width:46px;height:46px;border:4px solid #ffffff24;border-top-color:#2b7cff;border-radius:50%;
+    animation:spin 1.1s linear infinite;
+    filter:drop-shadow(0 0 8px #2b7cff99);
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* 控制鍵（Sound / Skip） */
+  .vctrl {
+    position: absolute;
+    left: 50%;
+    bottom: calc(8% + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+
+  .vctrl button {
+    background: rgba(10, 16, 46, 0.65); /* 提高透明度，更隱形 */
+    border: 1px solid rgba(65, 176, 255, 0.4); /* 弱化原本的藍色邊框 */
+    color: rgba(201, 216, 255, 0.7); /* 圖案顏色變淡 */
+    width: 44px;  /* 變成細小的圓形按鈕 */
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .25s ease;
+  }
+
+  /* Hover 時才稍微亮起，不阻礙影片觀賞 */
+  .vctrl button:hover {
+    background: rgba(65, 176, 255, 0.15);
+    border-color: #41b0ff;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(65, 176, 255, 0.4);
+  }
+
+  .vctrl button:active {
+    transform: scale(0.95);
+  }
+
+  .vctrl.fadeout {
+    opacity: 0;
+    transition: opacity 1s ease;
+    pointer-events: none;
+  }
+
+  /* 手機版保持大小 */
+  @media (orientation: portrait) {
+    .vctrl {
+      bottom: calc(6% + env(safe-area-inset-bottom));
+      gap: 12px;
+    }
+  }
+
+  /* ===== Start layer ===== */
+  #startLayer{
+    position:fixed;inset:0;display:none;place-items:center;
+    background:rgba(5,8,20,.85);
+    z-index:13;opacity:0;transition:opacity .9s ease;
+  }
+  #startLayer.visible{opacity:1}
+
+  #startBtn {
+    background: linear-gradient(135deg, #1e40af, #2563eb); /* 漸層科技藍 */
+    border: 2px solid #ffd25a88;                 /* 帶有淡金色的邊框 */
+    color: #fff;
+    font-weight: 900;
+    letter-spacing: .08em;
+    padding: 18px 38px;
+    border-radius: 14px;
+    cursor: pointer;
+    user-select: none;
+    font-size: clamp(20px, 6vw, 32px);
+    box-shadow: 0 0 20px rgba(37, 99, 235, 0.4), 0 0 40px rgba(255, 210, 90, 0.1);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 彈性過渡效果 */
+    animation: pop .9s ease forwards, btnPulse 2s infinite ease-in-out; /* 加上呼吸燈效果 */
+  }
+
+  /* Hover 時釋放金幣寶藏能量 */
+  #startBtn:hover {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    border-color: #ffd25a;                       /* 邊框變純金黃色 */
+    color: #ffd25a;                              /* 文字變金色 */
+    transform: scale(1.05);                      /* 微微放大 */
+    box-shadow: 0 0 30px rgba(37, 99, 235, 0.6), 0 0 25px rgba(255, 210, 90, 0.6); /* 藍金雙色爆光 */
+  }
+
+  /* 撳落去一瞬間縮小反饋 */
+  #startBtn:active {
+    transform: scale(0.98);
+  }
+
+  #startBtn:disabled {
+    opacity: .5;
+    cursor: default;
+    box-shadow: none;
+    border-color: transparent;
+  }
+
+  /* 預設的按鈕呼吸燈動畫（未 Hover 時淡淡地閃爍） */
+  @keyframes btnPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.4); }
+    50% { box-shadow: 0 0 30px rgba(37, 99, 235, 0.7), 0 0 15px rgba(255, 210, 90, 0.3); }
+  }
+
+  /* FX（白閃 + NeoX Coin 爆光） */
+  #fx{
+    position:fixed;inset:0;display:none;place-items:center;pointer-events:none;z-index:12;
+  }
+  #fx .flash{
+    position:absolute;inset:0;background:#fff;opacity:0;
+  }
+  #fx .pulse{
+    position:absolute;left:50%;top:50%;width:130px;height:130px;
+    transform:translate(-50%,-50%) scale(.3);
+    background:url('https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png') center/contain no-repeat;
+    filter:drop-shadow(0 0 20px rgba(80,150,255,.8)) drop-shadow(0 0 40px rgba(43,124,255,.4));
+    opacity:.95;
+  }
+  .run .flash{animation:fx-flash .52s ease-out forwards}
+  .run .pulse{animation:fx-burst .9s ease-out forwards}
+  @keyframes fx-flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+  @keyframes fx-burst{
+    0%  {transform:translate(-50%,-50%) scale(.3);opacity:1}
+    60% {transform:translate(-50%,-50%) scale(6);opacity:.45}
+    100%{transform:translate(-50%,-50%) scale(8);opacity:0}
+  }
+</style>
+</head>
+<body>
+
+<!-- Banner -->
+<section id="banner">
+    <div class="brandline">
+        <img class="coin" src="https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png" alt="NeoX Coin" />
+        <h1>NeoX Catch Game</h1>
+    </div>
+    <p class="tag">Your adventure begins — Catch the NeoX Coins and unlock the treasure!</p>
+    
+    <!-- 💡 新增：引導玩家點擊的按鈕 -->
+    <button id="btnEnterGame" style="margin-top: 24px; padding: 12px 28px; background: #2563eb; color: #fff; border: 1px solid #ffd25a; border-radius: 8px; font-weight: bold; cursor: pointer;">
+        ENTER GAME
+    </button>
+</section>
+
+<!-- Opener -->
+<section id="opener" aria-label="Opening">
+  <div id="loading">
+    <div class="sp"></div>
+    <span>Loading opening…</span>
+  </div>
+  <video id="openerVideo" playsinline webkit-playsinline muted autoplay preload="auto"></video>
+ <div class="vctrl" id="openerControls" hidden>
+  <!-- 聲音掣（預設靜音狀態） -->
+  <button id="btnToggleSound" aria-label="Toggle Sound">
+    <svg id="soundIcon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <line class="mute-line" x1="22" y1="9" x2="16" y2="15"></line>
+      <line class="mute-line" x1="16" y1="9" x2="22" y2="15"></line>
+    </svg>
+  </button>
+  
+  <!-- Skip 掣 -->
+  <button id="btnSkip" aria-label="Skip Opening">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon>
+      <line x1="19" y1="5" x2="19" y2="19"></line>
+    </svg>
+  </button>
+</div>
+</section>
+
+<!-- Start -->
+<section id="startLayer">
+ <button id="startBtn"><span class="btn-arrow">▶</span> START GAME</button>
+</section>
+
+<!-- Transition FX -->
+<div id="fx">
+  <div class="flash"></div>
+  <div class="pulse"></div>
+</div>
+
+<!-- Short transition BGM -->
+<audio id="startBGM" preload="auto"
+  src="https://neoxcoin.github.io/neox-game/NeoX_OpeningTheme_Cartoon.m4a" style="display:none"></audio>
+
+<script>
+/* Elements */
+const banner   = document.getElementById('banner');
+const btnEnterGame = document.getElementById('btnEnterGame'); // 💡 新增// ... 其他原本的 elements 定義不變 ...
+const opener   = document.getElementById('opener');
+const video    = document.getElementById('openerVideo');
+const loading  = document.getElementById('loading');
+const ctrls    = document.getElementById('openerControls');
+const btnToggleSound = document.getElementById('btnToggleSound');
+const btnSkip  = document.getElementById('btnSkip');
+const start    = document.getElementById('startLayer');
+const startBtn = document.getElementById('startBtn');
+const fx       = document.getElementById('fx');
+const startBGM = document.getElementById('startBGM');
+
+/* ---------- 💡 核心修改：由點擊事件觸發 Opening ---------- */
+btnEnterGame.addEventListener('click', () => {
+    // 玩家一撳呢個掣，成個網頁嘅聲音權限就會被解鎖！
+    banner.style.transition = 'opacity .6s ease';
+    banner.style.opacity = '0';
+    
+    setTimeout(() => {
+        banner.style.display = 'none';
+        startOpening(); // 轉去 Opening 畫面
+    }, 600);
+});
+
+/* ---------- Responsive fit ---------- */
+function fitVideo(){
+  const r=(video.videoWidth||16)/(video.videoHeight||9);
+  const s=innerWidth/innerHeight;
+  video.style.objectFit = Math.abs(r-s) < 0.18 ? 'cover' : 'contain';
+}
+video.addEventListener('loadedmetadata', fitVideo);
+addEventListener('resize', fitVideo, {passive:true});
+
+/* ---------- Opener flow ---------- */
+let ctrlFadeTimer;
+function scheduleControlsFade(ms=6000){
+  clearTimeout(ctrlFadeTimer);
+  ctrlFadeTimer = setTimeout(()=>ctrls.classList.add('fadeout'), ms);
+}
+function fadeControlsSoon(delay=600){
+  clearTimeout(ctrlFadeTimer);
+  setTimeout(()=>ctrls.classList.add('fadeout'), delay);
+}
+function showControlsAndArmTimer(ms=6000){
+  ctrls.hidden = false;
+  ctrls.classList.remove('fadeout');
+  scheduleControlsFade(ms);
+}
+
+function startOpening(){
+    opener.style.display = 'flex';
+    video.src = 'https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4';
+    
+    video.muted = false; // 💡 關鍵：因為前面撳咗掣，呢度可以直接設為 false 帶聲播放！
+    
+    video.play().then(() => {
+        loading.style.display = 'none';
+        video.style.opacity = '1';
+        updateSoundLabel();           // 喇叭掣會自動顯示為「有聲/亮起」狀態
+        showControlsAndArmTimer(6000);
+    }).catch((err) => {
+        console.log("Auto-play blocked:", err);
+        // 保險後備方案
+        video.muted = true; 
+        video.play();
+        loading.style.display = 'none';
+        video.style.opacity = '1';
+        updateSoundLabel();
+        showControlsAndArmTimer(6000);
+    });
+}
+
+function updateSoundLabel() {
+  const icon = document.getElementById('soundIcon');
+  if (video.muted) {
+    // 🔇 靜音狀態：顯示喇叭 + 交叉（X）
+    icon.innerHTML = `
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <line x1="22" y1="9" x2="16" y2="15"></line>
+      <line x1="16" y1="9" x2="22" y2="15"></line>
+    `;
+    btnToggleSound.style.color = 'rgba(201, 216, 255, 0.7)';
+    btnToggleSound.style.borderColor = 'rgba(65, 176, 255, 0.4)';
+    btnToggleSound.style.boxShadow = 'none';
+  } else {
+    // 🔊 有聲狀態：顯示喇叭 + 聲波線，並變成柔和的金黃色
+    icon.innerHTML = `
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+    `;
+    btnToggleSound.style.color = '#ffd25a';
+    btnToggleSound.style.borderColor = '#ffd25a88';
+    btnToggleSound.style.boxShadow = '0 0 8px rgba(255, 210, 90, 0.3)';
+  }
+}
+
+btnToggleSound.addEventListener('click', async ()=>{
+  try{
+    if (video.paused) await video.play();
+  }catch(e){}
+  video.muted = !video.muted;
+  updateSoundLabel();
+  scheduleControlsFade(2000);
+});
+
+/* 👉 Skip 或影片播完：只會執行一次 Opening → Start Game 畫面 */
+function goToStartFromOpening(){
+  if (openingDone) return;       // 保證只跑一次
+  openingDone = true;
+
+  fadeControlsSoon(0);
+  try{ video.pause(); }catch(e){}
+  playFX();
+  setTimeout(showStart, 900);
+}
+
+btnSkip.addEventListener('click', goToStartFromOpening);
+
+video.addEventListener('playing', ()=>{
+  loading.style.display='none';
+  video.style.opacity='1';
+  scheduleControlsFade(6000);
+});
+
+video.addEventListener('ended', goToStartFromOpening);
+
+/* ---------- Start Layer ---------- */
+function showStart(){
+  opener.style.display='none';
+  start.style.display='grid';
+  requestAnimationFrame(()=>start.classList.add('visible'));
+}
+
+startBtn.addEventListener('click', () => {
+  // 確保按一次
+  if (startBtn.disabled) return;
+  startBtn.disabled = true;
+
+  try {
+    startBGM.currentTime = 0;
+    startBGM.volume = 1;
+    startBGM.muted = false;
+    startBGM.play().catch(()=>{});
+  } catch(e){}
+
+  setTimeout(() => {
+    // ⚡ 如果係 iframe 裏面 → 交俾外層處理
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'NX_START_GAME' }, '*');
+    } else {
+      // ⚡ 如果係直接開 index.html → 自己去 v1.html
+      window.location.href = 'v1.html';
+    }
+  }, 800);
+});
+
+/* ---------- FX ---------- */
+function playFX(){
+  fx.style.display='grid';
+  fx.classList.remove('run');
+  requestAnimationFrame(()=>fx.classList.add('run'));
+  setTimeout(()=>{ fx.style.display='none'; }, 950);
+}
+
+/* 一次手勢可同時解鎖聲音（保險） */
+['pointerdown','touchend','click','keydown'].forEach(evt=>{
+  window.addEventListener(evt, async ()=>{
+    if (video.paused){
+      try{ await video.play(); }catch(e){}
+    }
+  }, { once:true, passive:true });
+});
+</script>
+</body>
+</html>
