@@ -180,10 +180,15 @@
   }
 
   /* ===== Start layer ===== */
-  #startLayer{
-    position:fixed;inset:0;display:none;place-items:center;
-    background:rgba(5,8,20,.85);
-    z-index:13;opacity:0;transition:opacity .9s ease;
+  #startLayer {
+      position: fixed;
+      inset: 0;
+      display: none; /* 暫時隱藏 */
+      place-items: center; /* 呢度控制緊佢嘅位置 */
+      background: rgba(5,8,20,.85);
+      z-index: 13;
+      opacity: 0;
+      transition: opacity .9s ease;
   }
   #startLayer.visible{opacity:1}
 
@@ -446,7 +451,9 @@ video.addEventListener('ended', goToStartFromOpening);
 function showStart(){
   opener.style.display='none';
   start.style.display='grid';
-  requestAnimationFrame(()=>start.classList.add('visible'));
+  requestAnimationFrame(() => {
+        start.classList.add('visible');
+    });
 }
 
 startBtn.addEventListener('click', () => {
