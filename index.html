@@ -13,19 +13,22 @@
 
   /* ===== Banner ===== */
   #banner {
-    position: fixed;
-    inset: 0;
-    display: flex;             /* 改用 flex 方便排版 */
-    flex-direction: column;    /* 讓 Logo/標題 同下方的標語直排 */
-    justify-content: flex-start; /* 靠頂部對齊 */
-    align-items: flex-start;   /* 靠左手邊對齊 */
-    padding: 40px 5%;          /* 頂部留 40px，左邊留 5% 彈性邊距，等畫面睇落平衡 */
-    box-sizing: border-box;
-    text-align: left;          /* 文字改為靠左對齊 */
-    z-index: 10;
-    background: linear-gradient(rgba(5,8,26,.55),rgba(5,8,26,.90)), 
-                url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat;
-    animation: bannerIn 1s ease forwards;
+      position: fixed; 
+      inset: 0; 
+      display: flex;             
+      flex-direction: column;    
+      justify-content: space-between; 
+      align-items: center;            
+    
+      /* 💡 將原本嘅 8% 改為 18% 或者 20%！ */
+      /* 頂部留 60px，左右留 5%，底部留 18% 就可以將個掣由最底推返上中間偏下嘅位置 */
+      padding: 60px 5% 18% 5%;         
+    
+      box-sizing: border-box; 
+      text-align: center;             
+      z-index: 10; 
+      background: linear-gradient(rgba(5,8,26,.55),rgba(5,8,26,.90)), url('https://neoxcoin.github.io/neox-game/TreasureSite%20.JPG') center/cover no-repeat; 
+      animation: bannerIn 1s ease forwards; 
   }
 
   @keyframes bannerIn{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
@@ -177,10 +180,15 @@
   }
 
   /* ===== Start layer ===== */
-  #startLayer{
-    position:fixed;inset:0;display:none;place-items:center;
-    background:rgba(5,8,20,.85);
-    z-index:13;opacity:0;transition:opacity .9s ease;
+  #startLayer {
+      position: fixed;
+      inset: 0;
+      display: none; /* 暫時隱藏 */
+      place-items: center; /* 呢度控制緊佢嘅位置 */
+      background: rgba(5,8,20,.85);
+      z-index: 13;
+      opacity: 0;
+      transition: opacity .9s ease;
   }
   #startLayer.visible{opacity:1}
 
@@ -255,11 +263,16 @@
 
 <!-- Banner -->
 <section id="banner">
-  <div class="brandline">
-    <img class="coin" src="https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png" alt="NeoX Coin" />
-    <h1>NeoX Catch Game</h1>
-  </div>
-  <p class="tag">Your adventure begins — Catch the NeoX Coins and unlock the treasure!</p>
+    <div class="brandline">
+        <img class="coin" src="https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png" alt="NeoX Coin" />
+        <h1>NeoX Catch Game</h1>
+    </div>
+    <p class="tag">Your adventure begins — Catch the NeoX Coins and unlock the treasure!</p>
+    
+    <!-- 💡 新增：引導玩家點擊的按鈕 -->
+    <button id="btnEnterGame" style="margin-top: 24px; padding: 12px 28px; background: #2563eb; color: #fff; border: 1px solid #ffd25a; border-radius: 8px; font-weight: bold; cursor: pointer;">
+        ENTER GAME
+    </button>
 </section>
 
 <!-- Opener -->
@@ -307,6 +320,7 @@
 <script>
 /* Elements */
 const banner   = document.getElementById('banner');
+const btnEnterGame = document.getElementById('btnEnterGame'); // 💡 新增// ... 其他原本的 elements 定義不變 ...
 const opener   = document.getElementById('opener');
 const video    = document.getElementById('openerVideo');
 const loading  = document.getElementById('loading');
@@ -318,18 +332,17 @@ const startBtn = document.getElementById('startBtn');
 const fx       = document.getElementById('fx');
 const startBGM = document.getElementById('startBGM');
 
-/* 防止 Opening 流程重覆執行 */
-let openingDone = false;
-
-/* ---------- Banner → Opener ---------- */
-setTimeout(()=>{
-  banner.style.transition = 'opacity .9s ease';
-  banner.style.opacity = '0';
-  setTimeout(()=>{
-    banner.style.display = 'none';
-    startOpening();
-  }, 900);
-}, 1800);
+/* ---------- 💡 核心修改：由點擊事件觸發 Opening ---------- */
+btnEnterGame.addEventListener('click', () => {
+    // 玩家一撳呢個掣，成個網頁嘅聲音權限就會被解鎖！
+    banner.style.transition = 'opacity .6s ease';
+    banner.style.opacity = '0';
+    
+    setTimeout(() => {
+        banner.style.display = 'none';
+        startOpening(); // 轉去 Opening 畫面
+    }, 600);
+});
 
 /* ---------- Responsive fit ---------- */
 function fitVideo(){
@@ -357,24 +370,30 @@ function showControlsAndArmTimer(ms=6000){
 }
 
 function startOpening(){
-  opener.style.display = 'flex';
-  video.src = 'https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4';
-  video.muted = true;
-  
-  video.play().then(()=>{
-    loading.style.display='none';
-    video.style.opacity='1';
-    updateSoundLabel();
-    showControlsAndArmTimer(6000);
-  }).catch((err)=>{
-    console.log("Auto-play blocked:", err);
-    // 💡 修正：即使被攔截，也要隱藏 Loading 並顯示影片區塊，讓用戶可以看到並點擊播放
-    loading.style.display='none';
-    video.style.opacity='1'; 
+    opener.style.display = 'flex';
+    video.src = 'https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4';
     
-    updateSoundLabel();
-    showControlsAndArmTimer(6000);
-  });
+    video.muted = false; // 💡 關鍵：因為前面撳咗掣，呢度可以直接設為 false 帶聲播放！
+
+    video.onended = () => {
+        showStart(); // 影片播完自動呼叫顯示按鈕
+    };
+    
+    video.play().then(() => {
+        loading.style.display = 'none';
+        video.style.opacity = '1';
+        updateSoundLabel();           // 喇叭掣會自動顯示為「有聲/亮起」狀態
+        showControlsAndArmTimer(6000);
+    }).catch((err) => {
+        console.log("Auto-play blocked:", err);
+        // 保險後備方案
+        video.muted = true; 
+        video.play();
+        loading.style.display = 'none';
+        video.style.opacity = '1';
+        updateSoundLabel();
+        showControlsAndArmTimer(6000);
+    });
 }
 
 function updateSoundLabel() {
@@ -422,12 +441,22 @@ function goToStartFromOpening(){
   setTimeout(showStart, 900);
 }
 
-btnSkip.addEventListener('click', goToStartFromOpening);
-
-video.addEventListener('playing', ()=>{
-  loading.style.display='none';
-  video.style.opacity='1';
-  scheduleControlsFade(6000);
+// 確保 btnSkip 的監聽器有正確呼叫顯示邏輯
+btnSkip.addEventListener('click', () => {
+    // 1. 暫停並隱藏影片
+    video.pause();
+    opener.style.display = 'none'; 
+    
+    // 2. 顯示 Start Layer
+    start.style.display = 'grid'; 
+    
+    // 3. 觸發顯示動畫
+    requestAnimationFrame(() => {
+        start.classList.add('visible');
+    });
+    
+    // 4. (選填) 如果你有聲音，記得一併停止
+    if(startBGM) startBGM.pause();
 });
 
 video.addEventListener('ended', goToStartFromOpening);
@@ -436,7 +465,9 @@ video.addEventListener('ended', goToStartFromOpening);
 function showStart(){
   opener.style.display='none';
   start.style.display='grid';
-  requestAnimationFrame(()=>start.classList.add('visible'));
+  requestAnimationFrame(() => {
+        start.classList.add('visible');
+    });
 }
 
 startBtn.addEventListener('click', () => {
