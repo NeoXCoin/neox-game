@@ -374,6 +374,10 @@ function startOpening(){
     video.src = 'https://neoxcoin.github.io/neox-game/NeoXcatchgameOpening_H264.mp4';
     
     video.muted = false; // 💡 關鍵：因為前面撳咗掣，呢度可以直接設為 false 帶聲播放！
+
+    video.onended = () => {
+        showStart(); // 影片播完自動呼叫顯示按鈕
+    };
     
     video.play().then(() => {
         loading.style.display = 'none';
