@@ -8,14 +8,14 @@
 <!-- ✅ 僅守門：允許 neoxcoin.io / neoxcoin.github.io，並檢查有無通過 Level 2 -->
 <script>
 (function(){
-  const HUB    = 'https://neoxcoin.io/neox-game/';
+  const HUB    = 'https://neoxcoin.github.io/neox-game/';
   const L2_URL = HUB + 'v2.html';
 
   // 允許做 parent 嘅來源（只睇 origin）
   const ALLOWED_PARENTS = [
     'https://neoxcoin.github.io',
     'https://neoxcoin.io'
-    'https://neoxcoin.io/neox-game/iframe'
+    'https://neoxcoin.github.io/neox-game/iframe'
   ];
 
   // 🔐 防熱鏈：如果被其他網站 iframe 載入 → 送返去 HUB
