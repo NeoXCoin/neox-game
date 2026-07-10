@@ -6,17 +6,9 @@
 <title>NeoX Catch – Level 1</title>
 <style>
   html,body{
-    height:100%;margin:0;background:#080818color:#fff;
+    height:100%;margin:0;background:#0a0b1f;color:#fff;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang TC","Noto Sans",Arial,sans-serif;
     overflow:hidden;
-  }
-  body::before {
-      content: "";
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.3); /* 0.3 代表 30% 的遮罩，數值越大越暗 */
-      pointer-events: none;
-      z-index: 0;
   }
   #wrap{position:relative;height:100%;display:grid;place-items:center;}
   canvas{
@@ -538,6 +530,8 @@ function drawBackground(){
   const iw=bgImg.width, ih=bgImg.height, ir=iw/ih, cr=w/h; let dw,dh,dx,dy;
   if(ir>cr){ dh=h; dw=h*ir; dx=(w-dw)/2; dy=0; } else { dw=w; dh=w/ir; dx=0; dy=(h-dh)/2; }
   ctx.drawImage(bgImg,dx,dy,dw,dh);
+  ctx.fillStyle = "rgba(0, 0, 0, 0.4)"; // 設定黑色，0.4 代表 40% 不透明度 (數值越大越暗)
+  ctx.fillRect(dx, dy, dw, dh); // 在圖片上方畫一個同樣大小的黑色半透明矩形
 }
 function drawChest(){
   const {x,y,w,h}=chest;
