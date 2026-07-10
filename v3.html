@@ -33,6 +33,16 @@
     }
   }
 
+  // === 新增：防偷步檢查 ===
+  // 檢查是否有來自前一關的合法標記
+  if (sessionStorage.getItem('can_enter_v3') !== 'true') {
+      // 如果冇標記，代表非法跳關，直接彈走
+      location.replace(L2_URL + '#unauthorized');
+      return;
+  }
+  // 進入後清除標記，確保「用完即棄」
+    sessionStorage.removeItem('can_enter_v3');
+  
   // ✅ 防跳關：預期先過 L2（neox_last_level >= 2）
   const safeNum = k => { try { return Number(localStorage.getItem(k) || 0); } catch { return 0; } };
   const lastLv  = safeNum('neox_last_level');
