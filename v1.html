@@ -527,6 +527,8 @@ function drawBackground(){
   const iw=bgImg.width, ih=bgImg.height, ir=iw/ih, cr=w/h; let dw,dh,dx,dy;
   if(ir>cr){ dh=h; dw=h*ir; dx=(w-dw)/2; dy=0; } else { dw=w; dh=w/ir; dx=0; dy=(h-dh)/2; }
   ctx.drawImage(bgImg,dx,dy,dw,dh);
+  ctx.fillStyle = "rgba(0, 0, 0, 0.4)"; // 設定黑色，0.4 代表 40% 不透明度 (數值越大越暗)
+  ctx.fillRect(dx, dy, dw, dh); // 在圖片上方畫一個同樣大小的黑色半透明矩形
 }
 function drawChest(){
   const {x,y,w,h}=chest;
