@@ -437,12 +437,22 @@ function goToStartFromOpening(){
   setTimeout(showStart, 900);
 }
 
-btnSkip.addEventListener('click', goToStartFromOpening);
-
-video.addEventListener('playing', ()=>{
-  loading.style.display='none';
-  video.style.opacity='1';
-  scheduleControlsFade(6000);
+// 確保 btnSkip 的監聽器有正確呼叫顯示邏輯
+btnSkip.addEventListener('click', () => {
+    // 1. 暫停並隱藏影片
+    video.pause();
+    opener.style.display = 'none'; 
+    
+    // 2. 顯示 Start Layer
+    start.style.display = 'grid'; 
+    
+    // 3. 觸發顯示動畫
+    requestAnimationFrame(() => {
+        start.classList.add('visible');
+    });
+    
+    // 4. (選填) 如果你有聲音，記得一併停止
+    if(startBGM) startBGM.pause();
 });
 
 video.addEventListener('ended', goToStartFromOpening);
