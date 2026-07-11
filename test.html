@@ -363,10 +363,10 @@ function hidePanel(){
 /* ===== HUD & Utils ===== */
 function fmt(t){ const m=Math.floor(t/60), s=Math.floor(t%60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
 function refreshHUD(){
-  scoreBadge.textContent = `Score: ${Math.floor(score)}`;
-  bestBadge.textContent  = `Best: ${Math.floor(best)}`;
-  timeBadge.textContent  = `Time: ${fmt(timeLeft)}`;
-  missBadge.textContent  = `Miss: ${missCount}/${MAX_MISSES}`;
+  scoreBadge.textContent = `🪙 ${Math.floor(score)}`;
+  timeBadge.textContent  = `⏱️ ${fmt(timeLeft)}`;
+  bestBadge.textContent  = `🏆 ${Math.floor(best)}`;
+  missBadge.textContent  = `❌ ${missCount}/${MAX_MISSES}`;
   // 🛰️ 向父頁傳分數（如被 iframe 包住）
   window.parent?.postMessage({ type:'NX_CARRY', score: Math.floor(score) }, '*');
 }
