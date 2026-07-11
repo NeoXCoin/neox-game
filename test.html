@@ -119,7 +119,6 @@
         <div class="left">
           <button id="btnHome" class="iconbtn" title="Back to Home">
             <img src="https://neoxcoin.github.io/neox-game/XNXC.png" alt="Home" />
-            <span>Home</span>
           </button>
         </div>
         <div class="center">
@@ -129,7 +128,7 @@
           <span class="badge" id="missBadge">Miss: 0/60</span>
         </div>
         <div class="right">
-          <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸ Pause</button>
+          <button id="btnPause" class="iconbtn" title="Pause/Resume (P)">⏸</button>
         </div>
       </div>
 
@@ -301,10 +300,10 @@ function spawn(dt){
 }
 
 /* ===== Flow ===== */
-function start(){ state=State.PLAYING; hidePanel(); btnPause.textContent='⏸ Pause'; refreshHUD(); }
+function start(){ state=State.PLAYING; hidePanel(); btnPause.textContent='⏸'; refreshHUD(); }
 function togglePause(forcePause){
-  if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; btnPause.textContent='⏵ Resume'; }
-  else if(state===State.PAUSED){ state=State.PLAYING; btnPause.textContent='⏸ Pause'; }
+  if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; btnPause.textContent='⏵'; }
+  else if(state===State.PAUSED){ state=State.PLAYING; btnPause.textContent='⏸'; }
 }
 function restart(){
   // 回到 v2 傳入嘅分數（carry）
