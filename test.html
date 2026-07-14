@@ -93,7 +93,22 @@
     z-index: 1000;
     pointer-events: none; /* 分數牌本身不阻擋點擊 */
   }
-  .right{justify-self:end;pointer-events:auto}
+  .topbar .left, 
+  .topbar .right {
+    position: absolute !important;
+    top: 10px;
+    z-index: 1001;
+    pointer-events: auto; /* 強制讓按鈕可以被點擊 */
+  }
+  /* Home 掣貼最左 */
+  .topbar .left {
+    left: 14px;
+  }
+
+  /* Pause 掣貼最右 */
+  .topbar .right {
+    right: 14px;
+  }
   .badge{display:inline-block;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.14);backdrop-filter:blur(3px);
     box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);margin:0 6px;font-weight:900}
   .iconbtn{display:inline-flex;align-items:center;gap:8px;background:#1b2144;border:0;color:#fff;border-radius:14px;padding:10px 14px;
