@@ -68,7 +68,19 @@
 
   /* HUD */
   .hud{position:absolute;inset:0;z-index:5;pointer-events:none;display:grid;grid-template-rows:auto 1fr}
-  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:10px;padding:10px 14px;font-weight:800}
+  .topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column; 
+    gap: 12px;             
+    z-index: 999;          /* 提到最高層 */
+    pointer-events: auto;  /* 讓整個頂欄容器變透明，唔阻擋任何點擊 */
+  }
   .left{justify-self:start;pointer-events:auto}
   .topbar .center {
     position: relative !important;
