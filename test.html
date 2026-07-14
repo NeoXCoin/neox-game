@@ -550,10 +550,10 @@ function drawItems() {
     ctx.rotate(it.rot);
 
     let img, ready;
+    // 確保炸彈繪製時，尺寸比例一致
     if (it.type === TYPES.BOMB) {
-      // 強制按比例繪製，避免被拉伸
-      const imgSize = Math.min(size, size); 
-      ctx.drawImage(bombImg, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        const s = 26; // 用返你剛才定義嘅獨立大小
+        ctx.drawImage(bombImg, -s/2, -s/2, s, s);
     }
     else if (it.type === TYPES.COIN) { img = coinImg; ready = coinReady; }
     else if (it.type === TYPES.GOLD) { img = goldImg; ready = goldReady; }
