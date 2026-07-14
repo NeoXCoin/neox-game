@@ -486,7 +486,7 @@ function loop(now){
                    score += SCORE_MAP[it.type];
                    items.splice(i, 1);
               }
-       }
+      
           if (it.type === TYPES.BOMB) {
               // 碰到炸彈：直接 Game Over
               best = Math.max(best, Math.floor(score));
