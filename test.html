@@ -481,6 +481,12 @@ function loop(now){
       const r = SIZE_MAP[it.type]/2;
       const ex=(it.x-mouth.cx)/mouth.rx, ey=(it.y-mouth.cy)/mouth.ry;
       if(ex*ex+ey*ey<=1){
+        if (it.type === 'bomb') { // 記得確認你的 TYPES.BOMB 是否定義
+            state = State.OVER;
+            SFX.over();
+            showPanel('Game Over 💣', false);
+            return; // 直接中斷迴圈
+        } else {
         score += SCORE_MAP[it.type];
         items.splice(i,1);
         (it.type===TYPES.COIN?SFX.coin: it.type===TYPES.GOLD?SFX.gold: it.type===TYPES.RUBY?SFX.ruby:SFX.sapp)();
