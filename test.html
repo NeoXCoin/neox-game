@@ -486,7 +486,7 @@ function loop(now){
                    items.splice(i, 1);
               }
       
-          if (it.type === TYPES.BOMB) {
+              if (it.type === TYPES.BOMB) {
               // 碰到炸彈：直接 Game Over
               best = Math.max(best, Math.floor(score));
               refreshHUD();
@@ -494,7 +494,8 @@ function loop(now){
               SFX.over();
               showPanel('BOOM! Game Over 💣', false);
               return;
-      }
+             }
+         }
         score += SCORE_MAP[it.type];
         items.splice(i,1);
         (it.type===TYPES.COIN?SFX.coin: it.type===TYPES.GOLD?SFX.gold: it.type===TYPES.RUBY?SFX.ruby:SFX.sapp)();
