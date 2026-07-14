@@ -8,15 +8,11 @@
 <!-- ✅ 僅守門：允許 neoxcoin.io / neoxcoin.github.io，並檢查有無通過 Level 2 -->
 <script>
 (function(){
-  const HUB    = 'https://neoxcoin.io/neox-game/';
+  const HUB    = 'https://neoxcoin。github.io/neox-game/';
   const L2_URL = HUB + 'v2.html';
 
   // 允許做 parent 嘅來源（只睇 origin）
-  const ALLOWED_PARENTS = [
-    'https://neoxcoin.github.io',
-    'https://neoxcoin.io'
-    'https://neoxcoin.io/neox-game/iframe'
-  ];
+  const ALLOWED_PARENTS = ['https://neoxcoin.github.io', 'https://neoxcoin.io', 'https://neoxcoin.io/neox-game/iframe'];
 
   // 🔐 防熱鏈：如果被其他網站 iframe 載入 → 送返去 HUB
   if (window.top !== window.self) {
@@ -387,7 +383,7 @@ function restart(){
   missCount = 0;
   caughtCount = 0;
   items.length=0; spawnTimer=0; chest.x=canvas.clientWidth/2; chest.vx=0; placeChest();
-  state=State.PLAYING; hidePanel(); btnPause.textContent='⏸ Pause'; refreshHUD();
+  state=State.PLAYING; hidePanel(); btnPause.textContent='⏸'; refreshHUD();
 }
 
 function gotoEnd(){
@@ -482,6 +478,15 @@ function loop(now){
       const r = SIZE_MAP[it.type]/2;
       const ex=(it.x-mouth.cx)/mouth.rx, ey=(it.y-mouth.cy)/mouth.ry;
       if(ex*ex+ey*ey<=1){
+          if (Math.abs(dx) < chest.w / 2 && Math.abs(dy) < chest.h / 2) {
+              if (it.type === TYPES.BOMB) {
+                  state = State.OVER; // 觸發結束
+                  // ... 這裡加上你的結束畫面邏輯
+              } else {
+                   score += SCORE_MAP[it.type];
+                   items.splice(i, 1);
+              }
+       }
           if (it.type === TYPES.BOMB) {
               // 碰到炸彈：直接 Game Over
               best = Math.max(best, Math.floor(score));
