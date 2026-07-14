@@ -536,8 +536,11 @@ function drawChest(){
 }
 function drawItems(){
   for(const it of items){
-    const size=SIZE_MAP[it.type], r=size/2;
-    ctx.save(); ctx.translate(it.x,it.y); ctx.rotate(it.rot);
+    const size = SIZE_MAP[it.type];
+    const r = size / 2;
+    ctx.save(); 
+    ctx.translate(it.x, it.y); 
+    ctx.rotate(it.rot);
 
     // 柔光
     const g=ctx.createRadialGradient(0,0,r*0.4,0,0,r*1.25);
@@ -554,12 +557,15 @@ function drawItems(){
     else if(it.type==='gold'){ img=goldImg; ready=goldReady; }
     else if(it.type==='ruby'){ img=rubyImg; ready=rubyReady; }
     else { img=sappImg; ready=sappReady; }
-    if(ready) {
-        ctx.save();
-        ctx.translate(it.x, it.y);
-        ctx.rotate(it.rot);
-        ctx.drawImage(img, -SIZE_MAP[it.type]/2, -SIZE_MAP[it.type]/2, SIZE_MAP[it.type], SIZE_MAP[it.type]);
-        ctx.restore();
+    if(ready){ 
+         ctx.drawImage(img, -r, -r, size, size); 
+     } else { 
+         ctx.fillStyle = '#ccc'; 
+         ctx.beginPath(); 
+         ctx.arc(0, 0, r, 0, Math.PI * 2); 
+         ctx.fill(); 
+     }
+     ctx.restore();
   }
 }
 </script>
