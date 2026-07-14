@@ -234,7 +234,6 @@ const COIN_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoinBack.png";   // 
 const GOLD_URL  = "https://neoxcoin.github.io/neox-game/NeoXCoin.Front.png"; // 特別金幣
 const RUBY_URL  = "https://neoxcoin.github.io/neox-game/ruby.png";
 const SAPP_URL  = "https://neoxcoin.github.io/neox-game/sapphire.png";
-const BOMB_URL  = "https://neoxcoin.github.io/neox-game/bomb.png"; // 請確保此網址正確
 
 /* ===== Canvas HiDPI ===== */
 const canvas = document.getElementById('game');
@@ -283,8 +282,6 @@ const coinImg =new Image(); coinImg.src =COIN_URL;  let coinReady =false; coinIm
 const goldImg =new Image(); goldImg.src =GOLD_URL;  let goldReady =false; goldImg.onload =()=>goldReady =true;
 const rubyImg =new Image(); rubyImg.src =RUBY_URL;  let rubyReady =false; rubyImg.onload =()=>rubyReady =true;
 const sappImg =new Image(); sappImg.src =SAPP_URL;  let sappReady =false; sappImg.onload =()=>sappReady =true;
-const bombImg = new Image();bombImg.src = BOMB_URL;let bombReady = false;bombImg.onload = () => bombReady = true;
-}
 
 /* ===== Player (Chest) ===== */
 const chest={x:canvas.clientWidth/2,y:0,w:220,h:160,speed:6.5,vx:0};
@@ -351,17 +348,18 @@ document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState
 /* ===== Items ===== */
 const items=[]; let spawnTimer=0;
 const EDGE=2;
-const TYPES = {COIN:'coin', GOLD:'gold', RUBY:'ruby', SAPP:'sapp', BOMB:'bomb'};
-const SCORE_MAP = {coin:10, gold:30, ruby:50, sapp:100, bomb: 0};
-const SIZE_MAP = {coin:28, gold:30, ruby:30, sapp:34, bomb: 35};
+const TYPES={COIN:'coin', GOLD:'gold', RUBY:'ruby', SAPP:'sapp'};
+const SCORE_MAP={coin:10, gold:30, ruby:50, sapp:100};
+const SIZE_MAP ={coin:28, gold:30, ruby:30, sapp:34};
+
 function spawn(dt){
   spawnTimer-=dt;
-  const r = Math.random();
+  const maxOnScreen=6;
   if(spawnTimer<=0 && items.length<maxOnScreen){
     const SAFE = chest.w*0.12;
     // 概率：coin 50% / gold 15% / ruby 20% / sapp 15%
     const r = Math.random();
-    const type = r<0.45 ? TYPES.COIN : r<0.60 ? TYPES.GOLD : r<0.75 ? TYPES.RUBY : r<0.90 ? TYPES.SAPP : TYPES.BOMB;
+    const type = r<0.50 ? TYPES.COIN : r<0.65 ? TYPES.GOLD : r<0.85 ? TYPES.RUBY : TYPES.SAPP;
     items.push({
       type,
       x: EDGE+SAFE + Math.random()*(canvas.clientWidth - 2*(EDGE+SAFE)),
@@ -482,15 +480,19 @@ function loop(now){
       const r = SIZE_MAP[it.type]/2;
       const ex=(it.x-mouth.cx)/mouth.rx, ey=(it.y-mouth.cy)/mouth.ry;
       if(ex*ex+ey*ey<=1){
-          if (it.type === TYPES.BOMB) {
-              // 碰到炸彈：直接 Game Over
-              best = Math.max(best, Math.floor(score));
-              refreshHUD();
-              state = State.OVER;
-              SFX.over();
-              showPanel('BOOM! Game Over 💣', false);
-              return;
-          }
+        score += SCORE_MAP[it.type];
+        items.splice(i,1);
+        (it.type===TYPES.COIN?SFX.coin: it.type===TYPES.GOLD?SFX.gold: it.type===TYPES.RUBY?SFX.ruby:SFX.sapp)();
+        caughtCount++; refreshHUD();
+      }else if(it.y>canvas.clientHeight+30){
+        // v3：只計 Miss，不扣分；Miss 達上限 → Game Over
+        items.splice(i,1);
+        missCount++; SFX.miss(); refreshHUD();
+        if(missCount>=MAX_MISSES){
+          best = Math.max(best, Math.floor(score));
+          refreshHUD(); state=State.OVER; SFX.over();
+          showPanel('Game Over 😭', false);   // Over：不顯示 Game Finished
+          return;
         }
       }
     }
@@ -537,7 +539,6 @@ function drawItems(){
     if(it.type==='coin'){ img=coinImg; ready=coinReady; }
     else if(it.type==='gold'){ img=goldImg; ready=goldReady; }
     else if(it.type==='ruby'){ img=rubyImg; ready=rubyReady; }
-    else if(it.type==='bomb'){ img=bombImg; ready=bombReady; }
     else { img=sappImg; ready=sappReady; }
     if(ready){ ctx.drawImage(img,-r,-r,size,size); }
     else{ ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); }
