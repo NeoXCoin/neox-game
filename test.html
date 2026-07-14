@@ -489,7 +489,7 @@ function loop(now){
         SFX.over();
         showPanel('BOOM! Game Over 💣', false);
         return; // 停止執行
-      } else {
+      } 
         score += SCORE_MAP[it.type];
         items.splice(i,1);
         (it.type===TYPES.COIN?SFX.coin: it.type===TYPES.GOLD?SFX.gold: it.type===TYPES.RUBY?SFX.ruby:SFX.sapp)();
