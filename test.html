@@ -227,6 +227,7 @@
 /* ===== Config ===== */
 const TOTAL_TIME_SEC = 180;
 const MAX_MISSES = 60;
+const BOMB_DISPLAY_SIZE = 26;
 
 /* ===== Asset URLs ===== */
 const CHEST_URL = "https://neoxcoin.github.io/neox-game/treasure-box.png";
@@ -539,28 +540,26 @@ function drawChest(){
 }
 function drawItems() {
   for (const it of items) {
-    const size = SIZE_MAP[it.type] || 30; // 如果找不到對應的 size，給予預設值
-    const r = size / 3;
+    // 判斷該物品是否為炸彈，決定使用哪一個 size
+    const isBomb = (it.type === TYPES.BOMB);
+    const size = isBomb ? BOMB_DISPLAY_SIZE : (SIZE_MAP[it.type] || 30);
+    const r = size / 2;
+    
     ctx.save();
     ctx.translate(it.x, it.y);
     ctx.rotate(it.rot);
 
-    // 完整的類型判斷
     let img, ready;
-    switch(it.type) {
-      case TYPES.BOMB: img = bombImg; ready = bombReady; break;
-      case TYPES.COIN: img = coinImg; ready = coinReady; break;
-      case TYPES.GOLD: img = goldImg; ready = goldReady; break;
-      case TYPES.RUBY: img = rubyImg; ready = rubyReady; break;
-      case TYPES.SAPP: img = sappImg; ready = sappReady; break;
-      default: img = null; ready = false;
-    }
+    if (it.type === TYPES.BOMB) { img = bombImg; ready = bombReady; }
+    else if (it.type === TYPES.COIN) { img = coinImg; ready = coinReady; }
+    else if (it.type === TYPES.GOLD) { img = goldImg; ready = goldReady; }
+    else if (it.type === TYPES.RUBY) { img = rubyImg; ready = rubyReady; }
+    else { img = sappImg; ready = sappReady; }
 
-    if (img && ready) {
+    if (ready) {
       ctx.drawImage(img, -r, -r, size, size);
     } else {
-      // 繪製 fallback 佔位圖
-      ctx.fillStyle = (it.type === TYPES.BOMB) ? '#ff0000' : '#ccc';
+      ctx.fillStyle = isBomb ? '#ff0000' : '#ccc';
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.fill();
