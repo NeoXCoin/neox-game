@@ -12,8 +12,7 @@
   const L2_URL = HUB + 'v2.html';
 
   // 允許做 parent 嘅來源（只睇 origin）
-  const ALLOWED_PARENTS = ['https://neoxcoin.github.io', 'https://neoxcoin.io', 'https://neoxcoin.github.io/neox-game/iframe'];
-
+  const ALLOWED_PARENTS = ['https://neoxcoin.github.io', 'https://neoxcoin.io' 'https://neoxcoin.io/neox-game/iframe' ];
   // 🔐 防熱鏈：如果被其他網站 iframe 載入 → 送返去 HUB
   if (window.top !== window.self) {
     try {
