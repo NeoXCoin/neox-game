@@ -558,6 +558,7 @@ function drawItems() {
     else if (it.type === TYPES.COIN) { img = coinImg; ready = coinReady; }
     else if (it.type === TYPES.GOLD) { img = goldImg; ready = goldReady; }
     else if (it.type === TYPES.RUBY) { img = rubyImg; ready = rubyReady; }
+    else if (it.type === TYPES.BOMB) { img = bombImg; ready = true; // 強制設定為 true，先繞過 ready 檢查睇下圖出唔出到}
     else { img = sappImg; ready = sappReady; }
 
     if (ready) {
