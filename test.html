@@ -353,7 +353,7 @@ const items=[]; let spawnTimer=0;
 const EDGE=2;
 const TYPES={COIN:'coin', GOLD:'gold', RUBY:'ruby', SAPP:'sapp', BOMB:'bomb'};
 const SCORE_MAP={coin:10, gold:30, ruby:50, sapp:100, bomb:0 };
-const SIZE_MAP ={coin:28, gold:30, ruby:30, sapp:34, bomb:24 };
+const SIZE_MAP ={coin:28, gold:30, ruby:30, sapp:34, bomb:30 };
 
 function spawn(dt){
   spawnTimer-=dt;
@@ -540,7 +540,7 @@ function drawChest(){
 function drawItems() {
   for (const it of items) {
     const size = SIZE_MAP[it.type] || 30; // 如果找不到對應的 size，給予預設值
-    const r = size / 2;
+    const r = size / 3;
     ctx.save();
     ctx.translate(it.x, it.y);
     ctx.rotate(it.rot);
