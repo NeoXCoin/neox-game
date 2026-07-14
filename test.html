@@ -284,7 +284,7 @@ const coinImg =new Image(); coinImg.src =COIN_URL;  let coinReady =false; coinIm
 const goldImg =new Image(); goldImg.src =GOLD_URL;  let goldReady =false; goldImg.onload =()=>goldReady =true;
 const rubyImg =new Image(); rubyImg.src =RUBY_URL;  let rubyReady =false; rubyImg.onload =()=>rubyReady =true;
 const sappImg =new Image(); sappImg.src =SAPP_URL;  let sappReady =false; sappImg.onload =()=>sappReady =true;
-const bombImg =new Image(); bombImg.src =bomb_URL;  let bombReady =false; bombImg.onload =()=>bombReady =true;
+const bombImg =new Image(); bombImg.src =BOMB_URL;  let bombReady =false; bombImg.onload =()=>bombReady =true;
 
 /* ===== Player (Chest) ===== */
 const chest={x:canvas.clientWidth/2,y:0,w:220,h:160,speed:6.5,vx:0};
@@ -554,9 +554,12 @@ function drawItems(){
     else if(it.type==='gold'){ img=goldImg; ready=goldReady; }
     else if(it.type==='ruby'){ img=rubyImg; ready=rubyReady; }
     else { img=sappImg; ready=sappReady; }
-    if(ready){ ctx.drawImage(img,-r,-r,size,size); }
-    else{ ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); }
-    ctx.restore();
+    if(ready) {
+        ctx.save();
+        ctx.translate(it.x, it.y);
+        ctx.rotate(it.rot);
+        ctx.drawImage(img, -SIZE_MAP[it.type]/2, -SIZE_MAP[it.type]/2, SIZE_MAP[it.type], SIZE_MAP[it.type]);
+        ctx.restore();
   }
 }
 </script>
