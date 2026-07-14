@@ -542,7 +542,7 @@ function drawItems() {
   for (const it of items) {
     // 判斷該物品是否為炸彈，決定使用哪一個 size
     const isBomb = (it.type === TYPES.BOMB);
-    const size = isBomb ? BOMB_DISPLAY_SIZE : (SIZE_MAP[it.type] || 50);
+    const size = isBomb ? BOMB_DISPLAY_SIZE : (SIZE_MAP[it.type] || 30);
     const r = size / 2;
     
     ctx.save();
