@@ -550,7 +550,11 @@ function drawItems() {
     ctx.rotate(it.rot);
 
     let img, ready;
-    if (it.type === TYPES.BOMB) { img = bombImg; ready = bombReady; }
+    if (it.type === TYPES.BOMB) {
+      // 強制按比例繪製，避免被拉伸
+      const imgSize = Math.min(size, size); 
+      ctx.drawImage(bombImg, -imgSize/2, -imgSize/2, imgSize, imgSize);
+    }
     else if (it.type === TYPES.COIN) { img = coinImg; ready = coinReady; }
     else if (it.type === TYPES.GOLD) { img = goldImg; ready = goldReady; }
     else if (it.type === TYPES.RUBY) { img = rubyImg; ready = rubyReady; }
