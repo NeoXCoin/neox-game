@@ -360,9 +360,13 @@ function spawn(dt){
   const maxOnScreen=6;
   if(spawnTimer<=0 && items.length<maxOnScreen){
     const SAFE = chest.w*0.12;
-    // 概率：coin 50% / gold 15% / ruby 20% / sapp 15%
+    // 修正：補回正確的巢狀三元運算符，將 TYPES.BOMB 正確納入邏輯
     const r = Math.random();
-    const type = r<0.50 ? TYPES.COIN : r<0.65 ? TYPES.GOLD : r<0.85 ? TYPES.RUBY : TYPES.SAPP; TYPES.BOMB;
+    const type = r<0.50 ? TYPES.COIN : 
+                 r<0.65 ? TYPES.GOLD : 
+                 r<0.85 ? TYPES.RUBY : 
+                 r<0.92 ? TYPES.SAPP : TYPES.BOMB; // 最後一項為 BOMB
+    
     items.push({
       type,
       x: EDGE+SAFE + Math.random()*(canvas.clientWidth - 2*(EDGE+SAFE)),
@@ -374,7 +378,6 @@ function spawn(dt){
     spawnTimer = 0.48 + Math.random()*0.64;
   }
 }
-
 /* ===== Flow ===== */
 function start(){ state=State.PLAYING; hidePanel(); btnPause.textContent='⏸'; refreshHUD(); }
 function togglePause(forcePause){
