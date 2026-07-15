@@ -483,8 +483,8 @@ function loop(now){
     const mouth = {cx:chest.x, cy:chest.y - chest.h*0.58, rx:baseRx + edgeBoost, ry:baseRy};
 
     for(let i=items.length-1;i>=0;i--){
-      const it=items[i];
-      const r = SIZE_MAP[it.type]/2;
+      const itemSize = SIZE_MAP[it.type];
+      const r = (itemSize.w + itemSize.h) / 4;
       const ex=(it.x-mouth.cx)/mouth.rx, ey=(it.y-mouth.cy)/mouth.ry;
       if(ex*ex+ey*ey<=1){
         if (it.type === TYPES.BOMB) {
