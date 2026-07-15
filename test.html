@@ -543,7 +543,7 @@ function drawItems(){
         const itemSize = SIZE_MAP[it.type]; 
         const w = itemSize.w;
         const h = itemSize.h;
-        const r = Math.max(w, h) / 2; // 用於碰撞半徑計算
+        const r = (itemSize.w + itemSize.h) / 4; // 用於碰撞半徑計算
       
     // 柔光
     const g=ctx.createRadialGradient(0,0,r*0.4,0,0,r*1.25);
