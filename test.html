@@ -352,7 +352,13 @@ const items=[]; let spawnTimer=0;
 const EDGE=2;
 const TYPES = {COIN:'coin', GOLD:'gold', RUBY:'ruby', SAPP:'sapp', BOMB:'bomb'};
 const SCORE_MAP = {coin:10, gold:30, ruby:50, sapp:100, bomb: 0};
-const SIZE_MAP = {coin:28, gold:30, ruby:30, sapp:34, bomb: 35};
+const SIZE_MAP = {
+    coin: { w: 28, h: 28 },
+    gold: { w: 30, h: 30 },
+    ruby: { w: 30, h: 30 },
+    sapp: { w: 34, h: 34 },
+    bomb: { w: 40, h: 40 } // 這裡可以自由調整炸彈的長寬
+};
 function spawn(dt){
     spawnTimer-=dt; 
     const maxOnScreen=6; 
