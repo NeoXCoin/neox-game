@@ -483,8 +483,8 @@ function loop(now){
     const mouth = {cx:chest.x, cy:chest.y - chest.h*0.58, rx:baseRx + edgeBoost, ry:baseRy};
 
     for(let i=items.length-1;i>=0;i--){
-      const itemSize = SIZE_MAP[it.type];
-      const r = (itemSize.w + itemSize.h) / 4;
+      const it=items[i];
+      const r = SIZE_MAP[it.type]/2;
       const ex=(it.x-mouth.cx)/mouth.rx, ey=(it.y-mouth.cy)/mouth.ry;
       if(ex*ex+ey*ey<=1){
         if (it.type === TYPES.BOMB) {
@@ -543,7 +543,7 @@ function drawItems(){
         const itemSize = SIZE_MAP[it.type]; 
         const w = itemSize.w;
         const h = itemSize.h;
-        const r = Math.max(w, h) / 2; // 用於碰撞半徑計算
+        const r = (itemSize.w + itemSize.h) / 4; // 用於碰撞半徑計算
     ctx.save(); ctx.translate(it.x,it.y); ctx.rotate(it.rot);
 
     // 柔光
