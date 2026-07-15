@@ -357,7 +357,7 @@ const SIZE_MAP = {
     gold: { w: 30, h: 30 },
     ruby: { w: 30, h: 30 },
     sapp: { w: 34, h: 34 },
-    bomb: { w: 40, h: 40 }
+    bomb: { w: 40, h: 40 } // 這裡可以自由調整炸彈的長寬
 };
 function spawn(dt){
     spawnTimer-=dt; 
@@ -543,8 +543,9 @@ function drawItems(){
         const itemSize = SIZE_MAP[it.type]; 
         const w = itemSize.w;
         const h = itemSize.h;
-        const r = (itemSize.w + itemSize.h) / 4; // 用於碰撞半徑計算
-      
+        const r = Math.max(w, h) / 2; // 用於碰撞半徑計算
+    ctx.save(); ctx.translate(it.x,it.y); ctx.rotate(it.rot);
+
     // 柔光
     const g=ctx.createRadialGradient(0,0,r*0.4,0,0,r*1.25);
     if(it.type==='coin'){ g.addColorStop(0,'rgba(255,220,120,.85)'); g.addColorStop(1,'rgba(255,220,120,0)'); }
@@ -561,18 +562,13 @@ function drawItems(){
     else if(it.type==='sapp'){ img=sappImg; ready=sappReady; }
     else if(it.type==='bomb'){ img=bombImg; ready=bombReady; }
     else { img=sappImg; ready=sappReady; }
-    if(ready){
-            // 使用獨立的 w 和 h 繪製，這樣就不會變形
-            ctx.drawImage(img, -w/2, -h/2, w, h);
-        } else {
-            // fallback 繪製
-            ctx.fillStyle='#ccc';
+    if(ready){ ctx.drawImage(img, -w/2, -h/2, w, h); }
+    else{ ctx.fillStyle='#ccc';
             ctx.beginPath();
             ctx.arc(0,0,Math.min(w,h)/2,0,Math.PI*2);
-            ctx.fill();
-        }
-        ctx.restore();
-    }
+            ctx.fill(); }
+    ctx.restore();
+  }
 }
 </script>
 </body>
