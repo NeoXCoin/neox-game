@@ -442,8 +442,8 @@ function start(){
   refreshHUD(); btnPause.textContent='⏸';
 }
 function togglePause(forcePause){
-  if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; panelPause.classList.remove('hidden'); btnPause.textContent='⏵'; }
-  else if(state===State.PAUSED){ state=State.PLAYING; panelPause.classList.add('hidden'); btnPause.textContent='⏸'; }
+  if(state===State.PLAYING && (forcePause??true)){ state=State.PAUSED; btnPause.textContent='⏵'; }
+  else if(state===State.PAUSED){ state=State.PLAYING; btnPause.textContent='⏸'; }
 }
 function restart(){
   panelWin.classList.add('hidden'); panelPause.classList.add('hidden');
