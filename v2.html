@@ -316,7 +316,7 @@ const SFX={ star(){beep(880,.08); setTimeout(()=>beep(1320,.08),40)}, miss(){bee
 
 /* ====== Buttons ====== */
 document.getElementById('btnHome').onclick = () => {
-  (window.top || window).location.replace('https://neoxcoin.io/');
+  (window.top || window).location.replace('https://neoxcoin.io/game.html');
 };
 document.getElementById('btnReplay').onclick=()=>{restart();};
 const btnPause=document.getElementById('btnPause'); btnPause.onclick=()=>togglePause();
